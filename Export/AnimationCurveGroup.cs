@@ -451,8 +451,8 @@ public class AnimationCurveGroup
         for (var i = 0; i < maxCount; i++)
         {
             data.valueNumbers[i] = frame.valueNumbers[i];
-            data.inTangentNumbers[i] = 0;
-            data.outTangentNumbers[i] = 0;
+            data.inTangentNumbers[i] = frame.inTangentNumbers[i];
+            data.outTangentNumbers[i] = frame.outTangentNumbers[i];
         }
     }
 
