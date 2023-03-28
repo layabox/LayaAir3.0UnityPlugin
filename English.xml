@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EnglishLanguage>
+  <Scene>Scene3D</Scene>
+  <Sprite3D>Sprite3D</Sprite3D>
+  <MeshSetting> Mesh Setting</MeshSetting>
+  <IgnoreVerticesUV> Ignore Vertices UV</IgnoreVerticesUV>
+  <IgnoreVerticesColor> Ignore Vertices Color</IgnoreVerticesColor>
+  <IgnoreVerticesNormal> Ignore Vertices Normal</IgnoreVerticesNormal>
+  <IgnoreVerticesTangent> Ignore Vertices Tangent</IgnoreVerticesTangent>
+  <Compress> Compress</Compress>
+  <ThisfunctionneedVIP>This function need VIP</ThisfunctionneedVIP>
+  <PleaseBindthecurrentdevice>Please Bind the current device</PleaseBindthecurrentdevice>
+  <TerrainSetting> Terrain Setting</TerrainSetting>
+  <ConvertTerrainToMesh> Convert Terrain To Mesh</ConvertTerrainToMesh>
+  <Resolution> Resolution</Resolution>
+  <GameObjectSetting> GameObject Setting</GameObjectSetting>
+  <IgnoreNotActiveGameObjects> Ignore Not Active Game Objects</IgnoreNotActiveGameObjects>
+  <BatchMakeTheFirstLevelGameObjects> Batch Make The First Level Game Objects</BatchMakeTheFirstLevelGameObjects>
+  <Assetsplatform> Assets platform</Assetsplatform>
+  <IOSQuality>iOS Quality</IOSQuality>
+  <AnimationSetting> Animation Setting</AnimationSetting>
+  <TexAnimatorSetting> Pre Baked Bone Animation</TexAnimatorSetting>
+  <TexAnimatorbakeFPS> Bake FPS </TexAnimatorbakeFPS>
+  <TexAnimationSocket> Keep Skeletal Add Point </TexAnimationSocket>
+  <OtherSetting> Other Setting</OtherSetting>
+  <CustomizeExportRootDirectoryName> Customize Export Root Directory Name</CustomizeExportRootDirectoryName>
+  <SavePathcannotbeempty>                   Save Path cannot be empty</SavePathcannotbeempty>
+  <SavePath>Save Path</SavePath>
+  <Browse>Browse</Browse>
+  <ClearConfig>Revert Config</ClearConfig>
+  <LayaAirRun>Run   </LayaAirRun>
+  <erweimatu>QRCode</erweimatu>
+  <LayaAirExport>Export </LayaAirExport>
+  <Exportaddresscannotbeempty>Export address cannot be empty</Exportaddresscannotbeempty>
+  <JPGquality>JPG quality </JPGquality>
+  <Copy>Copy</Copy>
+  <multiScene> export multiScenes </multiScene>
+
+    //LoginWindow
+    <Accountorpassworderror>Account or password error</Accountorpassworderror>
+  <Accountpasswordcannotbeempty>Account password can not be empty</Accountpasswordcannotbeempty>
+  <Pleaserecheckthenetwork>Please re-check the network</Pleaserecheckthenetwork>
+  <Logonfailed>Logon failed</Logonfailed>
+  <Account>Account</Account>
+  <Password>Password</Password>
+  <Login>Login</Login>
+  <Forgetpassword>Forget password?</Forgetpassword>
+  <register>register</register>
+  <NotOpen>Not  Open</NotOpen>
+  <Recharge>Recharge</Recharge>
+  <VIPFunction>VIP Function</VIPFunction>
+  <Function1>Android/iOS Asset Platform(Texture Compression)</Function1>
+  <Function2>Mesh File Compression</Function2>
+  <Function3>Animation File Compression</Function3>
+  <BindingDevice>Binding Device</BindingDevice>
+  <Unbind>Unbind</Unbind>
+  <SignOut>Sign Out</SignOut>
+  <Refresh>Refresh</Refresh>
+  <Invoice>Invoice</Invoice>
+  <LearnMore>Learn More</LearnMore>
+  <qiyeVIP>enterpriseVIP</qiyeVIP>
+  <gerenVIP>persionalVIP</gerenVIP>
+  <putongVIP>normalUser</putongVIP>
+  
+  //Version
+  <LayaBoxVersion>LayaBox Version 2.11.0beta</LayaBoxVersion>
+  <AboutLayaAir>About LayaAir</AboutLayaAir>
+  <downloadNodejs>Please download and install nodejs,</downloadNodejs>
+  <unity> then restart Unity</unity>
+  <down>DownLoad Node.js</down>
+  <Unbindlingfail>Unbundling fail，One Count only Unbind once in 24 hours</Unbindlingfail>
+  <accountDevice> account device is full. Please remove an old device.  </accountDevice>
+  <UnbindSuccess>                    Unbind success                     </UnbindSuccess>
+  <YourAcountNeedReLogin>              Your Acount Need ReLogin                 </YourAcountNeedReLogin>
+  <Expired>expired</Expired>
+
+  //particleSystem
+  <UnityInspector>UnityInspector</UnityInspector>
+  <LayaInspector>LayaAirInspector</LayaInspector>
+  <clearData>clearData</clearData>
+  <particleNeedVIP>need VIP</particleNeedVIP>
+  <particleTips>clear properties laya not support \nthis operate can not undo</particleTips>
+</EnglishLanguage>

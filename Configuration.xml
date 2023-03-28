@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LayaExportSetting>
+  <FirstlevelMenu>0</FirstlevelMenu>
+  <IgnoreNotActiveGameObject>False</IgnoreNotActiveGameObject>
+  <BatchMade>False</BatchMade>
+  <IgnoreVerticesUV>False</IgnoreVerticesUV>
+  <IgnoreVerticesNormal>False</IgnoreVerticesNormal>
+  <IgnoreVerticesTangent>False</IgnoreVerticesTangent>
+  <IgnoreVerticesColor>False</IgnoreVerticesColor>
+  <CustomizeDirectory>False</CustomizeDirectory>
+  <CustomizeDirectoryName>
+  </CustomizeDirectoryName>
+  <SavePath>E:\LayaProject1\assets\urpTest</SavePath>
+</LayaExportSetting>

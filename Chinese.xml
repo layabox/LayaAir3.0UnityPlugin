@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ChineseLanguage>
+  <Scene>场  景</Scene>
+  <Sprite3D>预  设</Sprite3D>
+  <Sprite3D>Sprite3D</Sprite3D>
+  <MeshSetting> 模 型 设 置 </MeshSetting>
+  <IgnoreVerticesUV> 忽 略 顶 点 UV</IgnoreVerticesUV>
+  <IgnoreVerticesColor> 忽 略 顶 点 颜 色</IgnoreVerticesColor>
+  <IgnoreVerticesNormal> 忽 略 顶 点 法 线</IgnoreVerticesNormal>
+  <IgnoreVerticesTangent> 忽 略 顶 点 切 线</IgnoreVerticesTangent>
+  <Compress> 文 件 压 缩 </Compress>
+  <ThisfunctionneedVIP> 该功能属于VIP专属功能，请购买VIP帐号使用授权 </ThisfunctionneedVIP>
+  <PleaseBindthecurrentdevice>    请 绑 定 当 前 设 备     </PleaseBindthecurrentdevice>
+  <TerrainSetting> 地 形 设 置</TerrainSetting>
+  <ConvertTerrainToMesh> 将 地 形 转 换 为 网 格 </ConvertTerrainToMesh>
+  <Resolution> 精 度</Resolution>
+  <GameObjectSetting> 节 点 设 置 </GameObjectSetting>
+  <IgnoreNotActiveGameObjects> 忽 略 未 激 活 节 点 </IgnoreNotActiveGameObjects>
+  <BatchMakeTheFirstLevelGameObjects> 批 量 导 出 一 级 节 点 </BatchMakeTheFirstLevelGameObjects>
+  <Assetsplatform> 发 布 平 台 </Assetsplatform>
+  <IOSQuality>iOS 质量</IOSQuality>
+  <AnimationSetting> 动 画 设 置 </AnimationSetting>
+  <TexAnimatorSetting> 预 烘 焙 骨 骼 动 画 </TexAnimatorSetting>
+  <TexAnimatorbakeFPS> 烘 焙 帧 数 </TexAnimatorbakeFPS>
+  <TexAnimationSocket> 保 留 骨 骼 挂 点 </TexAnimationSocket>
+  <OtherSetting> 其 他 设 置 </OtherSetting>
+  <CustomizeExportRootDirectoryName> 自 定 义 导 出 根 目 录 名</CustomizeExportRootDirectoryName>
+  <SavePathcannotbeempty>                   保 存 路 径 不 能 为 空 </SavePathcannotbeempty>
+  <SavePath> 导 出 路 径 </SavePath>
+  <Browse> 浏 览 </Browse>
+  <ClearConfig> 恢 复 配 置 </ClearConfig>
+  <LayaAirRun> 预 览 </LayaAirRun>
+  <LayaAirExport> 导 出 </LayaAirExport>
+  <erweimatu>二维码</erweimatu>
+  <Exportaddresscannotbeempty> 导 出 地 址 不 能 为 空</Exportaddresscannotbeempty>
+  <JPGquality>JPG 质 量 </JPGquality>
+  <Copy>复 制</Copy>
+  <multiScene> 批量导出场景 </multiScene>
+
+
+  //LoginWindow
+  <Accountorpassworderror>帐 户 或 密 码 错 误</Accountorpassworderror>
+  <Accountpasswordcannotbeempty>帐 户 密 码 不 能 为 空</Accountpasswordcannotbeempty>
+  <Pleaserecheckthenetwork>请 重 新 检 查 网 络</Pleaserecheckthenetwork>
+  <Logonfailed>登 录 失 败</Logonfailed>
+  <Account>账 户</Account>
+  <Password>密 码</Password>
+  <Login>登 录</Login>
+  <Forgetpassword>忘 记 密 码？</Forgetpassword>
+  <register>注 册</register>
+  <NotOpen>未 开 通</NotOpen>
+  <Recharge>充 值</Recharge>
+  <VIPFunction>VIP 功 能</VIPFunction>
+  <Function1>Android/iOS 资 源 平 台 纹 理 压 缩</Function1>
+  <Function2>网 格 文 件 压 缩</Function2>
+  <Function3>动 画 文 件 压 缩</Function3>
+  <BindingDevice>绑 定 设 备</BindingDevice>
+  <Unbind>解 绑</Unbind>
+  <SignOut>退 出</SignOut>
+  <Refresh>刷 新</Refresh>
+  <Invoice>发 票</Invoice>
+  <LearnMore>了 解 更 多</LearnMore>
+  <qiyeVIP>企业VIP</qiyeVIP>
+  <gerenVIP>个人VIP</gerenVIP>
+  <putongVIP>普通用户</putongVIP>
+
+  //Version
+  <LayaBoxVersion>LayaBox 版 本 2.11.0beta</LayaBoxVersion>
+  <AboutLayaAir> 关 于 LayaAir</AboutLayaAir>
+  <downloadNodejs> 请 下 载 和 安 装 NodeJs,</downloadNodejs>
+  <unity> 然 后 重 新 启 动 Unity</unity>
+  <down> 下 载 Node.js</down>
+  <Unbindlingfail>         解 绑 失 败，24 小 时 仅 允 许 解 绑 一 次 。     </Unbindlingfail>
+  <accountDevice>       帐 户 绑 定 设 备 已 满 。 请 删 除 旧 设 备 。      </accountDevice>
+  <UnbindSuccess>                     解 绑 成 功                       </UnbindSuccess>
+  <YourAcountNeedReLogin>            你 的 帐 户 需 要 重 新 登 录             </YourAcountNeedReLogin>
+
+  <Expired> 到 期 </Expired>
+  
+  //particleSystem
+  <UnityInspector>Unity面板</UnityInspector>
+  <LayaInspector>LayaAir面板</LayaInspector>
+  <clearData>清除数据</clearData>
+  <particleNeedVIP>该功能属于VIP专属功能，请购买VIP帐号使用授权</particleNeedVIP>
+  <particleTips>清除Laya不支持的属性 \n这个操作不支持撤销</particleTips>
+</ChineseLanguage>
