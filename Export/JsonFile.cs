@@ -34,7 +34,7 @@ internal class JsonFile : FileData
             FileData file = exportFiles[filename];
             if (file == null)
             {
-                Debug.LogWarning("LayaAir3D Warning £º can not found file " + filename);
+                Debug.LogWarning("LayaAir3D Warning: can not found file " + filename);
             }
             jsonContent = jsonContent.Replace(filename, file.uuid);
         }

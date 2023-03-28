@@ -23,7 +23,7 @@ public enum ComponentType
     PhysicsCollider = 11,
     Rigidbody3D = 12,
     TrailRenderer = 13,
-    LineRenderer = 14, 
+    LineRenderer = 14,
     Fixedjoint = 15,
     ConfigurableJoint = 16,
     ReflectionProbe = 17,
@@ -44,7 +44,7 @@ public class DefindsValue
     private string _keyName;
     private DefindsFrom _from;
     private float _value;
-    public DefindsValue(string keyName,DefindsFrom from, float value)
+    public DefindsValue(string keyName, DefindsFrom from, float value)
     {
         this._keyName = keyName;
         this._from = from;
@@ -87,7 +87,7 @@ public class TextureConfig
 {
     public string keyName;
     public bool isNormal;
-    public TextureConfig(string keyname,bool isNomal)
+    public TextureConfig(string keyname, bool isNomal)
     {
         this.keyName = keyname;
         this.isNormal = isNomal;
@@ -101,13 +101,13 @@ public class ConditionConfig
     public string targetName;
     public string ruleType;
     public string ruleKeyName;
-  /*  public ConditionConfig(string ruleType, string ruleKeyName, string target, object data)
-    {
-        this.data = data;
-        this.ruleType = ruleType;
-        this.ruleKeyName = ruleKeyName;
-        this.target = target;
-    }*/
+    /*  public ConditionConfig(string ruleType, string ruleKeyName, string target, object data)
+      {
+          this.data = data;
+          this.ruleType = ruleType;
+          this.ruleKeyName = ruleKeyName;
+          this.target = target;
+      }*/
 }
 
 public class PropDatasConfig
@@ -132,15 +132,15 @@ public class PropDatasConfig
         this._defindsLists = new Dictionary<string, DefindsValue>();
     }
 
-    public void addTextureProps(string uprops, string lprops, string definde = null, bool isnormal=false)
+    public void addTextureProps(string uprops, string lprops, string definde = null, bool isnormal = false)
     {
-        this._pictureList.Add(uprops, new TextureConfig(lprops,isnormal));
-        if(definde!= null)
+        this._pictureList.Add(uprops, new TextureConfig(lprops, isnormal));
+        if (definde != null)
         {
             this.addDefineds(uprops, definde, DefindsFrom.TextureValue, 0.0f);
         }
     }
-    public void addFloatProps(string uprops, string lprops,bool isgamma = false,string rule = null)
+    public void addFloatProps(string uprops, string lprops, bool isgamma = false, string rule = null)
     {
         FloatConfig floatdata = new FloatConfig();
         floatdata.keyName = lprops;
@@ -149,10 +149,10 @@ public class PropDatasConfig
         this._floatLists.Add(uprops, floatdata);
 
     }
-    public void addColorProps(string uprops, string lprops,string otherName = null)
+    public void addColorProps(string uprops, string lprops, string otherName = null)
     {
         this._colorLists.Add(uprops, lprops);
-        if(otherName != null)
+        if (otherName != null)
         {
             this._colorHdrLists.Add(uprops, otherName);
         }
@@ -163,7 +163,7 @@ public class PropDatasConfig
         this._tillOffsetLists.Add(uprops, lprops);
     }
 
-    public void addDefineds(string uprops, string lprops,DefindsFrom from, float value = 0)
+    public void addDefineds(string uprops, string lprops, DefindsFrom from, float value = 0)
     {
         if (this._defindsLists.ContainsKey(uprops))
         {
@@ -218,7 +218,7 @@ public class PropDatasConfig
         }
     }
 
-    public Dictionary<string,DefindsValue> defindsLists
+    public Dictionary<string, DefindsValue> defindsLists
     {
         get
         {
@@ -430,7 +430,7 @@ public class PropDatasConfig
         {
             return 2;
         }
-        else if(result == "Fade")
+        else if (result == "Fade")
         {
             return 5;
         }
@@ -441,7 +441,7 @@ public class PropDatasConfig
     }
 }
 
-//????????
+//��������
 public class VertexData
 {
     public int index;
@@ -453,9 +453,9 @@ public class VertexData
     public Vector4 boneWeight;
     public Vector4 boneIndex;
     public Vector4 tangent;
-    //?????????????????��??boneindex
+    //�Ƿ��Ѿ������������иı�boneindex
     public bool ischange = true;
-    //?��?index????
+    //�ж�index����
     public int subMeshindex = -1;
     public int subsubMeshindex = -1;
     public Dictionary<string, int> commonPoint;
@@ -472,7 +472,7 @@ public class VertexData
         boneIndex = new Vector4(othervertexdata.boneIndex.x, othervertexdata.boneIndex.y, othervertexdata.boneIndex.z, othervertexdata.boneIndex.w);
     }
 }
-//??????????
+//����������
 public class Triangle
 {
     public VertexData point1;
@@ -481,15 +481,15 @@ public class Triangle
 }
 
 
-class GameObjectUitls 
+class GameObjectUitls
 {
     private static string LaniVersion = "LAYAANIMATION:04";
     public static Dictionary<string, PropDatasConfig> MaterialPropsConfigs;
     public static Dictionary<string, string> searchCompoment;
 
-    public static void  init()
+    public static void init()
     {
-        if(searchCompoment == null)
+        if (searchCompoment == null)
         {
             searchCompoment = new Dictionary<string, string>();
             searchCompoment.Add("UnityEngine.GameObject", "");
@@ -500,20 +500,20 @@ class GameObjectUitls
             searchCompoment.Add("UnityEngine.TrailRenderer", "trailRenderer");
         }
 
-        JSONObject metaDatas = JSONObject.Create(File.ReadAllText("Assets/LayaAir3D/MetarialPropData.json"));
+        JSONObject metaDatas = JSONObject.Create(File.ReadAllText("Assets/LayaAir3.0UnityPlugin/MetarialPropData.json"));
         MaterialPropsConfigs = new Dictionary<string, PropDatasConfig>();
         int count = metaDatas.Count;
-        for(int i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
         {
             string key = metaDatas.keys[i];
             JSONObject mJdata = metaDatas.GetField(key);
             PropDatasConfig propdata = new PropDatasConfig(mJdata.GetField("targeName").str);
             MaterialPropsConfigs.Add(key, propdata);
             JSONObject textures = mJdata["textures"];
-            if(textures != null)
+            if (textures != null)
             {
                 int texureCount = textures.Count;
-                for(int tindex = 0; tindex < texureCount; tindex++)
+                for (int tindex = 0; tindex < texureCount; tindex++)
                 {
                     JSONObject texture = textures[tindex];
                     string uName = texture.GetField("uName").str;
@@ -523,14 +523,14 @@ class GameObjectUitls
                     if (texture.GetField("defind") != null)
                     {
                         defined = texture.GetField("defind").str;
-                      
+
                     }
                     if (texture.GetField("isNormal") != null)
                     {
                         isNormal = texture.GetField("isNormal").b;
 
                     }
-                    propdata.addTextureProps(uName, lName, defined,isNormal);
+                    propdata.addTextureProps(uName, lName, defined, isNormal);
                 }
             }
             JSONObject colors = mJdata["colors"];
@@ -578,7 +578,7 @@ class GameObjectUitls
             JSONObject tillOffset = mJdata["tillOffset"];
             if (tillOffset != null)
             {
-                int  tillOffsetCount = tillOffset.Count;
+                int tillOffsetCount = tillOffset.Count;
                 for (int tOffsetIndex = 0; tOffsetIndex < tillOffsetCount; tOffsetIndex++)
                 {
                     JSONObject tOffsetData = tillOffset[tOffsetIndex];
@@ -608,10 +608,10 @@ class GameObjectUitls
                 }
             }
             JSONObject rules = mJdata["rules"];
-            if(rules != null)
+            if (rules != null)
             {
                 int ruleCount = rules.Count;
-                for(var rindex = 0; rindex < ruleCount; rindex++)
+                for (var rindex = 0; rindex < ruleCount; rindex++)
                 {
                     JSONObject rule = rules[rindex];
                     ConditionConfig ruleConfig = new ConditionConfig();
@@ -619,7 +619,7 @@ class GameObjectUitls
                     ruleConfig.targetName = rule.GetField("targetName").str;
                     ruleConfig.ruleType = rule.GetField("ruleType").str;
                     ruleConfig.ruleKeyName = rule.GetField("ruleKeyName").str;
-                    if(ruleConfig.ruleType == "texture")
+                    if (ruleConfig.ruleType == "texture")
                     {
                         ruleConfig.data = rule.GetField("data").b;
                     }
@@ -631,7 +631,7 @@ class GameObjectUitls
                 }
             }
         }
-        
+
 
     }
     private static string LmVersion = "LAYAMODEL:0501";
@@ -652,7 +652,7 @@ class GameObjectUitls
 
     public static List<ComponentType> componentsOnGameObject(GameObject gameObject)
     {
-        
+
         List<ComponentType> components = new List<ComponentType>();
 
         Camera camera = gameObject.GetComponent<Camera>();
@@ -674,7 +674,7 @@ class GameObjectUitls
         BoxCollider boxCollider = gameObject.GetComponent<BoxCollider>();
         SphereCollider sphereCollider = gameObject.GetComponent<SphereCollider>();
         CapsuleCollider capsuleCollider = gameObject.GetComponent<CapsuleCollider>();
-        //???Meshcoliser
+        //���Meshcoliser
         MeshCollider meshcollider = gameObject.GetComponent<MeshCollider>();
 
 
@@ -688,12 +688,12 @@ class GameObjectUitls
         FixedJoint fixedJoint = gameObject.GetComponent<FixedJoint>();
         ConfigurableJoint configurableJoint = gameObject.GetComponent<ConfigurableJoint>();
 
-        // todo ????????, ????? reflectionProbe ????????????? 
+        // todo ͬʱ���ڼ��, ��֧�� reflectionProbe ������������� 
         ReflectionProbe reflectionProbe = gameObject.GetComponent<ReflectionProbe>();
         LODGroup lodGroup = gameObject.GetComponent<LODGroup>();
 
         components.Add(ComponentType.Transform);
-        if(lodGroup != null)
+        if (lodGroup != null)
         {
             components.Add(ComponentType.LodGroup);
         }
@@ -746,7 +746,7 @@ class GameObjectUitls
         {
             components.Add(ComponentType.Camera);
         }
-        //???
+        //�ƹ�
         if (light != null)
         {
             if (light.type == LightType.Directional)
@@ -895,8 +895,8 @@ class GameObjectUitls
         string vbDeclaration = "";
 
 
-        //????????,0?????????????????;1?????
-        //??????????????????????��??????????��????????uv?????????????????tangents
+        //��ȡ����ṹ,0�����ö���ṹ�޴�����;1����֮
+        //�������������ܴܺ�Ϊ���Ż�Ч�ʣ�Ĭ�϶����λ�ã����ߣ�uv������Ȩ�ش��ڣ�����tangents
         for (i = 0; i < VertexStructure.Length; i++)
             VertexStructure[i] = 0;
 
@@ -933,7 +933,7 @@ class GameObjectUitls
             everyVBSize += 8;
         }
 
- 
+
 
         if (tangents != null && tangents.Length != 0 && !ExportConfig.IgnoreVerticesTangent)
         {
@@ -988,17 +988,17 @@ class GameObjectUitls
         stringDatas.Add("MESH");
         stringDatas.Add("SUBMESH");
 
-        //?��??
+        //�汾��
         Util.FileUtil.WriteData(fs, LmVersion);
         VerionSize = fs.Position;
 
-        //????????????
-        ContentAreaPosition_Start = fs.Position; // ??????????????
+        //���������Ϣ��
+        ContentAreaPosition_Start = fs.Position; // Ԥ��������ƫ�Ƶ�ַ
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
 
-        //????????????
-        BlockAreaPosition_Start = fs.Position;//???????????
+        //���ݶ�����Ϣ��
+        BlockAreaPosition_Start = fs.Position;//Ԥ����������
 
         Util.FileUtil.WriteData(fs, (UInt16)blockCount);
         for (i = 0; i < blockCount; i++)
@@ -1007,19 +1007,19 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
         }
 
-        //?????
-        StringAreaPosition_Start = fs.Position;//????????
+        //�ַ���
+        StringAreaPosition_Start = fs.Position;//Ԥ���ַ���
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt16)0);//count
 
-        //??????
+        //������
         MeshAreaPosition_Start = fs.Position;
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("MESH"));//?????????????????
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("MESH"));//�����������ַ�����
         stringDatas.Add(meshName);
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(meshName));//?????????????
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(meshName));//�������ַ�����
 
         //vb
-        Util.FileUtil.WriteData(fs, (UInt16)1);//vb????
+        Util.FileUtil.WriteData(fs, (UInt16)1);//vb����
         VBMeshAreaPosition_Start = fs.Position;
         for (i = 0; i < 1; i++)//vb
         {
@@ -1059,12 +1059,12 @@ class GameObjectUitls
         MeshAreaPosition_End = fs.Position;
         MeshAreaSize = MeshAreaPosition_End - MeshAreaPosition_Start;
 
-        //????????
+        //��������
         for (i = 0; i < subMeshCount; i++)
         {
             subMeshAreaPosition_Start[i] = fs.Position;
 
-            Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("SUBMESH"));//?????????????????
+            Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("SUBMESH"));//�����������ַ�����
             Util.FileUtil.WriteData(fs, (UInt16)0);//vbIndex
 
             Util.FileUtil.WriteData(fs, (UInt32)0);//ibStart
@@ -1083,7 +1083,7 @@ class GameObjectUitls
             subMeshAreaSize[i] = subMeshAreaPosition_End[i] - subMeshAreaPosition_Start[i];
         }
 
-        //?????????
+        //�ַ�������
         StringDatasAreaPosition_Start = fs.Position;
         for (i = 0; i < stringDatas.Count; i++)
         {
@@ -1092,7 +1092,7 @@ class GameObjectUitls
         StringDatasAreaPosition_End = fs.Position;
         StringDatasAreaSize = StringDatasAreaPosition_End - StringDatasAreaPosition_Start;
 
-        //??????????
+        //����������
         //vb
         Vector3 vertice;
         Vector3 normal;
@@ -1100,18 +1100,18 @@ class GameObjectUitls
         Vector2 uvs;
         Vector4 tangent;
         VBContentDatasAreaPosition_Start = fs.Position;
-        
+
         for (j = 0; j < mesh.vertexCount; j++)
         {
             vertice = vertices[j];
             Util.FileUtil.WriteData(fs, -vertice.x, vertice.y, vertice.z);
-            //????8
+            //����8
             if (VertexStructure[1] == 1)
             {
                 normal = normals[j];
                 Util.FileUtil.WriteData(fs, -normal.x, normal.y, normal.z);
             }
-            //???
+            //��ɫ
             if (VertexStructure[2] == 1)
             {
                 color = colors[j];
@@ -1123,13 +1123,13 @@ class GameObjectUitls
                 uvs = uv[j];
                 Util.FileUtil.WriteData(fs, uvs.x, uvs.y * -1.0f + 1.0f);
             }
-          /*  //uv2
-            if (VertexStructure[4] == 1)
-            {
-                uv2s = uv2[j];
-                Util.FileUtil.WriteData(fs, uv2s.x, uv2s.y * -1.0f + 1.0f);
-            }*/
-            //????
+            /*  //uv2
+              if (VertexStructure[4] == 1)
+              {
+                  uv2s = uv2[j];
+                  Util.FileUtil.WriteData(fs, uv2s.x, uv2s.y * -1.0f + 1.0f);
+              }*/
+            //����
             if (VertexStructure[6] == 1)
             {
                 tangent = tangents[j];
@@ -1141,7 +1141,7 @@ class GameObjectUitls
         VBContentDatasAreaSize = VBContentDatasAreaPosition_End - VBContentDatasAreaPosition_Start;
 
         //indices
-        //TODO:3.0 ��???????????lm??
+        //TODO:3.0 δ�������Ǵ���lm��
         IBContentDatasAreaPosition_Start = fs.Position;
         int[] triangles = mesh.triangles;
         if (mesh.indexFormat == IndexFormat.UInt32 && mesh.vertexCount > 65535)
@@ -1162,7 +1162,7 @@ class GameObjectUitls
         IBContentDatasAreaPosition_End = fs.Position;
         IBContentDatasAreaSize = IBContentDatasAreaPosition_End - IBContentDatasAreaPosition_Start;
 
-        //????????????
+        //������������
         UInt32 ibstart = 0;
         UInt32 iblength = 0;
         UInt32 _ibstart = 0;
@@ -1201,7 +1201,7 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, iblength);
         }
 
-        //??????????
+        //����������
         fs.Position = VBMeshAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)(VBContentDatasAreaPosition_Start - StringDatasAreaPosition_Start));
         Util.FileUtil.WriteData(fs, (UInt32)mesh.vertexCount);
@@ -1210,13 +1210,13 @@ class GameObjectUitls
         Util.FileUtil.WriteData(fs, (UInt32)(IBContentDatasAreaPosition_Start - StringDatasAreaPosition_Start));
         Util.FileUtil.WriteData(fs, (UInt32)IBContentDatasAreaSize);
 
-        //?????????
+        //�����ַ���
         fs.Position = StringAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)0);
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.Count);
         StringAreaPosition_End = fs.Position;
 
-        //?????????
+        //���ƶ�����
         fs.Position = BlockAreaPosition_Start + 2;
         Util.FileUtil.WriteData(fs, (UInt32)MeshAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)MeshAreaSize);
@@ -1226,7 +1226,7 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)subMeshAreaSize[i]);
         }
 
-        //???????????????????
+        //���Ʊ������������Ϣ��
         fs.Position = ContentAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)StringDatasAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)(StringDatasAreaPosition_Start + StringDatasAreaSize + VBContentDatasAreaSize + IBContentDatasAreaSize + subMeshAreaSize[0]));
@@ -1234,20 +1234,20 @@ class GameObjectUitls
         fs.Close();
     }
 
-    public static void writeSkinnerMesh(SkinnedMeshRenderer skinnedMeshRenderer, string meshName, FileStream fs,int MaxBoneCount = 24)
+    public static void writeSkinnerMesh(SkinnedMeshRenderer skinnedMeshRenderer, string meshName, FileStream fs, int MaxBoneCount = 24)
     {
         Mesh mesh = skinnedMeshRenderer.sharedMesh;
-        //-------------------------------------------?????��??????-------------------------------------------
-        UInt16 vbCount = (UInt16)1;//unity???????????65535
+        //-------------------------------------------��֯��д������-------------------------------------------
+        UInt16 vbCount = (UInt16)1;//unity��Ĭ��������65535
         UInt16 subMeshCount = (UInt16)mesh.subMeshCount;
         UInt16 everyVBSize = 0;
         string vbDeclaration = "";
 
-        //????????,0?????????????????;1?????
-        //??????????????????????��??????????��????????uv?????????????????triangles
+        //��ȡ����ṹ,0�����ö���ṹ�޴�����;1����֮
+        //�������������ܴܺ�Ϊ���Ż�Ч�ʣ�Ĭ�϶����λ�ã����ߣ�uv������Ȩ�ش��ڣ�����triangles
         for (int i = 0; i < VertexStructure.Length; i++)
             VertexStructure[i] = 0;
-     
+
         if (mesh.vertices != null && mesh.vertices.Length != 0)
         {
             VertexStructure[0] = 1;
@@ -1255,7 +1255,7 @@ class GameObjectUitls
             everyVBSize += 12;
         }
 
-        if (mesh.normals != null && mesh.normals.Length != 0&&!ExportConfig.IgnoreVerticesNormal)
+        if (mesh.normals != null && mesh.normals.Length != 0 && !ExportConfig.IgnoreVerticesNormal)
         {
             VertexStructure[1] = 1;
             vbDeclaration += ",NORMAL";
@@ -1297,7 +1297,7 @@ class GameObjectUitls
             everyVBSize += 16;
         }
 
-        //???????????
+        //��ȡ��������
         List<Transform> bones = new List<Transform>();
         for (int j = 0; j < skinnedMeshRenderer.bones.Length; j++)
         {
@@ -1307,18 +1307,18 @@ class GameObjectUitls
         }
 
 
-        //???VB,IB????
-        //???��?????
+        //�ع�VB,IB����
+        //���е�ļ���
         int vertexlength = mesh.vertexCount;
         List<VertexData> vertexBuffer = new List<VertexData>();
 
 
-        //????index?????
+        //����index�ļ���
         List<int> indexBuffer = new List<int>();
 
-        //????subMesh??????????????????????????list?????24?????subMesh???????list??????????????????
+        //����subMesh�Լ�������������������ݣ����list����Ϊ24��ÿ��subMesh����һ��list��������Ź���������
         List<List<int>>[] boneIndexList = new List<List<int>>[subMeshCount];
-        //subMesh index?????????
+        //subMesh index�����ĳ���
         List<int>[] subIBIndex = new List<int>[subMeshCount];
         List<List<Triangle>>[] subsubMeshtriangles = new List<List<Triangle>>[subMeshCount];
 
@@ -1329,34 +1329,34 @@ class GameObjectUitls
         Vector2[] uv2s = mesh.uv2;
         BoneWeight[] boneWeights = mesh.boneWeights;
         Vector4[] tangents = mesh.tangents;
-        //??????��????????
+        //��֯���еĶ�������
         for (int ii = 0; ii < vertexlength; ii++)
         {
             vertexBuffer.Add(getVertexData(vertices, normals, colors, uvs, uv2s, boneWeights, tangents, ii));
         }
-       
+
 
         int[] subMeshFirstIndex = new int[subMeshCount];
         int[] subMeshIndexLength = new int[subMeshCount];
         int _ibLength = 0;
-        //??????subMesh
+        //ѭ��ÿ��subMesh
         for (int i = 0; i < subMeshCount; i++)
         {
-            //???submesh??????index
+            //���submesh������index
             int[] subIndices = mesh.GetIndices(i);
-            //????????????????????
+            //������Ҫ�Ĺ�����������
             boneIndexList[i] = new List<List<int>>();
             boneIndexList[i].Add(new List<int>());
-            //?????????? 24??24??24??10
+            //���˹�����Ŀ 24��24��24��10
             subIBIndex[i] = new List<int>();
-            //?????????????????????????��?????
+            //���������飬���ݹ���������Ϊ�ü��黮��
             List<List<Triangle>> subsubMeshTriangle = new List<List<Triangle>>();
             subsubMeshtriangles[i] = subsubMeshTriangle;
-            //?????????????????
+            //�ض���һ�����������
             subsubMeshTriangle.Add(new List<Triangle>());
-            //subMesh?????��?triangle
+            //subMesh�����е�triangle
             List<Triangle> subAllTriangle = new List<Triangle>();
-            //??????ib,??????��???????
+            //��ʼ��֯ib,������е�������
             for (int j = 0, n = subIndices.Length; j < n; j += 3)
             {
                 Triangle triangle = new Triangle();
@@ -1365,25 +1365,25 @@ class GameObjectUitls
                 triangle.point3 = vertexBuffer[subIndices[j + 2]];
                 subAllTriangle.Add(triangle);
             }
-            //???????��?????????????
+            //�������θ��ݹ��������ֶ�
             for (int k = 0; k < subAllTriangle.Count; k++)
             {
                 Triangle tri = subAllTriangle[k];
-                //????????????��????????????
+                //������������еĹ�����������
                 List<int> tigleboneindexs = triangleBoneIndex(tri);
-                //??????????��?submesh??????????????list
+                //����ѭ�����е�submesh����Ĺ���������list
                 bool isAdd = false;
                 for (int m = 0; m < boneIndexList[i].Count; m++)
                 {
                     List<int> list = listContainCount(tigleboneindexs, boneIndexList[i][m]);
-                    //???????????????????
+                    //ȫ�����Ͱ�������ȫ�ӽ�ȥ
                     if (list.Count == 0)
                     {
                         subsubMeshTriangle[m].Add(tri);
                         isAdd = true;
                         break;
                     }
-                    //???????????????????24?????
+                    //����ȫ�����Ϳ��Ƿ���Ϲ�24�����
                     else if ((boneIndexList[i][m].Count + list.Count) <= MaxBoneCount)
                     {
                         for (int c = 0; c < list.Count; c++)
@@ -1410,14 +1410,14 @@ class GameObjectUitls
                 }
             }
 
-            //??????????????????????
+            //�ֶ�֮�������ӵ㲢���޸�����
             for (int q = 0; q < subsubMeshTriangle.Count; q++)
             {
                 List<Triangle> subsubtriangles = subsubMeshTriangle[q];
                 for (int h = 0; h < subsubtriangles.Count; h++)
                 {
                     Triangle trianglle = subsubtriangles[h];
-                    //?????????
+                    //���������
                     trianglle.point1 = checkPoint(trianglle.point1, i, q, vertexBuffer);
                     trianglle.point2 = checkPoint(trianglle.point2, i, q, vertexBuffer);
                     trianglle.point3 = checkPoint(trianglle.point3, i, q, vertexBuffer);
@@ -1432,7 +1432,7 @@ class GameObjectUitls
             }
         }
 
-        //?��?????????index????
+        //�л���Ӱ����֯index����
         for (int ii = 0; ii < subMeshCount; ii++)
         {
             List<List<Triangle>> subsubtriangle = subsubMeshtriangles[ii];
@@ -1509,18 +1509,18 @@ class GameObjectUitls
         stringDatas.Add("MESH");
         stringDatas.Add("SUBMESH");
 
-        //?��??
-        string layaModelVerion =  LmVersion;
+        //�汾��
+        string layaModelVerion = LmVersion;
         Util.FileUtil.WriteData(fs, layaModelVerion);
         VerionSize = fs.Position;
 
-        //????????????
-        ContentAreaPosition_Start = fs.Position; // ??????????????
+        //���������Ϣ��
+        ContentAreaPosition_Start = fs.Position; // Ԥ��������ƫ�Ƶ�ַ
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
 
-        //????????????
-        BlockAreaPosition_Start = fs.Position;//???????????
+        //���ݶ�����Ϣ��
+        BlockAreaPosition_Start = fs.Position;//Ԥ����������
         int blockCount = subMeshCount + 1;
         Util.FileUtil.WriteData(fs, (UInt16)blockCount);
         for (int i = 0; i < blockCount; i++)
@@ -1529,23 +1529,23 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
         }
 
-        //?????
-        StringAreaPosition_Start = fs.Position;//????????
+        //�ַ���
+        StringAreaPosition_Start = fs.Position;//Ԥ���ַ���
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt16)0);//count
 
-        //??????
+        //������
 
-        //??????
+        //������
         MeshAreaPosition_Start = fs.Position;
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("MESH"));//?????????????????
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("MESH"));//�����������ַ�����
         stringDatas.Add(meshName);
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(meshName));//?????????????
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(meshName));//�������ַ�����
 
         //vb
-        Util.FileUtil.WriteData(fs, (UInt16)vbCount);//vb????
+        Util.FileUtil.WriteData(fs, (UInt16)vbCount);//vb����
         VBMeshAreaPosition_Start = fs.Position;
-        //???vbCount?1
+        //Ĭ��vbCountΪ1
         //for (ushort i = 0; i < vbCount; i++)
         //{
         Util.FileUtil.WriteData(fs, (UInt32)0);//vbStart
@@ -1587,12 +1587,12 @@ class GameObjectUitls
         MeshAreaPosition_End = fs.Position;
         MeshAreaSize = MeshAreaPosition_End - MeshAreaPosition_Start;
 
-        //????????
+        //��������
         for (int i = 0; i < subMeshCount; i++)
         {
             subMeshAreaPosition_Start[i] = fs.Position;
 
-            Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("SUBMESH"));//?????????????????
+            Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("SUBMESH"));//�����������ַ�����
             Util.FileUtil.WriteData(fs, (UInt16)0);//vbIndex
 
             Util.FileUtil.WriteData(fs, (UInt32)0);//ibStart
@@ -1615,7 +1615,7 @@ class GameObjectUitls
         }
 
 
-        //?????????
+        //�ַ�������
         StringDatasAreaPosition_Start = fs.Position;
 
         for (int i = 0; i < stringDatas.Count; i++)
@@ -1625,7 +1625,7 @@ class GameObjectUitls
         StringDatasAreaPosition_End = fs.Position;
         StringDatasAreaSize = StringDatasAreaPosition_End - StringDatasAreaPosition_Start;
 
-        //??????????
+        //����������
         //vb
         VBContentDatasAreaPosition_Start = fs.Position;
 
@@ -1682,7 +1682,7 @@ class GameObjectUitls
 
 
         //indices
-        //TODO:��???????????lm??
+        //TODO:δ�������Ǵ���lm��
         IBContentDatasAreaPosition_Start = fs.Position;
         if (mesh.indexFormat == IndexFormat.UInt32 && vertexBuffer.Count > 65535)
         {
@@ -1751,7 +1751,7 @@ class GameObjectUitls
             boneDicDatasAreaPosition_End = fs.Position;
         }
 
-        //????????????
+        //������������
 
         UInt32 ibstart = 0;
         UInt32 iblength = 0;
@@ -1801,7 +1801,7 @@ class GameObjectUitls
             }
         }
 
-        //??????????
+        //����������
         fs.Position = VBMeshAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)(VBContentDatasAreaPosition_Start - StringDatasAreaPosition_Start));
         Util.FileUtil.WriteData(fs, (UInt32)vertexBuffer.Count);
@@ -1815,13 +1815,13 @@ class GameObjectUitls
         Util.FileUtil.WriteData(fs, (UInt32)(inverseGlobalBindPosesDatasAreaPosition_Start - StringDatasAreaPosition_Start));
         Util.FileUtil.WriteData(fs, (UInt32)(boneDicDatasAreaPosition_Start - inverseGlobalBindPosesDatasAreaPosition_Start));
 
-        //?????????
+        //�����ַ���
         fs.Position = StringAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)0);
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.Count);
         StringAreaPosition_End = fs.Position;
 
-        //?????????
+        //���ƶ�����
         fs.Position = BlockAreaPosition_Start + 2;
         Util.FileUtil.WriteData(fs, (UInt32)MeshAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)MeshAreaSize);
@@ -1831,7 +1831,7 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)subMeshAreaSize[i]);
         }
 
-        //???????????????????
+        //���Ʊ������������Ϣ��
         fs.Position = ContentAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)StringDatasAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)(StringDatasAreaPosition_Start + StringDatasAreaSize + VBContentDatasAreaSize + IBContentDatasAreaSize + subMeshAreaSize[0]));
@@ -1841,47 +1841,47 @@ class GameObjectUitls
 
     private static VertexData checkPoint(VertexData vertexdata, int subMeshindex, int subsubMeshIndex, List<VertexData> ListVertexData)
     {
-        //???????????????
+        //��һ��ѭ���������
         if (vertexdata.subMeshindex == -1 && vertexdata.subsubMeshindex == -1)
         {
             vertexdata.subMeshindex = subMeshindex;
             vertexdata.subsubMeshindex = subsubMeshIndex;
             return vertexdata;
-        }//?????????��?????
+        }//�������һ�εĵ���ͬ
         else if (vertexdata.subMeshindex == subMeshindex && vertexdata.subsubMeshindex == subsubMeshIndex)
         {
             return vertexdata;
         }
-        //?????????
+        //��һ���غϵ�
         else if (vertexdata.commonPoint == null)
         {
-            //???????new dictionary
+            //���غϵ��new dictionary
             vertexdata.commonPoint = new Dictionary<string, int>();
             VertexData newvertexdata = new VertexData();
-            //?????????
+            //�����¶���
             ListVertexData.Add(newvertexdata);
-            //???????????
+            //���ƶ�������
             newvertexdata.setValue(vertexdata);
-            //?????Index
+            //���µ�Index
             newvertexdata.index = ListVertexData.Count - 1;
             vertexdata.commonPoint.Add(subMeshindex.ToString() + "," + subsubMeshIndex.ToString(), ListVertexData.Count - 1);
             return newvertexdata;
-        }//??????????
+        }//�Ѿ����غϵ��
         else
         {
-            //?????????key???
+            //�����Ѿ���key�ĵ�
             if (vertexdata.commonPoint.ContainsKey(subMeshindex.ToString() + "," + subsubMeshIndex.ToString()))
             {
                 return ListVertexData[vertexdata.commonPoint[subMeshindex.ToString() + "," + subsubMeshIndex.ToString()]];
-            }//???key,??????
+            }//û��key,�ټ�һ��
             else
             {
                 VertexData newvertexdata = new VertexData();
-                //?????????
+                //�����¶���
                 ListVertexData.Add(newvertexdata);
-                //???????????
+                //���ƶ�������
                 newvertexdata.setValue(vertexdata);
-                //?????index
+                //���µ�index
                 newvertexdata.index = ListVertexData.Count - 1;
                 vertexdata.commonPoint.Add(subMeshindex.ToString() + "," + subsubMeshIndex.ToString(), ListVertexData.Count - 1);
                 return newvertexdata;
@@ -1889,7 +1889,7 @@ class GameObjectUitls
             }
         }
     }
-    //???????????????��????
+    //��ȡһ�����������еĹ���
     private static List<int> triangleBoneIndex(Triangle triangle)
     {
         List<int> indexs = new List<int>();
@@ -1911,7 +1911,7 @@ class GameObjectUitls
         return indexs;
     }
 
-    //????list????????????????0???????????????????0?????
+    //����list������ϵ���������0��ȫ������������ز���0�Ǿ͵ö�
     private static List<int> listContainCount(List<int> boneindex, List<int> subsubboneindexs)
     {
         List<int> containcount = new List<int>();
@@ -2030,18 +2030,18 @@ class GameObjectUitls
         else
         {
             exposure = maxColorComponent;
-            baseLinearColor.r = Mathf.GammaToLinearSpace(linearColorHdr.r/ maxColorComponent);
-            baseLinearColor.g = Mathf.GammaToLinearSpace(linearColorHdr.g/ maxColorComponent);
-            baseLinearColor.b = Mathf.GammaToLinearSpace(linearColorHdr.b/ maxColorComponent);
+            baseLinearColor.r = Mathf.GammaToLinearSpace(linearColorHdr.r / maxColorComponent);
+            baseLinearColor.g = Mathf.GammaToLinearSpace(linearColorHdr.g / maxColorComponent);
+            baseLinearColor.b = Mathf.GammaToLinearSpace(linearColorHdr.b / maxColorComponent);
         }
     }
-    public static TextureFile writePicture(Texture texture, Dictionary<string, FileData> exportFiles,bool isNormal)
+    public static TextureFile writePicture(Texture texture, Dictionary<string, FileData> exportFiles, bool isNormal)
     {
         string picturePath = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureFile textureFile;
         if (!exportFiles.ContainsKey(picturePath))
         {
-            textureFile = new TextureFile(picturePath,picturePath,texture as Texture2D,isNormal);
+            textureFile = new TextureFile(picturePath, picturePath, texture as Texture2D, isNormal);
             exportFiles.Add(textureFile.filePath, textureFile);
         }
         else
@@ -2052,12 +2052,13 @@ class GameObjectUitls
         return textureFile;
     }
 
-    public static bool getMatarialRole(Material material,ConditionConfig rule)
+    public static bool getMatarialRole(Material material, ConditionConfig rule)
     {
-        if(rule.ruleType == "texture")
+        if (rule.ruleType == "texture")
         {
-            return material.GetTexture(rule.ruleKeyName)!=null;
-        }else if(rule.ruleType == "float")
+            return material.GetTexture(rule.ruleKeyName) != null;
+        }
+        else if (rule.ruleType == "float")
         {
             return material.GetFloat(rule.ruleKeyName) == (float)rule.data;
         }
@@ -2087,7 +2088,7 @@ class GameObjectUitls
         props.AddField("alphaTestValue", PropDatasConfig.GetAlphaTestValue(material));
         props.AddField("renderQueue", material.renderQueue);
         JSONObject texture = new JSONObject(JSONObject.Type.ARRAY);
-        foreach(var plist in propsData.pictureList)
+        foreach (var plist in propsData.pictureList)
         {
             if (material.GetTexture(plist.Key) != null)
             {
@@ -2117,7 +2118,7 @@ class GameObjectUitls
                 colorValue.Add(colorf.g);
                 colorValue.Add(colorf.b);
                 colorValue.Add(colorf.a);
-                props.AddField(propsData.colorHdrLists[cList.Key],exp);
+                props.AddField(propsData.colorHdrLists[cList.Key], exp);
             }
             else
             {
@@ -2140,18 +2141,18 @@ class GameObjectUitls
             props.AddField(tList.Value, tillOffData);
         }
 
-        foreach(var flist in propsData.floatLists)
+        foreach (var flist in propsData.floatLists)
         {
             string uName = flist.Key;
             string layaName = flist.Value.keyName;
             if (flist.Value.rule != null)
             {
                 ConditionConfig ruleConfig;
-                if(propsData.rules.TryGetValue(flist.Value.rule,out ruleConfig))
+                if (propsData.rules.TryGetValue(flist.Value.rule, out ruleConfig))
                 {
                     if (getMatarialRole(material, ruleConfig))
                     {
-                        if(ruleConfig.target == "uName")
+                        if (ruleConfig.target == "uName")
                         {
                             uName = ruleConfig.targetName;
                         }
@@ -2160,7 +2161,7 @@ class GameObjectUitls
                             layaName = ruleConfig.targetName;
                         }
                     }
-                    
+
                 }
             }
             float data = material.GetFloat(uName);
@@ -2173,23 +2174,25 @@ class GameObjectUitls
 
         JSONObject definds = new JSONObject(JSONObject.Type.ARRAY);
         List<string> defindLists = new List<string>();
-        foreach(var dlist in propsData.defindsLists)
+        foreach (var dlist in propsData.defindsLists)
         {
-            if(dlist.Value.from == DefindsFrom.floatValue)
+            if (dlist.Value.from == DefindsFrom.floatValue)
             {
-                if(material.GetFloat(dlist.Key)== dlist.Value.data)
+                if (material.GetFloat(dlist.Key) == dlist.Value.data)
                 {
                     definds.Add(dlist.Value.keyName);
                     defindLists.Add(dlist.Value.keyName);
                 }
-            }else if(dlist.Value.from == DefindsFrom.TextureValue)
+            }
+            else if (dlist.Value.from == DefindsFrom.TextureValue)
             {
                 if (material.GetTexture(dlist.Key))
                 {
                     definds.Add(dlist.Value.keyName);
                     defindLists.Add(dlist.Value.keyName);
                 }
-            }else if(dlist.Value.from == DefindsFrom.keyWorld)
+            }
+            else if (dlist.Value.from == DefindsFrom.keyWorld)
             {
                 if (material.IsKeywordEnabled(dlist.Key))
                 {
@@ -2222,7 +2225,7 @@ class GameObjectUitls
             if (material.GetTexture(plist.Key) != null)
             {
                 TextureConfig tConfig = plist.Value;
-                TextureFile textureFile = GameObjectUitls.writePicture(material.GetTexture(plist.Key), exportFiles,tConfig.isNormal);
+                TextureFile textureFile = GameObjectUitls.writePicture(material.GetTexture(plist.Key), exportFiles, tConfig.isNormal);
                 cubeMapData.jsonData.AddField(tConfig.keyName, "res://" + textureFile.filePath);
                 cubeMapData.AddRegistList(textureFile.filePath);
             }
@@ -2310,7 +2313,7 @@ class GameObjectUitls
     {
         KeyFrameValueType keyType;
         string propNames = binding.propertyName.Split('.')[0];
-        if(propNames == "m_LocalPosition")
+        if (propNames == "m_LocalPosition")
         {
             propNames = "localPosition";
             keyType = KeyFrameValueType.Position;
@@ -2325,7 +2328,7 @@ class GameObjectUitls
             propNames = "localScale";
             keyType = KeyFrameValueType.Scale;
         }
-        else if(propNames == "localEulerAnglesRaw")
+        else if (propNames == "localEulerAnglesRaw")
         {
             propNames = "localRotationEuler";
             keyType = KeyFrameValueType.RotationEuler;
@@ -2337,11 +2340,11 @@ class GameObjectUitls
         string conpomentType = searchCompoment[binding.type.ToString()];
         string propertyName = binding.propertyName;
         propertyName = propertyName.Substring(0, propertyName.LastIndexOf("."));
-        AnimationCurveGroup curveGroup = new AnimationCurveGroup(path,gameObject, binding.type, conpomentType, propertyName,keyType);
+        AnimationCurveGroup curveGroup = new AnimationCurveGroup(path, gameObject, binding.type, conpomentType, propertyName, keyType);
         curveGroup.propnames.Add(propNames);
         return curveGroup;
     }
-    private static AnimationCurveGroup readMaterAnimation(EditorCurveBinding binding,GameObject gameObject, object targetObject, string path)
+    private static AnimationCurveGroup readMaterAnimation(EditorCurveBinding binding, GameObject gameObject, object targetObject, string path)
     {
         PropertyInfo info = targetObject.GetType().GetProperty("material");
         Material material = (Material)info.GetValue(targetObject);
@@ -2369,9 +2372,9 @@ class GameObjectUitls
             propNames = propsData.tillOffsetLists[propNames];
             keyType = KeyFrameValueType.Vector4;
         }
-        else 
+        else
         {
-            //Debug.Log("????????" + binding.propertyName);
+            //Debug.Log("��������" + binding.propertyName);
             return null;
         }
         string conpomentType = searchCompoment[binding.type.ToString()];
@@ -2384,9 +2387,9 @@ class GameObjectUitls
         return curveGroup;
     }
 
-    public static void writeClip(AnimationClip aniclip, FileStream fs,GameObject gameObject, string clipName)
+    public static void writeClip(AnimationClip aniclip, FileStream fs, GameObject gameObject, string clipName)
     {
-        List<float> startTimeList = new List<float>();
+
 
         List<string> stringDatas = new List<string>();
         stringDatas.Add("ANIMATIONS");
@@ -2394,35 +2397,29 @@ class GameObjectUitls
         int clipFrameRate = (int)aniclip.frameRate;
 
         List<ComponentType> components = GameObjectUitls.componentsOnGameObject(gameObject);
-        // list Curve ????
+        // list Curve ����
         List<EditorCurveBinding> editorCurveBindingList = new List<EditorCurveBinding>();
-       
 
 
-        // ?? Curve ????
+
+        // ԭʼ Curve ����
         EditorCurveBinding[] oriEditorCurveBindingList = AnimationUtility.GetCurveBindings(aniclip);
 
 
         editorCurveBindingList.AddRange(oriEditorCurveBindingList);
 
-        // ???????? ????
+        // �������� ����
         EditorCurveBinding[] editorCurveBindings = editorCurveBindingList.ToArray();
 
         AnimationClipCurveData[] animationClipCurveDatas = new AnimationClipCurveData[editorCurveBindings.Length];
         Dictionary<string, AnimationCurveGroup> groupMap = new Dictionary<string, AnimationCurveGroup>();
-        float _time;
         for (int j = 0; j < editorCurveBindings.Length; j++)
         {
-            AnimationClipCurveData curveData = animationClipCurveDatas [j]=  new AnimationClipCurveData(editorCurveBindings[j]);
-            AnimationCurve curve = curveData.curve = AnimationUtility.GetEditorCurve(aniclip, editorCurveBindings[j]);
-            Keyframe[] keys = curve.keys;
-            for (int k = 0; k < keys.Length; k++)
-            {
-                _time = AnimationCurveGroup.getCurveTime(keys[k].time);
-                if (startTimeList.IndexOf(_time) == -1)
-                    startTimeList.Add(_time);
-            }
+            AnimationClipCurveData curveData = animationClipCurveDatas[j] = new AnimationClipCurveData(editorCurveBindings[j]);
+            curveData.curve = AnimationUtility.GetEditorCurve(aniclip, editorCurveBindings[j]);
+
             string path = AnimationCurveGroup.getCurvePath(curveData);
+
             AnimationCurveGroup curveGroup = null;
             if (groupMap.ContainsKey(path))
             {
@@ -2474,12 +2471,30 @@ class GameObjectUitls
                 curveGroup.pushCurve(curveData);
             }
         }
+        Dictionary<uint, float> timeList = new Dictionary<uint, float>();
+        foreach (var group in groupMap)
+        {
+            group.Value.mergeTimeList(timeList);
+        }
 
+        List<float> startTimeList = new List<float>();
+        foreach (var time in timeList)
+        {
+            startTimeList.Add(time.Value);
+        }
         startTimeList.Sort();
         float startTime = startTimeList[0];
         float endTime = startTimeList[startTimeList.Count - 1];
-        //???????
 
+        Dictionary<uint, FrameInfo> frameInfoList = new Dictionary<uint, FrameInfo>();
+        for (int i = 0, legnth = startTimeList.Count; i < legnth; i++)
+        {
+            FrameInfo info = new FrameInfo();
+            info.oriderIndex = i;
+            float time = info.time = startTimeList[i];
+            var frameIndex = info.frameIndex = AnimationCurveGroup.getFrameByTime(time);
+            frameInfoList.Add(frameIndex, info);
+        }
         List<AniNodeData> aniNodeDatas = new List<AniNodeData>();
 
         AniNodeData aniNodeData;
@@ -2487,10 +2502,9 @@ class GameObjectUitls
         {
             group.addEmptyClipCurve(startTime, endTime);
             aniNodeData = new AniNodeData();
-            group.getAnimaFameData(ref aniNodeData, ref startTimeList, ref stringDatas);
+            group.getAnimaFameData(ref aniNodeData, ref frameInfoList, ref stringDatas);
             aniNodeDatas.Add(aniNodeData);
         }
-
 
         long MarkContentAreaPosition_Start = 0;
 
@@ -2503,21 +2517,21 @@ class GameObjectUitls
         long StringDatasAreaPosition_Start = 0;
         long StringDatasAreaPosition_End = 0;
 
-        //?��??
-        //minner????
+        //�汾��
+        //minner����
 
         string layaModelVerion = LaniVersion;
 
         Util.FileUtil.WriteData(fs, layaModelVerion);
 
-        //????????????
-        MarkContentAreaPosition_Start = fs.Position; // ??????????????
+        //���������Ϣ��
+        MarkContentAreaPosition_Start = fs.Position; // Ԥ��������ƫ�Ƶ�ַ
 
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
 
-        //????????????
-        BlockAreaPosition_Start = fs.Position;//???????????
+        //���ݶ�����Ϣ��
+        BlockAreaPosition_Start = fs.Position;//Ԥ����������
         int blockCount = 1;
         Util.FileUtil.WriteData(fs, (UInt16)blockCount);
         for (int j = 0; j < blockCount; j++)
@@ -2526,14 +2540,14 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
         }
 
-        //?????
-        StringAreaPosition_Start = fs.Position;//????????
+        //�ַ���
+        StringAreaPosition_Start = fs.Position;//Ԥ���ַ���
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt16)0);//count
 
-        //??????
-        ContentAreaPosition_Start = fs.Position;//????????
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("ANIMATIONS"));//uint16 ?????????ID
+        //������
+        ContentAreaPosition_Start = fs.Position;//Ԥ���ַ���
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("ANIMATIONS"));//uint16 ���亯���ַ�ID
 
         Util.FileUtil.WriteData(fs, (UInt16)startTimeList.Count);//startTime
         for (int j = 0; j < startTimeList.Count; j++)
@@ -2541,16 +2555,16 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (float)startTimeList[j]);
         }
 
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(clipName));//?????????????
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(clipName));//�������ַ�����
 
         float aniTotalTime = startTimeList.Count == 0 ? 0.0f : (float)startTimeList[startTimeList.Count - 1];
-        Util.FileUtil.WriteData(fs, aniTotalTime);//?????????
+        Util.FileUtil.WriteData(fs, aniTotalTime);//������ʱ��
 
-        Util.FileUtil.WriteData(fs, aniclip.isLooping);//??????????
+        Util.FileUtil.WriteData(fs, aniclip.isLooping);//�����Ƿ�ѭ��
 
         Util.FileUtil.WriteData(fs, (UInt16)clipFrameRate);//frameRate
 
-        Util.FileUtil.WriteData(fs, (UInt16)aniNodeDatas.Count);//??????
+        Util.FileUtil.WriteData(fs, (UInt16)aniNodeDatas.Count);//�ڵ����
         for (int j = 0; j < aniNodeDatas.Count; j++)
         {
             aniNodeData = aniNodeDatas[j];
@@ -2566,7 +2580,7 @@ class GameObjectUitls
             {
                 Util.FileUtil.WriteData(fs, aniNodeData.propertyNameIndex[m]);//propertyNameLength
             }
-            Util.FileUtil.WriteData(fs, aniNodeData.keyFrameCount);//?????
+            Util.FileUtil.WriteData(fs, aniNodeData.keyFrameCount);//֡����
 
             for (int m = 0; m < aniNodeData.keyFrameCount; m++)
             {
@@ -2578,7 +2592,7 @@ class GameObjectUitls
 
         }
 
-        //???
+        //�¼�
         AnimationEvent[] aniEvents = aniclip.events;
         int aniEventCount = aniEvents.Length;
         Util.FileUtil.WriteData(fs, (Int16)aniEventCount);
@@ -2587,14 +2601,14 @@ class GameObjectUitls
             AnimationEvent aniEvent = aniEvents[k];
             //time
             Util.FileUtil.WriteData(fs, (float)aniEvent.time);
-            //????????????
+            //������������
             string funName = aniEvent.functionName;
             if (stringDatas.IndexOf(funName) == -1)
             {
                 stringDatas.Add(funName);
             }
             Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(funName));
-            //????????
+            //��������
             UInt16 paramCount = 3;
             Util.FileUtil.WriteData(fs, paramCount);
             for (int m = 0; m < 1; m++)
@@ -2618,7 +2632,7 @@ class GameObjectUitls
             }
         }
 
-        //?????????
+        //�ַ�������
         StringDatasAreaPosition_Start = fs.Position;
         for (int j = 0; j < stringDatas.Count; j++)
         {
@@ -2626,15 +2640,15 @@ class GameObjectUitls
         }
         StringDatasAreaPosition_End = fs.Position;
 
-        //?????????
+        //�����ַ���
         fs.Position = StringAreaPosition_Start + 4;
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.Count);//count
 
-        //????????????????
+        //�������ݶ�����Ϣ��
         fs.Position = BlockAreaPosition_Start + 2 + 4;
         Util.FileUtil.WriteData(fs, (UInt32)(StringDatasAreaPosition_Start - ContentAreaPosition_Start));//UInt32 blockLength
 
-        //?????????????
+        //����������Ϣ��
         fs.Position = MarkContentAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)StringDatasAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)(StringDatasAreaPosition_End - StringDatasAreaPosition_Start));

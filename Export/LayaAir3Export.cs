@@ -75,7 +75,7 @@ public class LayaAir3Export
 
 
 
-        //Ìì¿ÕºÐ
+        //ï¿½ï¿½Õºï¿½
         Material skyBoxMaterial = RenderSettings.skybox;
         if (skyBoxMaterial != null)
         {
@@ -87,7 +87,7 @@ public class LayaAir3Export
             scene3dNode.AddField("skyRenderer", skyRender);
         }
 
-        //»·¾³¹âÑÕÉ«
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«
         JSONObject ambientColor = JsonUtils.GetColorObject(RenderSettings.ambientLight);
         scene3dNode.AddField("ambientColor", ambientColor);
 
@@ -114,7 +114,7 @@ public class LayaAir3Export
 
         //saveLightMapFile(props);
 
-        //Îí»¯
+        //ï¿½ï¿½ï¿½
         scene3dNode.AddField("enableFog", RenderSettings.fog);
         scene3dNode.AddField("fogStart", RenderSettings.fogStartDistance);
         scene3dNode.AddField("fogRange", RenderSettings.fogEndDistance - RenderSettings.fogStartDistance);
@@ -503,7 +503,7 @@ public class LayaAir3Export
     {
         var type = PrefabUtility.GetPrefabAssetType(obj);
         var status = PrefabUtility.GetPrefabInstanceStatus(obj);
-        // ÊÇ·ñÎªÔ¤ÖÆÌåÊµÀýÅÐ¶Ï
+        // ï¿½Ç·ï¿½ÎªÔ¤ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Ð¶ï¿½
         if (type == PrefabAssetType.NotAPrefab || status == PrefabInstanceStatus.NotAPrefab)
         {
             return false;
@@ -705,7 +705,7 @@ public class LayaAir3Export
         JSONObject enterNode = new JSONObject(JSONObject.Type.OBJECT);
         statuesNode.Add(enterNode);
         enterNode.AddField("id", "-1");
-        enterNode.AddField("name", "½øÈë");
+        enterNode.AddField("name", "ï¿½ï¿½ï¿½ï¿½");
         enterNode.AddField("speed", 1);
         enterNode.AddField("clipEnd", 1);
         enterNode.AddField("x", enterPostion.x);
@@ -733,7 +733,7 @@ public class LayaAir3Export
         JSONObject anyNode = new JSONObject(JSONObject.Type.OBJECT);
         statuesNode.Add(anyNode);
         anyNode.AddField("id", "-2");
-        anyNode.AddField("name", "ÈÎºÎ×´Ì¬");
+        anyNode.AddField("name", "ï¿½Îºï¿½×´Ì¬");
         anyNode.AddField("speed", 1);
         anyNode.AddField("clipEnd", 1);
         anyNode.AddField("x", anyPostion.x);

@@ -5,9 +5,8 @@ public class LanguageConfig
     public enum languages
     {
         English = 0,
-        中文 = 1,
+        涓枃 = 1,
     }
-    //所有显示string
     public static string str_Scene;
     public static string str_Sprite3D;
     public static string str_MeshSetting;
@@ -41,7 +40,7 @@ public class LanguageConfig
     public static languages GetLanguages()
     {
         if (language == -1) {
-            return languages.中文;
+            return languages.涓枃;
         }
         else
         {
@@ -75,15 +74,14 @@ public class LanguageConfig
         language = index;
         XmlDocument xmlDoc = new XmlDocument();
         XmlNode xn;
-        //英语
         if (index == 0)
         {
-            xmlDoc.Load("Assets/LayaAir3D/English.xml");
+            xmlDoc.Load("Assets/LayaAir3.0UnityPlugin/English.xml");
             xn = xmlDoc.SelectSingleNode("EnglishLanguage");
-        }//汉语
+        }
         else
         {
-            xmlDoc.Load("Assets/LayaAir3D/Chinese.xml");
+            xmlDoc.Load("Assets/LayaAir3.0UnityPlugin/Chinese.xml");
             xn = xmlDoc.SelectSingleNode("ChineseLanguage");
         }
 
