@@ -441,7 +441,7 @@ public class PropDatasConfig
     }
 }
 
-//顶点数据
+//????????
 public class VertexData
 {
     public int index;
@@ -453,9 +453,9 @@ public class VertexData
     public Vector4 boneWeight;
     public Vector4 boneIndex;
     public Vector4 tangent;
-    //是否已经根据索引队列改变boneindex
+    //?????????????????и??boneindex
     public bool ischange = true;
-    //判断index队列
+    //?ж?index????
     public int subMeshindex = -1;
     public int subsubMeshindex = -1;
     public Dictionary<string, int> commonPoint;
@@ -472,7 +472,7 @@ public class VertexData
         boneIndex = new Vector4(othervertexdata.boneIndex.x, othervertexdata.boneIndex.y, othervertexdata.boneIndex.z, othervertexdata.boneIndex.w);
     }
 }
-//三角形数据
+//??????????
 public class Triangle
 {
     public VertexData point1;
@@ -674,7 +674,7 @@ class GameObjectUitls
         BoxCollider boxCollider = gameObject.GetComponent<BoxCollider>();
         SphereCollider sphereCollider = gameObject.GetComponent<SphereCollider>();
         CapsuleCollider capsuleCollider = gameObject.GetComponent<CapsuleCollider>();
-        //获得Meshcoliser
+        //???Meshcoliser
         MeshCollider meshcollider = gameObject.GetComponent<MeshCollider>();
 
 
@@ -688,7 +688,7 @@ class GameObjectUitls
         FixedJoint fixedJoint = gameObject.GetComponent<FixedJoint>();
         ConfigurableJoint configurableJoint = gameObject.GetComponent<ConfigurableJoint>();
 
-        // todo 同时存在检查, 不支持 reflectionProbe 与其他组件共存 
+        // todo ????????, ????? reflectionProbe ????????????? 
         ReflectionProbe reflectionProbe = gameObject.GetComponent<ReflectionProbe>();
         LODGroup lodGroup = gameObject.GetComponent<LODGroup>();
 
@@ -746,7 +746,7 @@ class GameObjectUitls
         {
             components.Add(ComponentType.Camera);
         }
-        //灯光
+        //???
         if (light != null)
         {
             if (light.type == LightType.Directional)
@@ -895,8 +895,8 @@ class GameObjectUitls
         string vbDeclaration = "";
 
 
-        //获取顶点结构,0代表该顶点结构无此数据;1，反之
-        //由于数据量可能很大，为了优化效率，默认顶点的位置，法线，uv，骨骼权重存在，还有tangents
+        //????????,0?????????????????;1?????
+        //??????????????????????Ч??????????λ????????uv?????????????????tangents
         for (i = 0; i < VertexStructure.Length; i++)
             VertexStructure[i] = 0;
 
@@ -988,17 +988,17 @@ class GameObjectUitls
         stringDatas.Add("MESH");
         stringDatas.Add("SUBMESH");
 
-        //版本号
+        //?汾??
         Util.FileUtil.WriteData(fs, LmVersion);
         VerionSize = fs.Position;
 
-        //标记数据信息区
-        ContentAreaPosition_Start = fs.Position; // 预留数据区偏移地址
+        //????????????
+        ContentAreaPosition_Start = fs.Position; // ??????????????
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
 
-        //内容段落信息区
-        BlockAreaPosition_Start = fs.Position;//预留段落数量
+        //????????????
+        BlockAreaPosition_Start = fs.Position;//???????????
 
         Util.FileUtil.WriteData(fs, (UInt16)blockCount);
         for (i = 0; i < blockCount; i++)
@@ -1007,19 +1007,19 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
         }
 
-        //字符区
-        StringAreaPosition_Start = fs.Position;//预留字符区
+        //?????
+        StringAreaPosition_Start = fs.Position;//????????
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt16)0);//count
 
-        //网格区
+        //??????
         MeshAreaPosition_Start = fs.Position;
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("MESH"));//解析函数名字符索引
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("MESH"));//?????????????????
         stringDatas.Add(meshName);
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(meshName));//网格名字符索引
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(meshName));//?????????????
 
         //vb
-        Util.FileUtil.WriteData(fs, (UInt16)1);//vb数量
+        Util.FileUtil.WriteData(fs, (UInt16)1);//vb????
         VBMeshAreaPosition_Start = fs.Position;
         for (i = 0; i < 1; i++)//vb
         {
@@ -1059,12 +1059,12 @@ class GameObjectUitls
         MeshAreaPosition_End = fs.Position;
         MeshAreaSize = MeshAreaPosition_End - MeshAreaPosition_Start;
 
-        //子网格区
+        //????????
         for (i = 0; i < subMeshCount; i++)
         {
             subMeshAreaPosition_Start[i] = fs.Position;
 
-            Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("SUBMESH"));//解析函数名字符索引
+            Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("SUBMESH"));//?????????????????
             Util.FileUtil.WriteData(fs, (UInt16)0);//vbIndex
 
             Util.FileUtil.WriteData(fs, (UInt32)0);//ibStart
@@ -1083,7 +1083,7 @@ class GameObjectUitls
             subMeshAreaSize[i] = subMeshAreaPosition_End[i] - subMeshAreaPosition_Start[i];
         }
 
-        //字符数据区
+        //?????????
         StringDatasAreaPosition_Start = fs.Position;
         for (i = 0; i < stringDatas.Count; i++)
         {
@@ -1092,7 +1092,7 @@ class GameObjectUitls
         StringDatasAreaPosition_End = fs.Position;
         StringDatasAreaSize = StringDatasAreaPosition_End - StringDatasAreaPosition_Start;
 
-        //内容数据区
+        //??????????
         //vb
         Vector3 vertice;
         Vector3 normal;
@@ -1105,13 +1105,13 @@ class GameObjectUitls
         {
             vertice = vertices[j];
             Util.FileUtil.WriteData(fs, -vertice.x, vertice.y, vertice.z);
-            //法线8
+            //????8
             if (VertexStructure[1] == 1)
             {
                 normal = normals[j];
                 Util.FileUtil.WriteData(fs, -normal.x, normal.y, normal.z);
             }
-            //颜色
+            //???
             if (VertexStructure[2] == 1)
             {
                 color = colors[j];
@@ -1129,7 +1129,7 @@ class GameObjectUitls
                 uv2s = uv2[j];
                 Util.FileUtil.WriteData(fs, uv2s.x, uv2s.y * -1.0f + 1.0f);
             }*/
-            //切线
+            //????
             if (VertexStructure[6] == 1)
             {
                 tangent = tangents[j];
@@ -1141,7 +1141,7 @@ class GameObjectUitls
         VBContentDatasAreaSize = VBContentDatasAreaPosition_End - VBContentDatasAreaPosition_Start;
 
         //indices
-        //TODO:3.0 未来加入标记存入lm内
+        //TODO:3.0 δ???????????lm??
         IBContentDatasAreaPosition_Start = fs.Position;
         int[] triangles = mesh.triangles;
         if (mesh.indexFormat == IndexFormat.UInt32 && mesh.vertexCount > 65535)
@@ -1162,7 +1162,7 @@ class GameObjectUitls
         IBContentDatasAreaPosition_End = fs.Position;
         IBContentDatasAreaSize = IBContentDatasAreaPosition_End - IBContentDatasAreaPosition_Start;
 
-        //倒推子网格区
+        //????????????
         UInt32 ibstart = 0;
         UInt32 iblength = 0;
         UInt32 _ibstart = 0;
@@ -1201,7 +1201,7 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, iblength);
         }
 
-        //倒推网格区
+        //??????????
         fs.Position = VBMeshAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)(VBContentDatasAreaPosition_Start - StringDatasAreaPosition_Start));
         Util.FileUtil.WriteData(fs, (UInt32)mesh.vertexCount);
@@ -1210,13 +1210,13 @@ class GameObjectUitls
         Util.FileUtil.WriteData(fs, (UInt32)(IBContentDatasAreaPosition_Start - StringDatasAreaPosition_Start));
         Util.FileUtil.WriteData(fs, (UInt32)IBContentDatasAreaSize);
 
-        //倒推字符区
+        //?????????
         fs.Position = StringAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)0);
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.Count);
         StringAreaPosition_End = fs.Position;
 
-        //倒推段落区
+        //?????????
         fs.Position = BlockAreaPosition_Start + 2;
         Util.FileUtil.WriteData(fs, (UInt32)MeshAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)MeshAreaSize);
@@ -1226,7 +1226,7 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)subMeshAreaSize[i]);
         }
 
-        //倒推标记内容数据信息区
+        //???????????????????
         fs.Position = ContentAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)StringDatasAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)(StringDatasAreaPosition_Start + StringDatasAreaSize + VBContentDatasAreaSize + IBContentDatasAreaSize + subMeshAreaSize[0]));
@@ -1237,14 +1237,14 @@ class GameObjectUitls
     public static void writeSkinnerMesh(SkinnedMeshRenderer skinnedMeshRenderer, string meshName, FileStream fs,int MaxBoneCount = 24)
     {
         Mesh mesh = skinnedMeshRenderer.sharedMesh;
-        //-------------------------------------------组织并写入数据-------------------------------------------
-        UInt16 vbCount = (UInt16)1;//unity中默认最大的是65535
+        //-------------------------------------------?????д??????-------------------------------------------
+        UInt16 vbCount = (UInt16)1;//unity???????????65535
         UInt16 subMeshCount = (UInt16)mesh.subMeshCount;
         UInt16 everyVBSize = 0;
         string vbDeclaration = "";
 
-        //获取顶点结构,0代表该顶点结构无此数据;1，反之
-        //由于数据量可能很大，为了优化效率，默认顶点的位置，法线，uv，骨骼权重存在，还有triangles
+        //????????,0?????????????????;1?????
+        //??????????????????????Ч??????????λ????????uv?????????????????triangles
         for (int i = 0; i < VertexStructure.Length; i++)
             VertexStructure[i] = 0;
      
@@ -1297,7 +1297,7 @@ class GameObjectUitls
             everyVBSize += 16;
         }
 
-        //获取骨骼数据
+        //???????????
         List<Transform> bones = new List<Transform>();
         for (int j = 0; j < skinnedMeshRenderer.bones.Length; j++)
         {
@@ -1307,18 +1307,18 @@ class GameObjectUitls
         }
 
 
-        //重构VB,IB数据
-        //所有点的集合
+        //???VB,IB????
+        //???е?????
         int vertexlength = mesh.vertexCount;
         List<VertexData> vertexBuffer = new List<VertexData>();
 
 
-        //所有index的集合
+        //????index?????
         List<int> indexBuffer = new List<int>();
 
-        //根据subMesh以及骨骼分离骨骼索引数据（最大list长度为24，每个subMesh至少一个list，里面存着骨骼索引）
+        //????subMesh??????????????????????????list?????24?????subMesh???????list??????????????????
         List<List<int>>[] boneIndexList = new List<List<int>>[subMeshCount];
-        //subMesh index索引的长度
+        //subMesh index?????????
         List<int>[] subIBIndex = new List<int>[subMeshCount];
         List<List<Triangle>>[] subsubMeshtriangles = new List<List<Triangle>>[subMeshCount];
 
@@ -1329,7 +1329,7 @@ class GameObjectUitls
         Vector2[] uv2s = mesh.uv2;
         BoneWeight[] boneWeights = mesh.boneWeights;
         Vector4[] tangents = mesh.tangents;
-        //组织所有的顶点数据
+        //??????е????????
         for (int ii = 0; ii < vertexlength; ii++)
         {
             vertexBuffer.Add(getVertexData(vertices, normals, colors, uvs, uv2s, boneWeights, tangents, ii));
@@ -1339,24 +1339,24 @@ class GameObjectUitls
         int[] subMeshFirstIndex = new int[subMeshCount];
         int[] subMeshIndexLength = new int[subMeshCount];
         int _ibLength = 0;
-        //循环每个subMesh
+        //??????subMesh
         for (int i = 0; i < subMeshCount; i++)
         {
-            //获得submesh的所有index
+            //???submesh??????index
             int[] subIndices = mesh.GetIndices(i);
-            //存了需要的骨骼数据索引
+            //????????????????????
             boneIndexList[i] = new List<List<int>>();
             boneIndexList[i].Add(new List<int>());
-            //存了骨骼数目 24，24，24，10
+            //?????????? 24??24??24??10
             subIBIndex[i] = new List<int>();
-            //三角形数组，根据骨骼来划分为好几组划分
+            //?????????????????????????ü?????
             List<List<Triangle>> subsubMeshTriangle = new List<List<Triangle>>();
             subsubMeshtriangles[i] = subsubMeshTriangle;
-            //必定有一个三角形组合
+            //?????????????????
             subsubMeshTriangle.Add(new List<Triangle>());
-            //subMesh中所有的triangle
+            //subMesh?????е?triangle
             List<Triangle> subAllTriangle = new List<Triangle>();
-            //开始组织ib,获得所有的三角形
+            //??????ib,??????е???????
             for (int j = 0, n = subIndices.Length; j < n; j += 3)
             {
                 Triangle triangle = new Triangle();
@@ -1365,25 +1365,25 @@ class GameObjectUitls
                 triangle.point3 = vertexBuffer[subIndices[j + 2]];
                 subAllTriangle.Add(triangle);
             }
-            //将三角形根据骨骼索引分堆
+            //???????θ?????????????
             for (int k = 0; k < subAllTriangle.Count; k++)
             {
                 Triangle tri = subAllTriangle[k];
-                //获得三角形所有的骨骼顶点索引
+                //????????????е????????????
                 List<int> tigleboneindexs = triangleBoneIndex(tri);
-                //遍历循环所有的submesh里面的骨骼索引的list
+                //??????????е?submesh??????????????list
                 bool isAdd = false;
                 for (int m = 0; m < boneIndexList[i].Count; m++)
                 {
                     List<int> list = listContainCount(tigleboneindexs, boneIndexList[i][m]);
-                    //全包含就把三角形全加进去
+                    //???????????????????
                     if (list.Count == 0)
                     {
                         subsubMeshTriangle[m].Add(tri);
                         isAdd = true;
                         break;
                     }
-                    //不是全包含就看是否加上够24块骨骼
+                    //???????????????????24?????
                     else if ((boneIndexList[i][m].Count + list.Count) <= MaxBoneCount)
                     {
                         for (int c = 0; c < list.Count; c++)
@@ -1410,14 +1410,14 @@ class GameObjectUitls
                 }
             }
 
-            //分堆之后检测增加点并且修改索引
+            //??????????????????????
             for (int q = 0; q < subsubMeshTriangle.Count; q++)
             {
                 List<Triangle> subsubtriangles = subsubMeshTriangle[q];
                 for (int h = 0; h < subsubtriangles.Count; h++)
                 {
                     Triangle trianglle = subsubtriangles[h];
-                    //检测三个点
+                    //?????????
                     trianglle.point1 = checkPoint(trianglle.point1, i, q, vertexBuffer);
                     trianglle.point2 = checkPoint(trianglle.point2, i, q, vertexBuffer);
                     trianglle.point3 = checkPoint(trianglle.point3, i, q, vertexBuffer);
@@ -1432,7 +1432,7 @@ class GameObjectUitls
             }
         }
 
-        //切换缩影且组织index数据
+        //?л?????????index????
         for (int ii = 0; ii < subMeshCount; ii++)
         {
             List<List<Triangle>> subsubtriangle = subsubMeshtriangles[ii];
@@ -1509,18 +1509,18 @@ class GameObjectUitls
         stringDatas.Add("MESH");
         stringDatas.Add("SUBMESH");
 
-        //版本号
+        //?汾??
         string layaModelVerion =  LmVersion;
         Util.FileUtil.WriteData(fs, layaModelVerion);
         VerionSize = fs.Position;
 
-        //标记数据信息区
-        ContentAreaPosition_Start = fs.Position; // 预留数据区偏移地址
+        //????????????
+        ContentAreaPosition_Start = fs.Position; // ??????????????
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
 
-        //内容段落信息区
-        BlockAreaPosition_Start = fs.Position;//预留段落数量
+        //????????????
+        BlockAreaPosition_Start = fs.Position;//???????????
         int blockCount = subMeshCount + 1;
         Util.FileUtil.WriteData(fs, (UInt16)blockCount);
         for (int i = 0; i < blockCount; i++)
@@ -1529,23 +1529,23 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
         }
 
-        //字符区
-        StringAreaPosition_Start = fs.Position;//预留字符区
+        //?????
+        StringAreaPosition_Start = fs.Position;//????????
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt16)0);//count
 
-        //材质区
+        //??????
 
-        //网格区
+        //??????
         MeshAreaPosition_Start = fs.Position;
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("MESH"));//解析函数名字符索引
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("MESH"));//?????????????????
         stringDatas.Add(meshName);
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(meshName));//网格名字符索引
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(meshName));//?????????????
 
         //vb
-        Util.FileUtil.WriteData(fs, (UInt16)vbCount);//vb数量
+        Util.FileUtil.WriteData(fs, (UInt16)vbCount);//vb????
         VBMeshAreaPosition_Start = fs.Position;
-        //默认vbCount为1
+        //???vbCount?1
         //for (ushort i = 0; i < vbCount; i++)
         //{
         Util.FileUtil.WriteData(fs, (UInt32)0);//vbStart
@@ -1587,12 +1587,12 @@ class GameObjectUitls
         MeshAreaPosition_End = fs.Position;
         MeshAreaSize = MeshAreaPosition_End - MeshAreaPosition_Start;
 
-        //子网格区
+        //????????
         for (int i = 0; i < subMeshCount; i++)
         {
             subMeshAreaPosition_Start[i] = fs.Position;
 
-            Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("SUBMESH"));//解析函数名字符索引
+            Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("SUBMESH"));//?????????????????
             Util.FileUtil.WriteData(fs, (UInt16)0);//vbIndex
 
             Util.FileUtil.WriteData(fs, (UInt32)0);//ibStart
@@ -1615,7 +1615,7 @@ class GameObjectUitls
         }
 
 
-        //字符数据区
+        //?????????
         StringDatasAreaPosition_Start = fs.Position;
 
         for (int i = 0; i < stringDatas.Count; i++)
@@ -1625,7 +1625,7 @@ class GameObjectUitls
         StringDatasAreaPosition_End = fs.Position;
         StringDatasAreaSize = StringDatasAreaPosition_End - StringDatasAreaPosition_Start;
 
-        //内容数据区
+        //??????????
         //vb
         VBContentDatasAreaPosition_Start = fs.Position;
 
@@ -1682,7 +1682,7 @@ class GameObjectUitls
 
 
         //indices
-        //TODO:未来加入标记存入lm内
+        //TODO:δ???????????lm??
         IBContentDatasAreaPosition_Start = fs.Position;
         if (mesh.indexFormat == IndexFormat.UInt32 && vertexBuffer.Count > 65535)
         {
@@ -1751,7 +1751,7 @@ class GameObjectUitls
             boneDicDatasAreaPosition_End = fs.Position;
         }
 
-        //倒推子网格区
+        //????????????
 
         UInt32 ibstart = 0;
         UInt32 iblength = 0;
@@ -1801,7 +1801,7 @@ class GameObjectUitls
             }
         }
 
-        //倒推网格区
+        //??????????
         fs.Position = VBMeshAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)(VBContentDatasAreaPosition_Start - StringDatasAreaPosition_Start));
         Util.FileUtil.WriteData(fs, (UInt32)vertexBuffer.Count);
@@ -1815,13 +1815,13 @@ class GameObjectUitls
         Util.FileUtil.WriteData(fs, (UInt32)(inverseGlobalBindPosesDatasAreaPosition_Start - StringDatasAreaPosition_Start));
         Util.FileUtil.WriteData(fs, (UInt32)(boneDicDatasAreaPosition_Start - inverseGlobalBindPosesDatasAreaPosition_Start));
 
-        //倒推字符区
+        //?????????
         fs.Position = StringAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)0);
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.Count);
         StringAreaPosition_End = fs.Position;
 
-        //倒推段落区
+        //?????????
         fs.Position = BlockAreaPosition_Start + 2;
         Util.FileUtil.WriteData(fs, (UInt32)MeshAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)MeshAreaSize);
@@ -1831,7 +1831,7 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)subMeshAreaSize[i]);
         }
 
-        //倒推标记内容数据信息区
+        //???????????????????
         fs.Position = ContentAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)StringDatasAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)(StringDatasAreaPosition_Start + StringDatasAreaSize + VBContentDatasAreaSize + IBContentDatasAreaSize + subMeshAreaSize[0]));
@@ -1841,47 +1841,47 @@ class GameObjectUitls
 
     private static VertexData checkPoint(VertexData vertexdata, int subMeshindex, int subsubMeshIndex, List<VertexData> ListVertexData)
     {
-        //第一次循环到这个点
+        //???????????????
         if (vertexdata.subMeshindex == -1 && vertexdata.subsubMeshindex == -1)
         {
             vertexdata.subMeshindex = subMeshindex;
             vertexdata.subsubMeshindex = subsubMeshIndex;
             return vertexdata;
-        }//点在与第一次的点相同
+        }//?????????ε?????
         else if (vertexdata.subMeshindex == subMeshindex && vertexdata.subsubMeshindex == subsubMeshIndex)
         {
             return vertexdata;
         }
-        //第一个重合点
+        //?????????
         else if (vertexdata.commonPoint == null)
         {
-            //有重合点就new dictionary
+            //???????new dictionary
             vertexdata.commonPoint = new Dictionary<string, int>();
             VertexData newvertexdata = new VertexData();
-            //添加新顶点
+            //?????????
             ListVertexData.Add(newvertexdata);
-            //复制顶点数据
+            //???????????
             newvertexdata.setValue(vertexdata);
-            //给新的Index
+            //?????Index
             newvertexdata.index = ListVertexData.Count - 1;
             vertexdata.commonPoint.Add(subMeshindex.ToString() + "," + subsubMeshIndex.ToString(), ListVertexData.Count - 1);
             return newvertexdata;
-        }//已经有重合点后
+        }//??????????
         else
         {
-            //若是已经有key的点
+            //?????????key???
             if (vertexdata.commonPoint.ContainsKey(subMeshindex.ToString() + "," + subsubMeshIndex.ToString()))
             {
                 return ListVertexData[vertexdata.commonPoint[subMeshindex.ToString() + "," + subsubMeshIndex.ToString()]];
-            }//没有key,再加一个
+            }//???key,??????
             else
             {
                 VertexData newvertexdata = new VertexData();
-                //添加新顶点
+                //?????????
                 ListVertexData.Add(newvertexdata);
-                //复制顶点数据
+                //???????????
                 newvertexdata.setValue(vertexdata);
-                //给新的index
+                //?????index
                 newvertexdata.index = ListVertexData.Count - 1;
                 vertexdata.commonPoint.Add(subMeshindex.ToString() + "," + subsubMeshIndex.ToString(), ListVertexData.Count - 1);
                 return newvertexdata;
@@ -1889,7 +1889,7 @@ class GameObjectUitls
             }
         }
     }
-    //获取一个三角形所有的骨骼
+    //???????????????е????
     private static List<int> triangleBoneIndex(Triangle triangle)
     {
         List<int> indexs = new List<int>();
@@ -1911,7 +1911,7 @@ class GameObjectUitls
         return indexs;
     }
 
-    //两个list包含关系，如果返回0就全包含，如果返回不是0那就得多
+    //????list????????????????0???????????????????0?????
     private static List<int> listContainCount(List<int> boneindex, List<int> subsubboneindexs)
     {
         List<int> containcount = new List<int>();
@@ -2371,7 +2371,7 @@ class GameObjectUitls
         }
         else 
         {
-            //Debug.Log("不导出：" + binding.propertyName);
+            //Debug.Log("????????" + binding.propertyName);
             return null;
         }
         string conpomentType = searchCompoment[binding.type.ToString()];
@@ -2386,7 +2386,7 @@ class GameObjectUitls
 
     public static void writeClip(AnimationClip aniclip, FileStream fs,GameObject gameObject, string clipName)
     {
-       
+        List<float> startTimeList = new List<float>();
 
         List<string> stringDatas = new List<string>();
         stringDatas.Add("ANIMATIONS");
@@ -2394,29 +2394,35 @@ class GameObjectUitls
         int clipFrameRate = (int)aniclip.frameRate;
 
         List<ComponentType> components = GameObjectUitls.componentsOnGameObject(gameObject);
-        // list Curve 数据
+        // list Curve ????
         List<EditorCurveBinding> editorCurveBindingList = new List<EditorCurveBinding>();
        
 
 
-        // 原始 Curve 数据
+        // ?? Curve ????
         EditorCurveBinding[] oriEditorCurveBindingList = AnimationUtility.GetCurveBindings(aniclip);
 
 
         editorCurveBindingList.AddRange(oriEditorCurveBindingList);
 
-        // 创建数据 数组
+        // ???????? ????
         EditorCurveBinding[] editorCurveBindings = editorCurveBindingList.ToArray();
 
         AnimationClipCurveData[] animationClipCurveDatas = new AnimationClipCurveData[editorCurveBindings.Length];
         Dictionary<string, AnimationCurveGroup> groupMap = new Dictionary<string, AnimationCurveGroup>();
+        float _time;
         for (int j = 0; j < editorCurveBindings.Length; j++)
         {
             AnimationClipCurveData curveData = animationClipCurveDatas [j]=  new AnimationClipCurveData(editorCurveBindings[j]);
-            curveData.curve = AnimationUtility.GetEditorCurve(aniclip, editorCurveBindings[j]);
-        
+            AnimationCurve curve = curveData.curve = AnimationUtility.GetEditorCurve(aniclip, editorCurveBindings[j]);
+            Keyframe[] keys = curve.keys;
+            for (int k = 0; k < keys.Length; k++)
+            {
+                _time = AnimationCurveGroup.getCurveTime(keys[k].time);
+                if (startTimeList.IndexOf(_time) == -1)
+                    startTimeList.Add(_time);
+            }
             string path = AnimationCurveGroup.getCurvePath(curveData);
-          
             AnimationCurveGroup curveGroup = null;
             if (groupMap.ContainsKey(path))
             {
@@ -2468,30 +2474,12 @@ class GameObjectUitls
                 curveGroup.pushCurve(curveData);
             }
         }
-        Dictionary<uint, float> timeList = new Dictionary<uint, float>();
-        foreach(var group in groupMap)
-        {
-            group.Value.mergeTimeList(timeList);
-        }
 
-        List<float> startTimeList = new List<float>();
-        foreach(var time in timeList)
-        {
-            startTimeList.Add(time.Value);
-        }
         startTimeList.Sort();
         float startTime = startTimeList[0];
         float endTime = startTimeList[startTimeList.Count - 1];
+        //???????
 
-        Dictionary<uint, FrameInfo> frameInfoList = new Dictionary<uint, FrameInfo>();
-        for(int i = 0,legnth = startTimeList.Count;i< legnth; i++)
-        {
-            FrameInfo info = new FrameInfo();
-            info.oriderIndex = i;
-            float time = info.time= startTimeList[i];
-            var frameIndex = info.frameIndex= AnimationCurveGroup.getFrameByTime(time);
-            frameInfoList.Add(frameIndex, info);
-        }
         List<AniNodeData> aniNodeDatas = new List<AniNodeData>();
 
         AniNodeData aniNodeData;
@@ -2499,9 +2487,10 @@ class GameObjectUitls
         {
             group.addEmptyClipCurve(startTime, endTime);
             aniNodeData = new AniNodeData();
-            group.getAnimaFameData(ref aniNodeData, ref frameInfoList, ref stringDatas);
+            group.getAnimaFameData(ref aniNodeData, ref startTimeList, ref stringDatas);
             aniNodeDatas.Add(aniNodeData);
         }
+
 
         long MarkContentAreaPosition_Start = 0;
 
@@ -2514,21 +2503,21 @@ class GameObjectUitls
         long StringDatasAreaPosition_Start = 0;
         long StringDatasAreaPosition_End = 0;
 
-        //版本号
-        //minner动画
+        //?汾??
+        //minner????
 
         string layaModelVerion = LaniVersion;
 
         Util.FileUtil.WriteData(fs, layaModelVerion);
 
-        //标记数据信息区
-        MarkContentAreaPosition_Start = fs.Position; // 预留数据区偏移地址
+        //????????????
+        MarkContentAreaPosition_Start = fs.Position; // ??????????????
 
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
 
-        //内容段落信息区
-        BlockAreaPosition_Start = fs.Position;//预留段落数量
+        //????????????
+        BlockAreaPosition_Start = fs.Position;//???????????
         int blockCount = 1;
         Util.FileUtil.WriteData(fs, (UInt16)blockCount);
         for (int j = 0; j < blockCount; j++)
@@ -2537,14 +2526,14 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 blockLength
         }
 
-        //字符区
-        StringAreaPosition_Start = fs.Position;//预留字符区
+        //?????
+        StringAreaPosition_Start = fs.Position;//????????
         Util.FileUtil.WriteData(fs, (UInt32)0);//UInt32 offset
         Util.FileUtil.WriteData(fs, (UInt16)0);//count
 
-        //内容区
-        ContentAreaPosition_Start = fs.Position;//预留字符区
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("ANIMATIONS"));//uint16 段落函数字符ID
+        //??????
+        ContentAreaPosition_Start = fs.Position;//????????
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf("ANIMATIONS"));//uint16 ?????????ID
 
         Util.FileUtil.WriteData(fs, (UInt16)startTimeList.Count);//startTime
         for (int j = 0; j < startTimeList.Count; j++)
@@ -2552,16 +2541,16 @@ class GameObjectUitls
             Util.FileUtil.WriteData(fs, (float)startTimeList[j]);
         }
 
-        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(clipName));//动画名字符索引
+        Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(clipName));//?????????????
 
         float aniTotalTime = startTimeList.Count == 0 ? 0.0f : (float)startTimeList[startTimeList.Count - 1];
-        Util.FileUtil.WriteData(fs, aniTotalTime);//动画总时长
+        Util.FileUtil.WriteData(fs, aniTotalTime);//?????????
 
-        Util.FileUtil.WriteData(fs, aniclip.isLooping);//动画是否循环
+        Util.FileUtil.WriteData(fs, aniclip.isLooping);//??????????
 
         Util.FileUtil.WriteData(fs, (UInt16)clipFrameRate);//frameRate
 
-        Util.FileUtil.WriteData(fs, (UInt16)aniNodeDatas.Count);//节点个数
+        Util.FileUtil.WriteData(fs, (UInt16)aniNodeDatas.Count);//??????
         for (int j = 0; j < aniNodeDatas.Count; j++)
         {
             aniNodeData = aniNodeDatas[j];
@@ -2577,7 +2566,7 @@ class GameObjectUitls
             {
                 Util.FileUtil.WriteData(fs, aniNodeData.propertyNameIndex[m]);//propertyNameLength
             }
-            Util.FileUtil.WriteData(fs, aniNodeData.keyFrameCount);//帧个数
+            Util.FileUtil.WriteData(fs, aniNodeData.keyFrameCount);//?????
 
             for (int m = 0; m < aniNodeData.keyFrameCount; m++)
             {
@@ -2589,7 +2578,7 @@ class GameObjectUitls
 
         }
 
-        //事件
+        //???
         AnimationEvent[] aniEvents = aniclip.events;
         int aniEventCount = aniEvents.Length;
         Util.FileUtil.WriteData(fs, (Int16)aniEventCount);
@@ -2598,14 +2587,14 @@ class GameObjectUitls
             AnimationEvent aniEvent = aniEvents[k];
             //time
             Util.FileUtil.WriteData(fs, (float)aniEvent.time);
-            //函数名字索引
+            //????????????
             string funName = aniEvent.functionName;
             if (stringDatas.IndexOf(funName) == -1)
             {
                 stringDatas.Add(funName);
             }
             Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(funName));
-            //参数个数
+            //????????
             UInt16 paramCount = 3;
             Util.FileUtil.WriteData(fs, paramCount);
             for (int m = 0; m < 1; m++)
@@ -2629,7 +2618,7 @@ class GameObjectUitls
             }
         }
 
-        //字符数据区
+        //?????????
         StringDatasAreaPosition_Start = fs.Position;
         for (int j = 0; j < stringDatas.Count; j++)
         {
@@ -2637,15 +2626,15 @@ class GameObjectUitls
         }
         StringDatasAreaPosition_End = fs.Position;
 
-        //倒推字符区
+        //?????????
         fs.Position = StringAreaPosition_Start + 4;
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.Count);//count
 
-        //倒推内容段落信息区
+        //????????????????
         fs.Position = BlockAreaPosition_Start + 2 + 4;
         Util.FileUtil.WriteData(fs, (UInt32)(StringDatasAreaPosition_Start - ContentAreaPosition_Start));//UInt32 blockLength
 
-        //倒推数据信息区
+        //?????????????
         fs.Position = MarkContentAreaPosition_Start;
         Util.FileUtil.WriteData(fs, (UInt32)StringDatasAreaPosition_Start);
         Util.FileUtil.WriteData(fs, (UInt32)(StringDatasAreaPosition_End - StringDatasAreaPosition_Start));

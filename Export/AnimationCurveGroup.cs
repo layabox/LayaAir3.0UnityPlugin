@@ -18,18 +18,12 @@ public enum KeyFrameValueType
 }
 
 
-
-public class FrameInfo
-{
-    public float time;
-    public int oriderIndex;
-    public uint frameIndex;
-}
 public class CustomAnimationCurve
 {
     public Keyframe[] keys;
 }
 
+//����֡��Ϣ
 public struct AniNodeFrameData
 {
     public UInt16 startTimeIndex;
@@ -37,7 +31,7 @@ public struct AniNodeFrameData
     public float[] outTangentNumbers;
     public float[] valueNumbers;
 }
-
+//�����ڵ���Ϣ
 public struct AniNodeData
 {
     public Byte type;
@@ -49,6 +43,7 @@ public struct AniNodeData
     public UInt16 keyFrameCount;
     public List<AniNodeFrameData> aniNodeFrameDatas;
 }
+
 
 public class PropertyConfig
 {
@@ -63,7 +58,6 @@ public class PropertyConfig
 
 public class FrameData
 {
-    public uint frameIndex;
     public float floatTime;
     public float[] inTangentNumbers;
     public float[] outTangentNumbers;
@@ -72,9 +66,8 @@ public class FrameData
     public float[] valueNumbers;
     private List<string> _props;
 
-    public FrameData(uint frameIndex, float time,  List<string> props)
+    public FrameData(float time,  List<string> props)
     {
-        this.frameIndex = frameIndex;
         this.floatTime = time;
         this._props = props;
         int propCount = props.Count;
@@ -90,7 +83,7 @@ public class FrameData
         int index = this._props.IndexOf(key);
         if (index < 0)
         {
-            Debug.LogError("not get the prop : "+ key);
+            Debug.LogError("δ�ҵ���Ӧ����");
         }
         this.inTangentNumbers[index] = value.inTangent;
         this.outTangentNumbers[index] = value.outTangent;
@@ -98,61 +91,13 @@ public class FrameData
         this.inWeightNumbers[index] = value.inWeight;
         this.outWeightNumbers[index] = value.outWeight;
     }
-}
 
-class CustomClipCurveData
-{
-    private Dictionary<uint, Keyframe> m_keyMap;
-    private AnimationClipCurveData _curveData;
+  
 
-    public AnimationClipCurveData curveData
-    {
-        get
-        {
-            return this._curveData;
-        }
-    }
-    public CustomClipCurveData(AnimationClipCurveData curveData)
-    {
-        this._curveData = curveData;
-    }
-    public void createKeyMap()
-    {
-        this.m_keyMap = new Dictionary<uint, Keyframe>();
-        foreach (Keyframe keyFame in curveData.curve.keys)
-        {
-            uint frameIndex = AnimationCurveGroup.getFrameByTime(keyFame.time);
-            if (!this.m_keyMap.ContainsKey(frameIndex))
-            {
-                this.m_keyMap.Add(frameIndex, keyFame);
-            }
-            else
-            {
-                Debug.Log("zhen" + frameIndex.ToString());
-            }
-            
-        }
-    }
-
-    public Keyframe GetKeyframeByTime(float time)
-    {
-        uint frameIndex = AnimationCurveGroup.getFrameByTime(time);
-        Keyframe keyframe;
-        if (this.m_keyMap.TryGetValue(frameIndex,out keyframe))
-        {
-            // Get the current value of the curve at the insertion point
-            float currentValue = curveData.curve.Evaluate(time);
-            float derivative = (curveData.curve.Evaluate(time + 0.0001f) - currentValue) / 0.0001f;
-
-            keyframe =  new Keyframe(time, currentValue, derivative, derivative);
-        }
-        return keyframe;
-    }
 }
 public class AnimationCurveGroup
 {
-    public static uint FPS = 1000;
-    private delegate void FrameDelegate(FrameData frame, ref AniNodeFrameData data, bool isRotate);
+    private delegate void FrameDelegate(FrameData frame, ref AniNodeFrameData data,bool isRotate);
     private static Dictionary<KeyFrameValueType, List<string>> keyFrameConfigs;
     public static void init()
     {
@@ -189,7 +134,7 @@ public class AnimationCurveGroup
         x.Add("x");
         keyFrameConfigs.Add(KeyFrameValueType.Float, x);
     }
-    private Dictionary<string, CustomClipCurveData> _curveList;
+    private Dictionary<string,AnimationClipCurveData> _curveList;
     private string _path;
     private KeyFrameValueType _keyType;
     private List<string> _propnames;
@@ -198,11 +143,11 @@ public class AnimationCurveGroup
     private string _conpomentType;
     private GameObject _gameobject;
     private Dictionary<float, FrameData> datas;
-    private Dictionary<uint, float> _timeLists;
+    List<float> everyStartTime;
     private List<ComponentType> components;
-    public AnimationCurveGroup(string path, GameObject gameObject, Type type, string conpomentType, string propertyName, KeyFrameValueType keyType)
+    public AnimationCurveGroup(string path, GameObject gameObject, Type type, string conpomentType,string propertyName, KeyFrameValueType keyType)
     {
-        this._curveList = new Dictionary<string, CustomClipCurveData>();
+        this._curveList = new Dictionary<string, AnimationClipCurveData>();
         this.components = GameObjectUitls.componentsOnGameObject(gameObject);
         this._path = path;
         this._gameobject = gameObject;
@@ -211,7 +156,7 @@ public class AnimationCurveGroup
         this._propnames = new List<string>();
         this._type = type;
         this._propertyName = propertyName;
-        this._timeLists = new Dictionary<uint, float>();
+        this.everyStartTime = new List<float>();
         this.datas = new Dictionary<float, FrameData>();
     }
     public string path
@@ -240,7 +185,7 @@ public class AnimationCurveGroup
 
     public bool pushCurve(AnimationClipCurveData curveData)
     {
-        if (this._path != AnimationCurveGroup.getCurvePath(curveData))
+        if(this._path != AnimationCurveGroup.getCurvePath(curveData))
         {
             return false;
         }
@@ -254,13 +199,13 @@ public class AnimationCurveGroup
             string[] propertyNames = curveData.propertyName.Split('.');
             endKey = propertyNames[propertyNames.Length - 1];
         }
-
+        
         if (this._curveList.ContainsKey(endKey))
         {
             return false;
         }
 
-        this._curveList.Add(endKey, new CustomClipCurveData(curveData));
+        this._curveList.Add(endKey,curveData);
 
         Keyframe[] _everyKeyframe = curveData.curve.keys;
         for (int m = 0; m < _everyKeyframe.Length; m++)
@@ -272,74 +217,93 @@ public class AnimationCurveGroup
 
     private void addFloatTime(float time)
     {
-        uint frameIndex = getFrameByTime(time);
-        if (!this._timeLists.ContainsKey(frameIndex))
+        bool isTimeExist = false;
+        for (int k = 0; k < everyStartTime.Count; k++)
         {
-            this._timeLists.Add(frameIndex, time);
-        }
-    }
-
-    public void mergeTimeList(Dictionary<uint, float> timeLists)
-    {
-        foreach (var value in this._timeLists)
-        {
-            if (!timeLists.ContainsKey(value.Key))
+            if (Math.Round(everyStartTime[k], 3) == Math.Round(time, 3))
             {
-                timeLists.Add(value.Key, value.Value);
+                isTimeExist = true;
             }
         }
+        if (!isTimeExist)
+        {
+            everyStartTime.Add(time);
+        }
     }
-
-    public static uint getFrameByTime(float time)
-    {
-        return (uint)Mathf.Floor(time * AnimationCurveGroup.FPS);
-    }
+   
     public bool addEmptyClipCurve(float start, float end)
     {
         this.addFloatTime(start);
         this.addFloatTime(end);
-    
+        everyStartTime.Sort();
+        int frameCount = everyStartTime.Count - 1;
+        float startTime = everyStartTime[0];
+        float endTime = everyStartTime[frameCount];
         List<string> props;
         if (!AnimationCurveGroup.keyFrameConfigs.TryGetValue(this._keyType, out props))
         {
             Debug.LogError("not get the Key Value Type" + this._keyType);
             return false;
         }
+        //���������
         foreach (string key in props)
         {
-            CustomClipCurveData customCurveData;
-            if (!this._curveList.TryGetValue(key,out customCurveData))
+            if (this._curveList.ContainsKey(key))
             {
-                EditorCurveBinding binding = new EditorCurveBinding();
-                binding.path = this._path.Split('.')[0];
-                binding.propertyName = this._propertyName + "." + key;
-                binding.type = this._type;
-                float data = 0.0f;
-                AnimationUtility.GetFloatValue(this._gameobject, binding, out data);
-                AnimationClipCurveData curveData = new AnimationClipCurveData(binding);
-                AnimationCurve curve = curveData.curve = new AnimationCurve();
-                curve.AddKey(start, data);
-                curve.AddKey(end, data);
-                customCurveData = new CustomClipCurveData(curveData);
-                this._curveList.Add(key, customCurveData);
+                continue;
             }
-            customCurveData.createKeyMap();
+            EditorCurveBinding binding = new EditorCurveBinding();
+            binding.path = this._path.Split('.')[0];
+            binding.propertyName = this._propertyName + "." + key;
+            binding.type = this._type;
+            float data = 0.0f;
+            AnimationUtility.GetFloatValue(this._gameobject, binding, out data);
+            AnimationClipCurveData curveData = new AnimationClipCurveData(binding);
+            AnimationCurve curve = curveData.curve = new AnimationCurve();
+            curve.AddKey(startTime, data);
+            curve.AddKey(endTime, data);
+            this._curveList.Add(key, curveData);
         }
-        foreach(var timeValue in this._timeLists)
+
+        for (int k = 0; k <= frameCount; k++)
         {
-            float floatTime = timeValue.Value;
-            FrameData frameData = new FrameData(timeValue.Key,floatTime, props);
+            float floatTime = everyStartTime[k];
+            FrameData frameData = new FrameData(floatTime, props);
             this.datas.Add(floatTime, frameData);
             foreach (string key in props)
             {
-                frameData.setValue(key, this._curveList[key].GetKeyframeByTime(floatTime));
+                frameData.setValue(key, getKeyByTime(this._curveList[key], floatTime));
             }
         }
         return true;
     }
 
+    private Keyframe getKeyByTime(AnimationClipCurveData curveData,float time)
+    {
+        foreach(Keyframe keyFame in curveData.curve.keys)
+        {
+            if(getCurveTime(keyFame.time) == getCurveTime(time))
+            {
+                 return keyFame;
+            }
+        }
 
-    public void getAnimaFameData(ref AniNodeData aniNodeData, ref Dictionary<uint, FrameInfo> frameInfoList, ref List<string> stringDatas)
+        // Get the current value of the curve at the insertion point
+        float currentValue = curveData.curve.Evaluate(time);
+        float derivative = (curveData.curve.Evaluate(time + 0.0001f) - currentValue) / 0.0001f;
+
+        return new Keyframe(time, currentValue, derivative, derivative);
+    }
+
+    private void addValueByTime(string key, List<Keyframe> _stdKeyframeList)
+    {
+        foreach(var frame in _stdKeyframeList)
+        {
+            this.datas[frame.time].setValue(key, frame);
+        }
+    }
+
+    public void getAnimaFameData(ref AniNodeData aniNodeData, ref List<float> startTimeList, ref List<string> stringDatas)
     {
         List<string> props;
         if (!AnimationCurveGroup.keyFrameConfigs.TryGetValue(this._keyType, out props))
@@ -405,17 +369,7 @@ public class AnimationCurveGroup
             data.valueNumbers = new float[porpCount];
             data.inTangentNumbers = new float[porpCount];
             data.outTangentNumbers = new float[porpCount];
-            uint frameIndex = getFrameByTime(frame.floatTime);
-            FrameInfo info;
-            if(frameInfoList.TryGetValue(frameIndex, out info))
-            {
-                data.startTimeIndex = (ushort)info.oriderIndex;
-            }
-            else
-            {
-                Debug.LogError("not get the frameIndex by time��" + frame.floatTime.ToString());
-            }
-           
+            data.startTimeIndex = (UInt16)startTimeList.IndexOf(getCurveTime(frame.floatTime));
             frameDelegate(frame, ref data, isRotate);
             aniNodeFrameDatas.Add(data);
         }
