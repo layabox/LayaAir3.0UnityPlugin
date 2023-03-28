@@ -25,6 +25,7 @@ public class LayaAir3D : EditorWindow
     [MenuItem("LayaAir3D/Export Tool", false, 1)]
     public static void initLayaExport()
     {
+        LanguageConfig.ReadLanguage(1);
         layaWindow = (LayaAir3D)EditorWindow.GetWindow(typeof(LayaAir3D));
         exporttu = new Texture2D(52, 52);
         Util.FileUtil.FileStreamLoadTexture("Assets/LayaAir3D/LayaResouce/Export.png", exporttu);
@@ -44,14 +45,15 @@ public class LayaAir3D : EditorWindow
 
     void OnEnable()
     {
-        ExportConfig.initConfig();
-        LanguageConfig.ReadLanguage(1);
+        
     }
 
    
     void OnGUI()
     {
         //½áÊø
+        ExportConfig.initConfig();
+        LanguageConfig.ReadLanguage(1);
 
         GUILayout.Space(10);
 
@@ -139,6 +141,12 @@ public class LayaAir3D : EditorWindow
             ExportConfig.IgnoreVerticesTangent = GUILayout.Toggle(ExportConfig.IgnoreVerticesTangent, LanguageConfig.str_IgnoreVerticesTangent);
             GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(21);
+            GUILayout.Label("", g, GUILayout.Width(15));
+
+            ExportConfig.AutoVerticesUV1 = GUILayout.Toggle(ExportConfig.AutoVerticesUV1, LanguageConfig.str_AutoVerticesUV1);
+            GUILayout.EndHorizontal();
 
 
             GUILayout.EndVertical();

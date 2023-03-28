@@ -56,6 +56,11 @@ internal class FileData
 
     }
 
+    public JSONObject metaData()
+    {
+        return this.m_metaData;
+    }
+
     public void saveMeta()
     {
         string filePath = metaPath;

@@ -7,6 +7,7 @@
   <IgnoreVerticesColor> Ignore Vertices Color</IgnoreVerticesColor>
   <IgnoreVerticesNormal> Ignore Vertices Normal</IgnoreVerticesNormal>
   <IgnoreVerticesTangent> Ignore Vertices Tangent</IgnoreVerticesTangent>
+  <AutoVerticesUV1> Auto Vertices UV1</AutoVerticesUV1>
   <Compress> Compress</Compress>
   <ThisfunctionneedVIP>This function need VIP</ThisfunctionneedVIP>
   <PleaseBindthecurrentdevice>Please Bind the current device</PleaseBindthecurrentdevice>

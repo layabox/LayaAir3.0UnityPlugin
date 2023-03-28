@@ -8,6 +8,7 @@
   <IgnoreVerticesColor> 忽 略 顶 点 颜 色</IgnoreVerticesColor>
   <IgnoreVerticesNormal> 忽 略 顶 点 法 线</IgnoreVerticesNormal>
   <IgnoreVerticesTangent> 忽 略 顶 点 切 线</IgnoreVerticesTangent>
+  <AutoVerticesUV1> 自 动 生 成 UV1</AutoVerticesUV1>
   <Compress> 文 件 压 缩 </Compress>
   <ThisfunctionneedVIP> 该功能属于VIP专属功能，请购买VIP帐号使用授权 </ThisfunctionneedVIP>
   <PleaseBindthecurrentdevice>    请 绑 定 当 前 设 备     </PleaseBindthecurrentdevice>

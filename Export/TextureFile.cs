@@ -1,4 +1,3 @@
-      
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -285,7 +284,7 @@ internal class TextureFile : FileData
             var pixleCount = width * height;
             // if (!(width < 8 || width > 32768))
             {
-                for (int i = height - 1; i >= 0; --i)
+                for (int i = height - 1; i > 0; --i)
                 {
                     for (int j = 0; j < width; ++j)
                     {
@@ -320,7 +319,11 @@ internal class TextureFile : FileData
             if (this._rgbmEncoding)
             {
                 Color[] pixels = this._texture.GetPixels(0);
-                this.exportHDRFile(filePath, pixels, this._texture.height, this._texture.width);
+                this.exportHDRFile(filePath, pixels, this._texture.width, this._texture.height);
+               /* for (int j = 0, m = pixels.Length; j < m; j++)
+                    pixels[j] = GameObjectUitls.EncodeRGBM(pixels[j], 5.0f);*/
+            /*    rgbmTexture.SetPixels(pixels);
+                File.WriteAllBytes(filePath, rgbmTexture.EncodeToPNG());*/
             }
             else if (this._format == 1)
             {
@@ -339,5 +342,3 @@ internal class TextureFile : FileData
 
 
 }
-
-    

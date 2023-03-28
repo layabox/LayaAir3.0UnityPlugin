@@ -7,8 +7,9 @@
   <IgnoreVerticesNormal>False</IgnoreVerticesNormal>
   <IgnoreVerticesTangent>False</IgnoreVerticesTangent>
   <IgnoreVerticesColor>False</IgnoreVerticesColor>
+  <AutoVerticesUV1>False</AutoVerticesUV1>
   <CustomizeDirectory>False</CustomizeDirectory>
   <CustomizeDirectoryName>
   </CustomizeDirectoryName>
-  <SavePath>E:\LayaProject1\assets\urpTest</SavePath>
+  <SavePath></SavePath>
 </LayaExportSetting>

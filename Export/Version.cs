@@ -5,8 +5,6 @@ using UnityEngine;
 using System;
 using System.Linq;
 using System.Reflection;
-using ZXing;
-using ZXing.QrCode;
 
 
 
@@ -65,24 +63,24 @@ public class Setting : EditorWindow
     }
     private void OnGUI()
     {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("", GUILayout.Width(15));
-            currentLanguage = (languages)EditorGUILayout.EnumPopup("Language",currentLanguage);
-            if (currentLanguage != frontLanguage)
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("", GUILayout.Width(15));
+        currentLanguage = (languages)EditorGUILayout.EnumPopup("Language",currentLanguage);
+        if (currentLanguage != frontLanguage)
+        {
+            frontLanguage = currentLanguage;
+            if (LayaAir3D.layaWindow != null)
             {
-                frontLanguage = currentLanguage;
-                if (LayaAir3D.layaWindow != null)
-                {
-                    LanguageConfig.ReadLanguage((int)currentLanguage);
-                    LayaAir3D.layaWindow.Repaint();
-                }
-                else
-                {
-                    LayaAir3D.initLayaExport();
-                    LanguageConfig.ReadLanguage((int)currentLanguage);
-                }
+                LanguageConfig.ReadLanguage((int)currentLanguage);
+                LayaAir3D.layaWindow.Repaint();
             }
-            GUILayout.EndHorizontal();
+            else
+            {
+                LayaAir3D.initLayaExport();
+                LanguageConfig.ReadLanguage((int)currentLanguage);
+            }
+        }
+        GUILayout.EndHorizontal();
     }
 
     private void OnDestroy()

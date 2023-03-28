@@ -5,7 +5,7 @@ public class ExportConfig
     private static string EditorConfig = "Assets/LayaAir3D/Configuration.xml";
     private static bool _updateConfig = false;
     //场景 or 预制体
-    private static int _FirstlevelMenu;
+    private static int _FirstlevelMenu = -1;
     //忽略未激活节点
     private static bool _IgnoreNotActiveGameObject;
     //批量导出一级节点
@@ -18,6 +18,8 @@ public class ExportConfig
     private static bool _IgnoreVerticesTangent;
     //忽略Color
     private static bool _IgnoreVerticesColor;
+    //自动生成uv1
+    private static bool _AutoVerticesUV1;
     //自定义根目录
     private static bool _CustomizeDirectory;
     //自定义根目录名
@@ -104,6 +106,20 @@ public class ExportConfig
             }
         }
     }
+    //自动生成uv1
+    public static bool AutoVerticesUV1
+    {
+        get { return _AutoVerticesUV1; }
+        set
+        {
+            if (_AutoVerticesUV1 != value)
+            {
+                _AutoVerticesUV1 = value;
+                _updateConfig = true;
+            }
+        }
+    }
+    
     //忽略Color
     public static bool IgnoreVerticesColor
     {
@@ -130,6 +146,7 @@ public class ExportConfig
             }
         }
     }
+
     //自定义根目录名
     public static string CustomizeDirectoryName
     {
@@ -172,6 +189,10 @@ public class ExportConfig
     }
     public static void initConfig()
     {
+        if (_FirstlevelMenu != -1)
+        {
+            return;
+        }
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.Load(EditorConfig);
         XmlNode xn = xmlDoc.SelectSingleNode("LayaExportSetting");
@@ -182,6 +203,7 @@ public class ExportConfig
         IgnoreVerticesNormal = bool.Parse(xn.SelectSingleNode("IgnoreVerticesNormal").InnerText);
         IgnoreVerticesTangent = bool.Parse(xn.SelectSingleNode("IgnoreVerticesTangent").InnerText);
         IgnoreVerticesColor = bool.Parse(xn.SelectSingleNode("IgnoreVerticesColor").InnerText);
+        AutoVerticesUV1 = bool.Parse(xn.SelectSingleNode("AutoVerticesUV1").InnerText);
         CustomizeDirectory = bool.Parse(xn.SelectSingleNode("CustomizeDirectory").InnerText);
         CustomizeDirectoryName = xn.SelectSingleNode("CustomizeDirectoryName").InnerText;
         _SAVEPATH = xn.SelectSingleNode("SavePath").InnerText;
@@ -204,6 +226,7 @@ public class ExportConfig
         xn.SelectSingleNode("IgnoreVerticesNormal").InnerText = IgnoreVerticesNormal.ToString();
         xn.SelectSingleNode("IgnoreVerticesTangent").InnerText = IgnoreVerticesTangent.ToString();
         xn.SelectSingleNode("IgnoreVerticesColor").InnerText = IgnoreVerticesColor.ToString();
+        xn.SelectSingleNode("AutoVerticesUV1").InnerText = AutoVerticesUV1.ToString();
         xn.SelectSingleNode("CustomizeDirectory").InnerText = CustomizeDirectory.ToString();
         xn.SelectSingleNode("CustomizeDirectoryName").InnerText = CustomizeDirectoryName;
         xn.SelectSingleNode("SavePath").InnerText = SAVEPATH;
@@ -219,6 +242,7 @@ public class ExportConfig
         IgnoreVerticesNormal = false;
         IgnoreVerticesTangent = false;
         IgnoreVerticesColor = false;
+        AutoVerticesUV1 = true;
         CustomizeDirectory = false;
         CustomizeDirectoryName ="";
         _SAVEPATH = "Assets";

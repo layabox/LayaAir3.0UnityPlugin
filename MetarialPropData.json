@@ -1,225 +1,538 @@
 {
-    "Standard":{
-        "targeName":"PBR",
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_AlbedoTexture","defind":"ALBEDOTEXTURE"},
-            {"uName":"_BumpMap","layaName":"u_NormalTexture","defind":"NORMALTEXTURE"},
-            {"uName":"_MetallicGlossMap","layaName":"u_MetallicGlossTexture","defind":"METALLICGLOSSTEXTURE"},
-            {"uName":"_DetailAlbedoMap","layaName":"u_DetailAlbedoTexture","defind":"DETAILTEXTURE"},
-            {"uName":"_DetailNormalMap","layaName":"u_DetailNormalTexture","defind":"DETAILNORMAL"},
-            {"uName":"_EmissionMap","layaName":"u_EmissionTexture","defind":"EMISSIONTEXTURE"},
-            {"uName":"_OcclusionMap","layaName":"u_OcclusionTexture","defind":"OCCLUSIONTEXTURE"},
-            {"uName":"_ParallaxMap","layaName":"u_ParallaxTexture","defind":"PARALLAXTEXTURE"}
+    "Standard": {
+        "targeName": "PBR",
+        "rules": [
+            {
+                "name": "_Glossiness",
+                "target": "uName",
+                "targetName": "_GlossMapScale",
+                "ruleType": "texture",
+                "ruleKeyName": "_MetallicGlossMap",
+                "data": true
+            }
         ],
-        "colors":[
-            {"uName":"_Color","layaName":"u_AlbedoColor"},
-            {"uName":"_EmissionColor","layaName":"u_EmissionColor","hdrName":"u_EmissionIntensity"}
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            },
+            {
+                "uName": "_BumpMap",
+                "layaName": "u_NormalTexture",
+                "defind": "NORMALTEXTURE",
+                "isNormal": true
+            },
+            {
+                "uName": "_MetallicGlossMap",
+                "layaName": "u_MetallicGlossTexture",
+                "defind": "METALLICGLOSSTEXTURE",
+                "isNormal": true
+            },
+            {
+                "uName": "_DetailAlbedoMap",
+                "layaName": "u_DetailAlbedoTexture",
+                "defind": "DETAILTEXTURE"
+            },
+            {
+                "uName": "_DetailNormalMap",
+                "layaName": "u_DetailNormalTexture",
+                "defind": "DETAILNORMAL",
+                "isNormal": true
+            },
+            {
+                "uName": "_EmissionMap",
+                "layaName": "u_EmissionTexture",
+                "defind": "EMISSIONTEXTURE"
+            },
+            {
+                "uName": "_OcclusionMap",
+                "layaName": "u_OcclusionTexture",
+                "defind": "OCCLUSIONTEXTURE"
+            },
+            {
+                "uName": "_ParallaxMap",
+                "layaName": "u_ParallaxTexture",
+                "defind": "PARALLAXTEXTURE"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"},
-            {"uName":"_DetailAlbedoMap_ST","layaName":"u_DetailTillingOffset"}
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_AlbedoColor"
+            },
+            {
+                "uName": "_EmissionColor",
+                "layaName": "u_EmissionColor",
+                "hdrName": "u_EmissionIntensity"
+            }
         ],
-        "floats":[
-            {"uName":"_Metallic","layaName":"u_Metallic"},
-            {"uName":"_Glossiness","layaName":"u_Smoothness"},
-            {"uName":"_GlossMapScale","layaName":"u_SmoothnessScale","isgama":true},
-            {"uName":"_BumpScale","layaName":"u_NormalScale"},
-            {"uName":"_Parallax","layaName":"u_ParallaxScale"},
-            {"uName":"_DetailNormalMapScale","layaName":"u_DetailNormalScale"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            },
+            {
+                "uName": "_DetailAlbedoMap_ST",
+                "layaName": "u_DetailTillingOffset"
+            }
         ],
-        "defineds":[
-            {"uName":"_SmoothnessTextureChannel","layaName":"SMOOTHNESSSOURCE_ALBEDOTEXTURE_ALPHA","from":0,"deflat":1.0},
-            {"uName":"_EMISSION","layaName":"EMISSION","from":1}
+        "floats": [
+            {
+                "uName": "_Metallic",
+                "layaName": "u_Metallic"
+            },
+            {
+                "uName": "_Glossiness",
+                "layaName": "u_Smoothness",
+                "rule": "_Glossiness"
+            },
+            {
+                "uName": "_BumpScale",
+                "layaName": "u_NormalScale"
+            },
+            {
+                "uName": "_Parallax",
+                "layaName": "u_ParallaxScale"
+            },
+            {
+                "uName": "_DetailNormalMapScale",
+                "layaName": "u_DetailNormalScale"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_SmoothnessTextureChannel",
+                "layaName": "SMOOTHNESSSOURCE_ALBEDOTEXTURE_ALPHA",
+                "from": 0,
+                "deflat": 1.0
+            },
+            {
+                "uName": "_EMISSION",
+                "layaName": "EMISSION",
+                "from": 1
+            }
         ]
     },
-    "Universal Render Pipeline/Lit":{
-        "targeName":"PBR",
-        "textures":[
-            {"uName":"_BaseMap","layaName":"u_AlbedoTexture","defind":"ALBEDOTEXTURE"},
-            {"uName":"_BumpMap","layaName":"u_NormalTexture","defind":"NORMALTEXTURE"},
-            {"uName":"_MetallicGlossMap","layaName":"u_MetallicGlossTexture","defind":"METALLICGLOSSTEXTURE"},
-            {"uName":"_DetailAlbedoMap","layaName":"u_DetailAlbedoTexture","defind":"DETAILTEXTURE"},
-            {"uName":"_DetailNormalMap","layaName":"u_DetailNormalTexture","defind":"DETAILNORMAL"},
-            {"uName":"_EmissionMap","layaName":"u_EmissionTexture","defind":"EMISSIONTEXTURE"},
-            {"uName":"_OcclusionMap","layaName":"u_OcclusionTexture","defind":"OCCLUSIONTEXTURE"},
-            {"uName":"_ParallaxMap","layaName":"u_ParallaxTexture","defind":"PARALLAXTEXTURE"}
+    "Universal Render Pipeline/Lit": {
+        "targeName": "PBR",
+        "textures": [
+            {
+                "uName": "_BaseMap",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            },
+            {
+                "uName": "_BumpMap",
+                "layaName": "u_NormalTexture",
+                "defind": "NORMALTEXTURE",
+                "isNormal": true
+            },
+            {
+                "uName": "_MetallicGlossMap",
+                "layaName": "u_MetallicGlossTexture",
+                "defind": "METALLICGLOSSTEXTURE"
+            },
+            {
+                "uName": "_DetailAlbedoMap",
+                "layaName": "u_DetailAlbedoTexture",
+                "defind": "DETAILTEXTURE"
+            },
+            {
+                "uName": "_DetailNormalMap",
+                "layaName": "u_DetailNormalTexture",
+                "defind": "DETAILNORMAL",
+                "isNormal": true
+            },
+            {
+                "uName": "_EmissionMap",
+                "layaName": "u_EmissionTexture",
+                "defind": "EMISSIONTEXTURE"
+            },
+            {
+                "uName": "_OcclusionMap",
+                "layaName": "u_OcclusionTexture",
+                "defind": "OCCLUSIONTEXTURE"
+            },
+            {
+                "uName": "_ParallaxMap",
+                "layaName": "u_ParallaxTexture",
+                "defind": "PARALLAXTEXTURE"
+            }
         ],
-        "colors":[
-            {"uName":"_BaseColor","layaName":"u_AlbedoColor"},
-            {"uName":"_EmissionColor","layaName":"u_EmissionColor","hdrName":"u_EmissionIntensity"}
+        "colors": [
+            {
+                "uName": "_BaseColor",
+                "layaName": "u_AlbedoColor"
+            },
+            {
+                "uName": "_EmissionColor",
+                "layaName": "u_EmissionColor",
+                "hdrName": "u_EmissionIntensity"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_BaseMap_ST","layaName":"u_TilingOffset"},
-            {"uName":"_DetailAlbedoMap_ST","layaName":"u_DetailTillingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_BaseMap_ST",
+                "layaName": "u_TilingOffset"
+            },
+            {
+                "uName": "_DetailAlbedoMap_ST",
+                "layaName": "u_DetailTillingOffset"
+            }
         ],
-        "floats":[
-            {"uName":"_Metallic","layaName":"u_Metallic"},
-            {"uName":"_Smoothness","layaName":"u_Smoothness"},
-            {"uName":"_BumpScale","layaName":"u_NormalScale"},
-            {"uName":"_Parallax","layaName":"u_ParallaxScale"},
-            {"uName":"_DetailNormalMapScale","layaName":"u_DetailNormalScale"}
+        "floats": [
+            {
+                "uName": "_Metallic",
+                "layaName": "u_Metallic"
+            },
+            {
+                "uName": "_Smoothness",
+                "layaName": "u_Smoothness"
+            },
+            {
+                "uName": "_BumpScale",
+                "layaName": "u_NormalScale"
+            },
+            {
+                "uName": "_Parallax",
+                "layaName": "u_ParallaxScale"
+            },
+            {
+                "uName": "_DetailNormalMapScale",
+                "layaName": "u_DetailNormalScale"
+            }
         ],
-        "defineds":[
-            {"uName":"_SmoothnessTextureChannel","layaName":"SMOOTHNESSSOURCE_ALBEDOTEXTURE_ALPHA","from":0,"deflat":1.0},
-            {"uName":"_EMISSION","layaName":"EMISSION","from":1}
+        "defineds": [
+            {
+                "uName": "_SmoothnessTextureChannel",
+                "layaName": "SMOOTHNESSSOURCE_ALBEDOTEXTURE_ALPHA",
+                "from": 0,
+                "deflat": 1.0
+            },
+            {
+                "uName": "_EMISSION",
+                "layaName": "EMISSION",
+                "from": 1
+            }
         ]
     },
-    "Universal Render Pipeline/Unlit":{
-        "targeName":"Unlit",
-        "textures":[
-            {"uName":"_BaseMap","layaName":"u_AlbedoTexture","defind":"ALBEDOTEXTURE"}
+    "Universal Render Pipeline/Unlit": {
+        "targeName": "Unlit",
+        "textures": [
+            {
+                "uName": "_BaseMap",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
         ],
-        "colors":[
-            {"uName":"_BaseColor","layaName":"u_AlbedoColor"}
+        "colors": [
+            {
+                "uName": "_BaseColor",
+                "layaName": "u_AlbedoColor"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_BaseMap_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_BaseMap_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Skybox/6 Sided":{
-        "targeName":"SkyBox",
-        "textures":[
-            {"uName":"_FrontTex","layaName":"front"},
-            {"uName":"_BackTex","layaName":"back"},
-            {"uName":"_LeftTex","layaName":"left"},
-            {"uName":"_RightTex","layaName":"right"},
-            {"uName":"_UpTex","layaName":"top"},
-            {"uName":"_DownTex","layaName":"bottom"}
+    "Skybox/6 Sided": {
+        "targeName": "SkyBox",
+        "textures": [
+            {
+                "uName": "_FrontTex",
+                "layaName": "front"
+            },
+            {
+                "uName": "_BackTex",
+                "layaName": "back"
+            },
+            {
+                "uName": "_LeftTex",
+                "layaName": "left"
+            },
+            {
+                "uName": "_RightTex",
+                "layaName": "right"
+            },
+            {
+                "uName": "_UpTex",
+                "layaName": "top"
+            },
+            {
+                "uName": "_DownTex",
+                "layaName": "bottom"
+            }
         ],
-        "colors":[
-            {"uName":"_Tint","layaName":"u_TintColor"}
+        "colors": [
+            {
+                "uName": "_Tint",
+                "layaName": "u_TintColor"
+            }
         ],
-        "floats":[
-            {"uName":"_Exposure","layaName":"u_Exposure"},
-            {"uName":"_Rotation","layaName":"u_Rotation"}
+        "floats": [
+            {
+                "uName": "_Exposure",
+                "layaName": "u_Exposure"
+            },
+            {
+                "uName": "_Rotation",
+                "layaName": "u_Rotation"
+            }
         ]
     },
-    "Skybox/Procedural":{
-        "targeName":"SkyProcedural",
-        "colors":[
-            {"uName":"_SkyTint","layaName":"u_SkyTint"},
-            {"uName":"_GroundColor","layaName":"u_GroundTint"}
+    "Skybox/Procedural": {
+        "targeName": "SkyProcedural",
+        "colors": [
+            {
+                "uName": "_SkyTint",
+                "layaName": "u_SkyTint"
+            },
+            {
+                "uName": "_GroundColor",
+                "layaName": "u_GroundTint"
+            }
         ],
-        "floats":[
-            {"uName":"_Exposure","layaName":"u_Exposure"},
-            {"uName":"_SunSize","layaName":"u_SunSize"},
-            {"uName":"_SunSizeConvergence","layaName":"u_SunSizeConvergence"},
-            {"uName":"_AtmosphereThickness","layaName":"u_AtmosphereThickness"}
+        "floats": [
+            {
+                "uName": "_Exposure",
+                "layaName": "u_Exposure"
+            },
+            {
+                "uName": "_SunSize",
+                "layaName": "u_SunSize"
+            },
+            {
+                "uName": "_SunSizeConvergence",
+                "layaName": "u_SunSizeConvergence"
+            },
+            {
+                "uName": "_AtmosphereThickness",
+                "layaName": "u_AtmosphereThickness"
+            }
         ]
     },
-    "Skybox/Panoramic":{
-        "targeName":"SkyPanoramic",
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_Texture"}
+    "Skybox/Panoramic": {
+        "targeName": "SkyPanoramic",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_Texture"
+            }
         ],
-        "colors":[
-            {"uName":"_Tint","layaName":"u_TintColor"}
+        "colors": [
+            {
+                "uName": "_Tint",
+                "layaName": "u_TintColor"
+            }
         ],
-        "floats":[
-            {"uName":"_Exposure","layaName":"u_Exposure"},
-            {"uName":"_Rotation","layaName":"u_Rotation"}
+        "floats": [
+            {
+                "uName": "_Exposure",
+                "layaName": "u_Exposure"
+            },
+            {
+                "uName": "_Rotation",
+                "layaName": "u_Rotation"
+            }
         ]
     },
-    "Legacy Shaders/Diffuse Fast":{
-        "targeName":"BLINNPHONG",
-        "colors":[
-            {"uName":"_Color","layaName":"u_DiffuseColor"}
+    "Legacy Shaders/Diffuse Fast": {
+        "targeName": "BLINNPHONG",
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_DiffuseColor"
+            }
         ],
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_DiffuseTexture","defind":"DIFFUSEMAP"}
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Legacy Shaders/Diffuse":{
-        "targeName":"BLINNPHONG",
-        "colors":[
-            {"uName":"_Color","layaName":"u_DiffuseColor"}
+    "Legacy Shaders/Diffuse": {
+        "targeName": "BLINNPHONG",
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_DiffuseColor"
+            }
         ],
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_DiffuseTexture","defind":"DIFFUSEMAP"}
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Legacy Shaders/Diffuse Detail":{
-        "targeName":"BLINNPHONG",
-        "colors":[
-            {"uName":"_Color","layaName":"u_DiffuseColor"}
+    "Legacy Shaders/Diffuse Detail": {
+        "targeName": "BLINNPHONG",
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_DiffuseColor"
+            }
         ],
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_DiffuseTexture","defind":"DIFFUSEMAP"}
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Legacy Shaders/Bumped Diffuse":{
-        "targeName":"BLINNPHONG",
-        "colors":[
-            {"uName":"_Color","layaName":"u_DiffuseColor"}
+    "Legacy Shaders/Bumped Diffuse": {
+        "targeName": "BLINNPHONG",
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_DiffuseColor"
+            }
         ],
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_DiffuseTexture","defind":"DIFFUSEMAP"},
-            {"uName":"_BumpMap","layaName":"u_NormalTexture","defind":"NORMALMAP"}
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            },
+            {
+                "uName": "_BumpMap",
+                "layaName": "u_NormalTexture",
+                "defind": "NORMALMAP",
+                "isNormal": true
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Legacy Shaders/Bumped Specular":{
-        "targeName":"BLINNPHONG",
-        "colors":[
-            {"uName":"_Color","layaName":"u_DiffuseColor"},
-            {"uName":"_SpecColor","layaName":"u_MaterialSpecular"}
+    "Legacy Shaders/Bumped Specular": {
+        "targeName": "BLINNPHONG",
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_DiffuseColor"
+            },
+            {
+                "uName": "_SpecColor",
+                "layaName": "u_MaterialSpecular"
+            }
         ],
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_DiffuseTexture","defind":"DIFFUSEMAP"},
-            {"uName":"_BumpMap","layaName":"u_NormalTexture","defind":"NORMALMAP"}
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            },
+            {
+                "uName": "_BumpMap",
+                "layaName": "u_NormalTexture",
+                "defind": "NORMALMAP",
+                "isNormal": true
+            }
         ],
-        "floats":[
-            {"uName":"_Shininess","layaName":"u_Shininess"}
+        "floats": [
+            {
+                "uName": "_Shininess",
+                "layaName": "u_Shininess"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Unlit/Texture":{
-        "targeName":"Unlit",
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_AlbedoTexture","defind":"ALBEDOTEXTURE"}
+    "Unlit/Texture": {
+        "targeName": "Unlit",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Unlit/Transparent Cutout":{
-        "targeName":"Unlit",
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_AlbedoTexture","defind":"ALBEDOTEXTURE"}
+    "Unlit/Transparent Cutout": {
+        "targeName": "Unlit",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
         ],
-        "floats":[
-            {"uName":"_Cutoff","layaName":"u_AlphaTestValue"}
+        "floats": [
+            {
+                "uName": "_Cutoff",
+                "layaName": "u_AlphaTestValue"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Unlit/Transparent":{
-        "targeName":"Unlit",
-        "textures":[
-            {"uName":"_MainTex","layaName":"u_AlbedoTexture","defind":"ALBEDOTEXTURE"}
+    "Unlit/Transparent": {
+        "targeName": "Unlit",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
         ],
-        "tillOffset":[
-            {"uName":"_MainTex_ST","layaName":"u_TilingOffset"}
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
         ]
     },
-    "Unlit/Color":{
-        "targeName":"Unlit",
-        "colors":[
-            {"uName":"_Color","layaName":"u_AlbedoColor"}
+    "Unlit/Color": {
+        "targeName": "Unlit",
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_AlbedoColor"
+            }
         ]
     }
 }

@@ -235,6 +235,12 @@ public class LayaAir3Export
             meshFile = new BufferFile(lmPath);
             GameObjectUitls.writeMesh(mesh, meshName, meshFile.filesteam);
             exportFiles.Add(meshFile.filePath, meshFile);
+            if (mesh.uv2.Length > 0 && ExportConfig.AutoVerticesUV1)
+            {
+                JSONObject autouv1 = new JSONObject(JSONObject.Type.OBJECT);
+                autouv1.AddField("generateLightmapUVs", true);
+                meshFile.metaData().AddField("importer", autouv1);
+            }
         }
         else
         {

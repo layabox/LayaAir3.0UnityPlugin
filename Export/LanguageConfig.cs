@@ -11,6 +11,7 @@ public class LanguageConfig
     public static string str_IgnoreVerticesColor;
     public static string str_IgnoreVerticesNormal;
     public static string str_IgnoreVerticesTangent;
+    public static string str_AutoVerticesUV1;
     public static string str_Compress;
     public static string str_ThisfunctionneedVIP;
     public static string str_PleaseBindthecurrentdevice;
@@ -46,8 +47,6 @@ public class LanguageConfig
     public static string str_LayaBoxVersion;
     public static string str_AboutLayaAir;
 
-  
-
     public static int language = -1;
 
     public static void ReadLanguage(int index)
@@ -78,6 +77,7 @@ public class LanguageConfig
         str_IgnoreVerticesColor = xn.SelectSingleNode("IgnoreVerticesColor").InnerText;
         str_IgnoreVerticesNormal = xn.SelectSingleNode("IgnoreVerticesNormal").InnerText;
         str_IgnoreVerticesTangent = xn.SelectSingleNode("IgnoreVerticesTangent").InnerText;
+        str_AutoVerticesUV1 = xn.SelectSingleNode("AutoVerticesUV1").InnerText;
         str_Compress = xn.SelectSingleNode("Compress").InnerText;
         str_ThisfunctionneedVIP = xn.SelectSingleNode("ThisfunctionneedVIP").InnerText;
         str_PleaseBindthecurrentdevice = xn.SelectSingleNode("PleaseBindthecurrentdevice").InnerText;
