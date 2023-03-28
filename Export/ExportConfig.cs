@@ -5,7 +5,7 @@ public class ExportConfig
     private static string EditorConfig = "Assets/LayaAir3D/Configuration.xml";
     private static bool _updateConfig = false;
     //场景 or 预制体
-    private static int _FirstlevelMenu = -1;
+    private static int _FirstlevelMenu;
     //忽略未激活节点
     private static bool _IgnoreNotActiveGameObject;
     //批量导出一级节点
@@ -189,7 +189,7 @@ public class ExportConfig
     }
     public static void initConfig()
     {
-        if (_FirstlevelMenu != -1)
+        if (_FirstlevelMenu != null)
         {
             return;
         }
