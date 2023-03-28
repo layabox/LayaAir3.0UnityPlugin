@@ -25,7 +25,7 @@ public class LayaAir3D : EditorWindow
     [MenuItem("LayaAir3D/Export Tool", false, 1)]
     public static void initLayaExport()
     {
-        LanguageConfig.ReadLanguage(1);
+        LanguageConfig.configLanguage();
         layaWindow = (LayaAir3D)EditorWindow.GetWindow(typeof(LayaAir3D));
         exporttu = new Texture2D(52, 52);
         Util.FileUtil.FileStreamLoadTexture("Assets/LayaAir3D/LayaResouce/Export.png", exporttu);
@@ -53,7 +53,7 @@ public class LayaAir3D : EditorWindow
     {
         //½áÊø
         ExportConfig.initConfig();
-        LanguageConfig.ReadLanguage(1);
+        LanguageConfig.configLanguage();
 
         GUILayout.Space(10);
 
@@ -226,13 +226,5 @@ public class LayaAir3D : EditorWindow
         ExportConfig.saveConfiguration();
 
     }
-
-
-    
-    
-
-   
-
-   
 
 }

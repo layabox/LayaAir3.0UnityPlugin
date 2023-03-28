@@ -2,7 +2,11 @@ using System.Xml;
 
 public class LanguageConfig 
 {
-
+    public enum languages
+    {
+        English = 0,
+        中文 = 1,
+    }
     //所有显示string
     public static string str_Scene;
     public static string str_Sprite3D;
@@ -49,7 +53,36 @@ public class LanguageConfig
 
     public static int language = -1;
 
-    public static void ReadLanguage(int index)
+
+    public static languages GetLanguages()
+    {
+        if (language == -1) {
+            return languages.中文;
+        }
+        else
+        {
+            return (languages)language;
+        }
+    }
+
+    public static bool setLanguages(languages language)
+    {
+        if(GetLanguages() == language)
+        {
+            return false;
+        }
+        int index = ((int)language);
+        ReadLanguage(index);
+        return true;
+    }
+
+    public static void configLanguage()
+    {
+        int index = ((int)GetLanguages());
+        ReadLanguage(index);
+    }
+
+    private static void ReadLanguage(int index)
     {
         if(index == language)
         {
