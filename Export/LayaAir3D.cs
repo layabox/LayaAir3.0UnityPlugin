@@ -50,20 +50,13 @@ public class LayaAir3D : EditorWindow
    
     void OnGUI()
     {
-        //����
+        //????
         ExportConfig.initConfig();
         LanguageConfig.configLanguage();
 
         GUILayout.Space(10);
 
-        GUILayout.BeginHorizontal();
-        GUILayout.Space(24);
-        GUIContent c22 = new GUIContent(LanguageConfig.str_LayaAirExport, exporttu);
-        if (GUILayout.Button(c22, GUILayout.Height(30), GUILayout.Width(position.width - 48)))
-        {
-            LayaAir3Export.ExportScene();
-        }
-        GUILayout.EndHorizontal();
+        
         GUILayout.Space(15);
         GUILayout.BeginHorizontal();
         GUILayout.Space(24);
@@ -95,7 +88,7 @@ public class LayaAir3D : EditorWindow
 
         }
 
-        //��
+        //??
         GUILayout.BeginHorizontal();
         GUILayout.Space(25);
         GUILayout.Box("", GUILayout.Height(1), GUILayout.Width(position.width - 50));
@@ -151,7 +144,7 @@ public class LayaAir3D : EditorWindow
             GUILayout.EndVertical();
         }
         //---------------------------------------OtherSetting------------------------------------------
-        //��
+        //??
         GUILayout.BeginHorizontal();
         GUILayout.Space(25);
         GUILayout.Box("", GUILayout.Height(1), GUILayout.Width(position.width - 50));
@@ -181,10 +174,10 @@ public class LayaAir3D : EditorWindow
         }
 
 
-        //��
+        //??
         GUILayout.BeginHorizontal();
-        GUILayout.Space(25);
-        GUILayout.Box("", GUILayout.Height(1), GUILayout.Width(position.width - 50));
+        GUILayout.Space(21);
+        GUILayout.Box("", GUILayout.Height(1), GUILayout.Width(position.width - 60));
         GUILayout.EndHorizontal();
 
         GUILayout.EndScrollView();
@@ -200,7 +193,7 @@ public class LayaAir3D : EditorWindow
 
         GUILayout.BeginHorizontal();
         GUILayout.Space(21);
-        GUILayout.Label(LanguageConfig.str_SavePath, GUILayout.Width(65));
+        GUILayout.Label(LanguageConfig.str_SavePath, GUILayout.Width(69), GUILayout.ExpandWidth(false));
         string savePath = ExportConfig.SAVEPATH;
         savePath = GUILayout.TextField(savePath, GUILayout.Height(21));
 
@@ -219,6 +212,16 @@ public class LayaAir3D : EditorWindow
             this.Repaint();
         }
         GUILayout.Space(21);
+        GUILayout.EndHorizontal();
+        GUILayout.Space(21);
+        
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(21);
+        GUIContent c22 = new GUIContent(LanguageConfig.str_LayaAirExport, exporttu);
+        if (GUILayout.Button(c22, GUILayout.Height(30), GUILayout.Width(position.width - 45)))
+        {
+            LayaAir3Export.ExportScene();
+        }
         GUILayout.EndHorizontal();
 
         GUILayout.Space(30);
