@@ -676,7 +676,7 @@ public class LayaAir3Export
         JSONObject enterNode = new JSONObject(JSONObject.Type.OBJECT);
         statuesNode.Add(enterNode);
         enterNode.AddField("id", "-1");
-        enterNode.AddField("name", "����");
+        enterNode.AddField("name", "进入");
         enterNode.AddField("speed", 1);
         enterNode.AddField("clipEnd", 1);
         enterNode.AddField("x", enterPostion.x);
@@ -704,7 +704,7 @@ public class LayaAir3Export
         JSONObject anyNode = new JSONObject(JSONObject.Type.OBJECT);
         statuesNode.Add(anyNode);
         anyNode.AddField("id", "-2");
-        anyNode.AddField("name", "�κ�״̬");
+        anyNode.AddField("name", "任何状态");
         anyNode.AddField("speed", 1);
         anyNode.AddField("clipEnd", 1);
         anyNode.AddField("x", anyPostion.x);

@@ -87,7 +87,6 @@ class GameObjectUitls
         BoxCollider boxCollider = gameObject.GetComponent<BoxCollider>();
         SphereCollider sphereCollider = gameObject.GetComponent<SphereCollider>();
         CapsuleCollider capsuleCollider = gameObject.GetComponent<CapsuleCollider>();
-        //���Meshcoliser
         MeshCollider meshcollider = gameObject.GetComponent<MeshCollider>();
 
 
@@ -101,7 +100,6 @@ class GameObjectUitls
         FixedJoint fixedJoint = gameObject.GetComponent<FixedJoint>();
         ConfigurableJoint configurableJoint = gameObject.GetComponent<ConfigurableJoint>();
 
-        // todo ͬʱ���ڼ��, ��֧�� reflectionProbe ������������� 
         ReflectionProbe reflectionProbe = gameObject.GetComponent<ReflectionProbe>();
         LODGroup lodGroup = gameObject.GetComponent<LODGroup>();
 
