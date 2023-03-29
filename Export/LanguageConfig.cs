@@ -1,11 +1,13 @@
 using System.Xml;
+using UnityEditor;
+using UnityEngine;
 
 public class LanguageConfig 
 {
     public enum languages
     {
         English = 0,
-        中文 = 1,
+        Chinese = 1,
     }
     public static string str_Scene;
     public static string str_Sprite3D;
@@ -40,7 +42,7 @@ public class LanguageConfig
     public static languages GetLanguages()
     {
         if (language == -1) {
-            return languages.中文;
+            return languages.Chinese;
         }
         else
         {
@@ -63,6 +65,18 @@ public class LanguageConfig
     {
         int index = ((int)GetLanguages());
         ReadLanguage(index);
+    }
+
+    public static string GetPath(string _scriptName)
+    {
+        string[] path = UnityEditor.AssetDatabase.FindAssets(_scriptName);
+        if(path.Length>1)
+        {
+            Debug.LogError("有同名文件"+_scriptName+"获取路径失败");
+            return null;
+        }
+        string _path = AssetDatabase.GUIDToAssetPath(path[0]).Replace((@"Export"+ @"/"+_scriptName+".cs"),"");
+        return _path;
     }
 
     private static void ReadLanguage(int index)

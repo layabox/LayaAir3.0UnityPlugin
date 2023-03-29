@@ -33,6 +33,7 @@ internal class AboutLayaAir : EditorWindow
 public class Setting : EditorWindow
 {
     private static Setting setting;
+    int sleIndex = 0;
 
     
     [MenuItem("LayaAir3D/Setting")]
@@ -48,7 +49,19 @@ public class Setting : EditorWindow
     {
         GUILayout.BeginHorizontal();
         GUILayout.Label("", GUILayout.Width(15));
-        languages currentLanguage = (languages)EditorGUILayout.EnumPopup("Language",LanguageConfig.GetLanguages());
+        string[] selections = new[] { "English", "中文" };
+        int languageIndex = EditorGUILayout.Popup("Language",sleIndex, selections);
+        sleIndex = languageIndex;
+        languages currentLanguage = languages.English;
+        switch (languageIndex)
+        {
+            case 0: currentLanguage = languages.English;
+                break;
+            case 1: currentLanguage = languages.Chinese;
+                break;
+            default: currentLanguage = languages.Chinese;
+                break;
+        }
         if (LanguageConfig.setLanguages(currentLanguage))
         {
             if (LayaAir3D.layaWindow != null)
