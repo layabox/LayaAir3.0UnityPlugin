@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 
 namespace Util
@@ -183,9 +184,22 @@ namespace Util
             }
         }
 
+        static string GetPath(string _scriptName)
+        {
+            string[] path = UnityEditor.AssetDatabase.FindAssets(_scriptName);
+            if(path.Length>1)
+            {
+                Debug.LogError("File Name Clash"+_scriptName+"Get Path ERROR!!");
+                return null;
+            }
+            string _path = AssetDatabase.GUIDToAssetPath(path[0]).Replace((@"Export" + @"/"+_scriptName+".cs"),"");
+            return _path;
+        }
+
         public static string getPluginResUrl(string url)
         {
-            return "Assets/LayaAir3.0UnityPlugin/" + url;
+            string rootPath = GetPath("LanguageConfig");
+            return rootPath + url;
         }
 
     }

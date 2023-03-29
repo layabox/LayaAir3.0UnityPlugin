@@ -1,5 +1,7 @@
 using System.IO;
 using System.Xml;
+using UnityEngine;
+
 public class ExportConfig
 {
     private static bool _updateConfig = false;
