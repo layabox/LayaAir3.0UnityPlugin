@@ -71,7 +71,7 @@ internal class TextureFile : FileData
         }
         string path = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
-        if (import == null)//dds?????????????
+        if (import == null)
         {
             Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
             return;
@@ -97,6 +97,7 @@ internal class TextureFile : FileData
          {*/
         importData.AddField("generateMipmap", true);
         importData.AddField("mipmapFilter", 1);
+        importData.AddField("anisoLevel", import.anisoLevel);
         /*}*/
         if (import.alphaSource == TextureImporterAlphaSource.FromInput)
         {
@@ -107,7 +108,6 @@ internal class TextureFile : FileData
         this._constructParams.Add(texture.height);
         if (texture.format == TextureFormat.RGB24 || texture.format == TextureFormat.DXT1 || texture.format == TextureFormat.DXT1Crunched)
         {
-            //?????
             this._format = 0;
         }
         else
