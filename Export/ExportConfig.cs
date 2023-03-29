@@ -2,10 +2,9 @@ using System.IO;
 using System.Xml;
 public class ExportConfig
 {
-    private static string EditorConfig = "Assets/LayaAir3.0UnityPlugin/Configuration.xml";
     private static bool _updateConfig = false;
     //场景 or 预制体
-    private static int _FirstlevelMenu;
+    private static int _FirstlevelMenu = -1;
     //忽略未激活节点
     private static bool _IgnoreNotActiveGameObject;
     //批量导出一级节点
@@ -189,12 +188,13 @@ public class ExportConfig
     }
     public static void initConfig()
     {
-        if (_FirstlevelMenu != null)
+        if (_FirstlevelMenu>=0)
         {
             return;
         }
+        string configUrl = getConfig();
         XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.Load(EditorConfig);
+        xmlDoc.Load(configUrl);
         XmlNode xn = xmlDoc.SelectSingleNode("LayaExportSetting");
         FirstlevelMenu = int.Parse(xn.SelectSingleNode("FirstlevelMenu").InnerText);
         IgnoreNotActiveGameObject = bool.Parse(xn.SelectSingleNode("IgnoreNotActiveGameObject").InnerText);
@@ -216,8 +216,9 @@ public class ExportConfig
             return;
         }
         _updateConfig = false;
+        string configUrl = getConfig();
         XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.Load(EditorConfig);
+        xmlDoc.Load(configUrl);
         XmlNode xn = xmlDoc.SelectSingleNode("LayaExportSetting");
         xn.SelectSingleNode("FirstlevelMenu").InnerText = FirstlevelMenu.ToString();
         xn.SelectSingleNode("IgnoreNotActiveGameObject").InnerText = IgnoreNotActiveGameObject.ToString();
@@ -230,7 +231,12 @@ public class ExportConfig
         xn.SelectSingleNode("CustomizeDirectory").InnerText = CustomizeDirectory.ToString();
         xn.SelectSingleNode("CustomizeDirectoryName").InnerText = CustomizeDirectoryName;
         xn.SelectSingleNode("SavePath").InnerText = SAVEPATH;
-        xmlDoc.Save(EditorConfig);
+        xmlDoc.Save(configUrl);
+    }
+
+    private static string getConfig()
+    {
+        return Util.FileUtil.getPluginResUrl("Configuration.xml");
     }
 
     public static void ResetConfig()

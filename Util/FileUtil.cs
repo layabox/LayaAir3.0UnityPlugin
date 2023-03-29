@@ -183,5 +183,10 @@ namespace Util
             }
         }
 
+        public static string getPluginResUrl(string url)
+        {
+            return "Assets/LayaAir3.0UnityPlugin/" + url;
+        }
+
     }
 }

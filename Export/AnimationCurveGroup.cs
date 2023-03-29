@@ -25,11 +25,8 @@ public class FrameInfo
     public int oriderIndex;
     public uint frameIndex;
 }
-public class CustomAnimationCurve
-{
-    public Keyframe[] keys;
-}
 
+//动画帧信息
 public struct AniNodeFrameData
 {
     public UInt16 startTimeIndex;
@@ -38,6 +35,7 @@ public struct AniNodeFrameData
     public float[] valueNumbers;
 }
 
+//动画节点信息
 public struct AniNodeData
 {
     public Byte type;
@@ -100,6 +98,7 @@ public class FrameData
     }
 }
 
+//所有动作帧节点数据
 class CustomClipCurveData
 {
     private Dictionary<uint, Keyframe> m_keyMap;
@@ -302,7 +301,7 @@ public class AnimationCurveGroup
         List<string> props;
         if (!AnimationCurveGroup.keyFrameConfigs.TryGetValue(this._keyType, out props))
         {
-            Debug.LogError("not get the Key Value Type" + this._keyType);
+            Debug.LogError("Not get the Key Value Type" + this._keyType);
             return false;
         }
         foreach (string key in props)

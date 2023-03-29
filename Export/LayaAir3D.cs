@@ -10,7 +10,6 @@ public class LayaAir3D : EditorWindow
     public static bool MeshSetting;
     private static bool OtherSetting;
 
-    // QTE ¶à³¡¾°ÅúÁ¿µ¼³ö
     public static bool Scenes;
     public static int sceneIndex;
 
@@ -28,7 +27,7 @@ public class LayaAir3D : EditorWindow
         LanguageConfig.configLanguage();
         layaWindow = (LayaAir3D)EditorWindow.GetWindow(typeof(LayaAir3D));
         exporttu = new Texture2D(52, 52);
-        Util.FileUtil.FileStreamLoadTexture("Assets/LayaAir3D/LayaResouce/Export.png", exporttu);
+        Util.FileUtil.FileStreamLoadTexture(Util.FileUtil.getPluginResUrl("LayaResouce/Export.png"), exporttu);
     }
 
     [MenuItem("LayaAir3D/Help/Study")]
@@ -51,7 +50,7 @@ public class LayaAir3D : EditorWindow
    
     void OnGUI()
     {
-        //½áÊø
+        //ï¿½ï¿½ï¿½ï¿½
         ExportConfig.initConfig();
         LanguageConfig.configLanguage();
 
@@ -96,7 +95,7 @@ public class LayaAir3D : EditorWindow
 
         }
 
-        //Ïß
+        //ï¿½ï¿½
         GUILayout.BeginHorizontal();
         GUILayout.Space(25);
         GUILayout.Box("", GUILayout.Height(1), GUILayout.Width(position.width - 50));
@@ -152,7 +151,7 @@ public class LayaAir3D : EditorWindow
             GUILayout.EndVertical();
         }
         //---------------------------------------OtherSetting------------------------------------------
-        //Ïß
+        //ï¿½ï¿½
         GUILayout.BeginHorizontal();
         GUILayout.Space(25);
         GUILayout.Box("", GUILayout.Height(1), GUILayout.Width(position.width - 50));
@@ -182,7 +181,7 @@ public class LayaAir3D : EditorWindow
         }
 
 
-        //Ïß
+        //ï¿½ï¿½
         GUILayout.BeginHorizontal();
         GUILayout.Space(25);
         GUILayout.Box("", GUILayout.Height(1), GUILayout.Width(position.width - 50));

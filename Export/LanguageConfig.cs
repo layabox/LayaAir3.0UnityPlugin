@@ -76,12 +76,12 @@ public class LanguageConfig
         XmlNode xn;
         if (index == 0)
         {
-            xmlDoc.Load("Assets/LayaAir3.0UnityPlugin/English.xml");
+            xmlDoc.Load(Util.FileUtil.getPluginResUrl("English.xml"));
             xn = xmlDoc.SelectSingleNode("EnglishLanguage");
         }
         else
         {
-            xmlDoc.Load("Assets/LayaAir3.0UnityPlugin/Chinese.xml");
+            xmlDoc.Load(Util.FileUtil.getPluginResUrl("Chinese.xml"));
             xn = xmlDoc.SelectSingleNode("ChineseLanguage");
         }
 

@@ -12,6 +12,8 @@ public class LayaAir3Export
     public static void ExportScene()
     {
         GameObjectUitls.init();
+        MetarialUitls.init();
+
         TextureFile.init();
         AnimationCurveGroup.init();
         LayaInstance = 1;
@@ -75,7 +77,6 @@ public class LayaAir3Export
 
 
 
-        //��պ�
         Material skyBoxMaterial = RenderSettings.skybox;
         if (skyBoxMaterial != null)
         {
@@ -87,7 +88,6 @@ public class LayaAir3Export
             scene3dNode.AddField("skyRenderer", skyRender);
         }
 
-        //��������ɫ
         JSONObject ambientColor = JsonUtils.GetColorObject(RenderSettings.ambientLight);
         scene3dNode.AddField("ambientColor", ambientColor);
 
@@ -112,9 +112,6 @@ public class LayaAir3Export
         }
 
 
-        //saveLightMapFile(props);
-
-        //���
         scene3dNode.AddField("enableFog", RenderSettings.fog);
         scene3dNode.AddField("fogStart", RenderSettings.fogStartDistance);
         scene3dNode.AddField("fogRange", RenderSettings.fogEndDistance - RenderSettings.fogStartDistance);
@@ -163,16 +160,16 @@ public class LayaAir3Export
     private static JSONObject getSkyMaterialData(Material material, JsonFile file)
     {
         string materialPath = getMatertialPath(material);
-        string materialLmatPath = cleanIllegalChar(materialPath.Split('.')[0], false) + ".lmat";
+        string materialLmatPath = GameObjectUitls.cleanIllegalChar(materialPath.Split('.')[0], false) + ".lmat";
         JsonFile materialFile = new JsonFile(materialLmatPath, new JSONObject(JSONObject.Type.OBJECT));
         exportFiles.Add(materialFile.filePath, materialFile);
         if(material.shader.name == "Skybox/6 Sided")
         {
-            GameObjectUitls.writeSkyMetarial(material, materialFile, exportFiles);
+            MetarialUitls.WriteSkyMetarial(material, materialFile, exportFiles);
         }
         else
         {
-            GameObjectUitls.writeMetarial(material, materialFile, exportFiles);
+            MetarialUitls.WriteMetarial(material, materialFile, exportFiles);
         }
         JSONObject materFiledata = new JSONObject(JSONObject.Type.OBJECT);
         materFiledata.AddField("_$uuid", materialFile.uuid);
@@ -182,13 +179,13 @@ public class LayaAir3Export
     private static JSONObject getMaterialData(Material material,JsonFile file)
     {
         string materialPath = getMatertialPath(material);
-        string materialLmatPath = cleanIllegalChar(materialPath.Split('.')[0], false) + ".lmat";
+        string materialLmatPath = GameObjectUitls.cleanIllegalChar(materialPath.Split('.')[0], false) + ".lmat";
         JsonFile jsonFile;
         if (!exportFiles.ContainsKey(materialLmatPath))
         {
             JSONObject materialData = new JSONObject(JSONObject.Type.OBJECT);
             jsonFile = new JsonFile(materialLmatPath, materialData);
-            GameObjectUitls.writeMetarial(material, jsonFile, exportFiles);
+            MetarialUitls.WriteMetarial(material, jsonFile, exportFiles);
             exportFiles.Add(jsonFile.filePath, jsonFile);
         }
         else
@@ -225,15 +222,15 @@ public class LayaAir3Export
             Debug.LogWarning("LayaAir3D Warning(Code:1001) : " + gameObject.name + "'s MeshFilter Component Mesh data can't be null!");
         }
 
-        string meshName = cleanIllegalChar(mesh.name, true);
+        string meshName = GameObjectUitls.cleanIllegalChar(mesh.name, true);
         string path = AssetDatabase.GetAssetPath(mesh.GetInstanceID());
-        string lmPath = cleanIllegalChar(path.Split('.')[0], false) + "-" + meshName;
+        string lmPath = GameObjectUitls.cleanIllegalChar(path.Split('.')[0], false) + "-" + meshName;
         lmPath += ".lm";
         BufferFile meshFile;
         if (!exportFiles.ContainsKey(lmPath))
         {
             meshFile = new BufferFile(lmPath);
-            GameObjectUitls.writeMesh(mesh, meshName, meshFile.filesteam);
+            MeshUitls.writeMesh(mesh, meshName, meshFile.filesteam);
             exportFiles.Add(meshFile.filePath, meshFile);
             if (mesh.uv2.Length > 0 && ExportConfig.AutoVerticesUV1)
             {
@@ -301,17 +298,17 @@ public class LayaAir3Export
         Mesh mesh = skinnedMeshRenderer.sharedMesh;
         if (mesh != null)
         {
-            string meshName = cleanIllegalChar(mesh.name, true);
+            string meshName = GameObjectUitls.cleanIllegalChar(mesh.name, true);
             string path2 = AssetDatabase.GetAssetPath(mesh.GetInstanceID());
 
-            string lmPath2 = cleanIllegalChar(path2.Split('.')[0], false) + "-" + meshName;
+            string lmPath2 = GameObjectUitls.cleanIllegalChar(path2.Split('.')[0], false) + "-" + meshName;
             lmPath2 += ".lm";
 
             BufferFile meshFile;
             if (!exportFiles.ContainsKey(lmPath2))
             {
                 meshFile = new BufferFile(lmPath2);
-                GameObjectUitls.writeSkinnerMesh(skinnedMeshRenderer, meshName, meshFile.filesteam);
+                MeshUitls.writeSkinnerMesh(skinnedMeshRenderer, meshName, meshFile.filesteam);
                 exportFiles.Add(meshFile.filePath, meshFile);
             }
             else
@@ -383,22 +380,7 @@ public class LayaAir3Export
 
         components.Add(compData);
     }
-    public static string cleanIllegalChar(string str, bool heightLevel)
-    {
-        str = str.Replace("<", "_");
-        str = str.Replace(">", "_");
-        str = str.Replace("\"", "_");
-        str = str.Replace("|", "_");
-        str = str.Replace("?", "_");
-        str = str.Replace("*", "_");
-        str = str.Replace("#", "_");
-        if (heightLevel)
-        {
-            str = str.Replace("/", "_");
-            str = str.Replace(":", "_");
-        }
-        return str;
-    }
+   
 
     private static int getInstanceIdByGameObject(GameObject gameObject)
     {
@@ -499,17 +481,6 @@ public class LayaAir3Export
 
     }
 
-    public static bool IsPrefabInstance(UnityEngine.GameObject obj)
-    {
-        var type = PrefabUtility.GetPrefabAssetType(obj);
-        var status = PrefabUtility.GetPrefabInstanceStatus(obj);
-        // �Ƿ�ΪԤ����ʵ���ж�
-        if (type == PrefabAssetType.NotAPrefab || status == PrefabInstanceStatus.NotAPrefab)
-        {
-            return false;
-        }
-        return true;
-    }
     private static JSONObject getLodGroup(GameObject gameObject)
     {
         LODGroup lodGroup = gameObject.GetComponent<LODGroup>();
@@ -578,7 +549,7 @@ public class LayaAir3Export
             return null;
         }
         string path = AssetDatabase.GetAssetPath(animatorController.GetInstanceID());
-        string animatorControllerPath = cleanIllegalChar(path.Split('.')[0], false) + ".controller";
+        string animatorControllerPath = GameObjectUitls.cleanIllegalChar(path.Split('.')[0], false) + ".controller";
         JsonFile controlFile;
         if (!exportFiles.ContainsKey(animatorControllerPath))
         {
@@ -762,9 +733,9 @@ public class LayaAir3Export
 
     private static BufferFile getAnimationClipBuffer(AnimationClip aniclip, GameObject gameObject)
     {
-        string clipName = cleanIllegalChar(aniclip.name, true);
+        string clipName = GameObjectUitls.cleanIllegalChar(aniclip.name, true);
         string path = AssetDatabase.GetAssetPath(aniclip.GetInstanceID());
-        string laniPath = cleanIllegalChar(path.Split('.')[0], false) + "-" + clipName + ".lani";
+        string laniPath = GameObjectUitls.cleanIllegalChar(path.Split('.')[0], false) + "-" + clipName + ".lani";
 
         BufferFile laniFile;
         if (!exportFiles.ContainsKey(laniPath))

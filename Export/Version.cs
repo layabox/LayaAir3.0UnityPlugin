@@ -11,7 +11,7 @@ internal class AboutLayaAir : EditorWindow
     {
         version = (AboutLayaAir)EditorWindow.GetWindow(typeof(AboutLayaAir));
         Texture2D wtest = new Texture2D(16, 16);
-        Util.FileUtil.FileStreamLoadTexture("Assets/LayaAir3D/LayaResouce/layabox.png",wtest);
+        Util.FileUtil.FileStreamLoadTexture(Util.FileUtil.getPluginResUrl("LayaResouce/layabox.png"), wtest);
         GUIContent titleContent = new GUIContent("LayaAir3D", wtest);
         version.titleContent = titleContent;
 
@@ -40,7 +40,7 @@ public class Setting : EditorWindow
     {
         setting = (Setting)EditorWindow.GetWindow(typeof(Setting));
         Texture2D title = new Texture2D(16, 16);
-        Util.FileUtil.FileStreamLoadTexture("Assets/LayaAir3D/LayaResouce/layabox.png", title);
+        Util.FileUtil.FileStreamLoadTexture(Util.FileUtil.getPluginResUrl("LayaResouce/layabox.png"), title);
         GUIContent titleContent = new GUIContent("LayaAir3D", title);
         setting.titleContent = titleContent;
     }
