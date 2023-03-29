@@ -67,17 +67,6 @@ public class LanguageConfig
         ReadLanguage(index);
     }
 
-    public static string GetPath(string _scriptName)
-    {
-        string[] path = UnityEditor.AssetDatabase.FindAssets(_scriptName);
-        if(path.Length>1)
-        {
-            Debug.LogError("有同名文件"+_scriptName+"获取路径失败");
-            return null;
-        }
-        string _path = AssetDatabase.GUIDToAssetPath(path[0]).Replace((@"Export"+ @"/"+_scriptName+".cs"),"");
-        return _path;
-    }
 
     private static void ReadLanguage(int index)
     {
