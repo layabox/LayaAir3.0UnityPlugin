@@ -303,6 +303,15 @@ internal class TextureFile : FileData
         }
     }
 
+    public void gammaColorsToLinear(Color[] gColor)
+    {
+        for (var i = 0; i < gColor.Length; ++i)
+        {
+            gColor[i].r = Mathf.GammaToLinearSpace(gColor[i].r);
+            gColor[i].g = Mathf.GammaToLinearSpace(gColor[i].g);
+            gColor[i].b = Mathf.GammaToLinearSpace(gColor[i].b);
+        }
+    }
     public override void SaveFile(Dictionary<string, FileData> exportFiles)
     {
         string filePath = outPath;
@@ -319,6 +328,11 @@ internal class TextureFile : FileData
             if (this._rgbmEncoding)
             {
                 Color[] pixels = this._texture.GetPixels(0);
+                if (QualitySettings.activeColorSpace == ColorSpace.Gamma)
+                {
+                    Debug.Log("Current color space is gamma.. Your Img will change to Linear Space");
+                    gammaColorsToLinear(pixels);
+                }
                 this.exportHDRFile(filePath, pixels, this._texture.height, this._texture.width);
             }
             else if (this._format == 1)
