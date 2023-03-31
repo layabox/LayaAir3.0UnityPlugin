@@ -440,6 +440,14 @@ public class LayaAir3Export
         {
             component.Add(JsonUtils.GetDirectionalLightComponentData(gameObject));
         }
+        if (components.IndexOf(ComponentType.PointLight) != -1)
+        {
+            component.Add(JsonUtils.GetPointLightComponentData(gameObject));
+        }
+        if (components.IndexOf(ComponentType.SpotLight) != -1)
+        {
+            component.Add(JsonUtils.GetSpotLightComponentData(gameObject));
+        }
         //Camera
         if (components.IndexOf(ComponentType.Camera) != -1)
         {
