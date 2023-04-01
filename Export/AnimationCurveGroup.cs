@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using FileUtil = Util.FileUtil;
 
 
 public enum KeyFrameValueType
@@ -88,6 +89,7 @@ public class FrameData
         int index = this._props.IndexOf(key);
         if (index < 0)
         {
+            FileUtil.setStatuse(false);
             Debug.LogError("not get the prop : " + key);
         }
         this.inTangentNumbers[index] = value.inTangent;
@@ -301,6 +303,7 @@ public class AnimationCurveGroup
         List<string> props;
         if (!AnimationCurveGroup.keyFrameConfigs.TryGetValue(this._keyType, out props))
         {
+            FileUtil.setStatuse(false);
             Debug.LogError("Not get the Key Value Type" + this._keyType);
             return false;
         }
@@ -343,6 +346,7 @@ public class AnimationCurveGroup
         List<string> props;
         if (!AnimationCurveGroup.keyFrameConfigs.TryGetValue(this._keyType, out props))
         {
+            FileUtil.setStatuse(false);
             Debug.LogError("not get the Key Value Type" + this._keyType);
             return;
         }
@@ -414,6 +418,7 @@ public class AnimationCurveGroup
             }
             else
             {
+                FileUtil.setStatuse(false);     
                 Debug.LogError("not get the frameIndex by time��" + frame.floatTime.ToString());
             }
 

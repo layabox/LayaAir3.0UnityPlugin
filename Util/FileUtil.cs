@@ -8,6 +8,7 @@ namespace Util
 {
     internal class FileUtil
     {
+        static bool ExportStatuse = true;
         //存储文件
         public static FileStream saveFile(string fileName, JSONObject node = null)
         {
@@ -26,6 +27,16 @@ namespace Util
             writer.Close();
 
             return fs;
+        }
+
+        static public void setStatuse(bool statuse)
+        {
+            FileUtil.ExportStatuse = statuse;
+        }
+
+        static public bool getStatuse()
+        {
+            return FileUtil.ExportStatuse;
         }
 
         public static FileStream saveFile(string fileName)
@@ -189,6 +200,7 @@ namespace Util
             string[] path = UnityEditor.AssetDatabase.FindAssets(_scriptName);
             if(path.Length>1)
             {
+                FileUtil.setStatuse(false);
                 Debug.LogError("File Name Clash"+_scriptName+"Get Path ERROR!!");
                 return null;
             }

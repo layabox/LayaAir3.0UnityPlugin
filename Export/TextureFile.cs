@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEngine;
+using FileUtil = Util.FileUtil;
+
 
 // [DllImport("OpenEXRPlugin")]
 // private static extern void EncodeHDR(Texture2D texture, string fileName);
@@ -71,8 +73,9 @@ internal class TextureFile : FileData
         }
         string path = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
-        if (import == null)
+        if (import == null)//dds?????????????
         {
+            FileUtil.setStatuse(false);
             Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
             return;
         }
@@ -108,10 +111,12 @@ internal class TextureFile : FileData
         this._constructParams.Add(texture.height);
         if (texture.format == TextureFormat.RGB24 || texture.format == TextureFormat.DXT1 || texture.format == TextureFormat.DXT1Crunched)
         {
+            // RGB
             this._format = 0;
         }
         else
         {
+            // RGBA
             this._format = 1;
         }
         this._constructParams.Add(this._format);
@@ -318,6 +323,7 @@ internal class TextureFile : FileData
         string folder = Path.GetDirectoryName(filePath);
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
+        Debug.Log(this._texture.format);
         if (this._format == 0)
         {
             byte[] bytes = this._texture.EncodeToJPG(JPGQuality);

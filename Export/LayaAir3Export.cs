@@ -4,6 +4,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using FileUtil = Util.FileUtil;
 
 public class LayaAir3Export
 {
@@ -35,6 +36,11 @@ public class LayaAir3Export
         {
             file.Value.SaveFile(exportFiles);
         }
+
+        if (FileUtil.getStatuse())
+            Debug.Log("Exported Successful");
+        else
+            Debug.Log("Exporting have some error !!!");
     }
 
    
