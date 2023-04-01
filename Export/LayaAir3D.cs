@@ -95,9 +95,6 @@ public class LayaAir3D : EditorWindow
 
             string json = request.downloadHandler.text;
             ConfigInfo jsonData = JsonUtility.FromJson<ConfigInfo>(json);
-
-            Debug.Log("Study: " + jsonData.Study);
-            Debug.Log("LayaAsk: " + jsonData.LayaAsk);
             layaAskURL = jsonData.LayaAsk;
             studyURL = jsonData.Study;
         }
