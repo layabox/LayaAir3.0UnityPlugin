@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using Util;
 
 
 public enum DefindsFrom
@@ -554,6 +555,7 @@ internal class MetarialUitls
     {
         if (!MaterialPropsConfigs.ContainsKey(shaderName))
         {
+            FileUtil.setStatuse(false);
             Debug.LogError("LayaAir3D Warning : not get the shader config " + shaderName);
             return null;
         }
@@ -579,6 +581,7 @@ internal class MetarialUitls
         string shaderName = material.shader.name;
         if (!MaterialPropsConfigs.ContainsKey(shaderName))
         {
+            FileUtil.setStatuse(false);
             Debug.LogError("LayaAir3D Warning : not get the shader config " + shaderName);
             return;
         }
@@ -723,6 +726,7 @@ internal class MetarialUitls
         string shaderName = material.shader.name;
         if (!MaterialPropsConfigs.ContainsKey(shaderName))
         {
+            FileUtil.setStatuse(false);
             Debug.LogError("LayaAir3D Warning : not get the shader config " + shaderName);
             return;
         }

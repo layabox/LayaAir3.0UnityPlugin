@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEngine;
+using FileUtil = Util.FileUtil;
+
 
 // [DllImport("OpenEXRPlugin")]
 // private static extern void EncodeHDR(Texture2D texture, string fileName);
@@ -71,8 +73,9 @@ internal class TextureFile : FileData
         }
         string path = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
-        if (import == null)
+        if (import == null)//dds?????????????
         {
+            FileUtil.setStatuse(false);
             Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
             return;
         }
@@ -112,10 +115,12 @@ internal class TextureFile : FileData
         this._constructParams.Add(texture.height);
         if (texture.format == TextureFormat.RGB24 || texture.format == TextureFormat.DXT1 || texture.format == TextureFormat.DXT1Crunched)
         {
+            // RGB
             this._format = 0;
         }
         else
         {
+            // RGBA
             this._format = 1;
         }
         this._constructParams.Add(this._format);
@@ -307,12 +312,22 @@ internal class TextureFile : FileData
         }
     }
 
+    public void gammaColorsToLinear(Color[] gColor)
+    {
+        for (var i = 0; i < gColor.Length; ++i)
+        {
+            gColor[i].r = Mathf.GammaToLinearSpace(gColor[i].r);
+            gColor[i].g = Mathf.GammaToLinearSpace(gColor[i].g);
+            gColor[i].b = Mathf.GammaToLinearSpace(gColor[i].b);
+        }
+    }
     public override void SaveFile(Dictionary<string, FileData> exportFiles)
     {
         string filePath = outPath;
         string folder = Path.GetDirectoryName(filePath);
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
+        Debug.Log(this._texture.format);
         if (this._format == 0)
         {
             byte[] bytes = this._texture.EncodeToJPG(JPGQuality);
@@ -323,6 +338,11 @@ internal class TextureFile : FileData
             if (this._rgbmEncoding)
             {
                 Color[] pixels = this._texture.GetPixels(0);
+                if (QualitySettings.activeColorSpace == ColorSpace.Gamma)
+                {
+                    Debug.Log("Current color space is gamma.. Your Img will change to Linear Space");
+                    gammaColorsToLinear(pixels);
+                }
                 this.exportHDRFile(filePath, pixels, this._texture.height, this._texture.width);
             }
             else if (this._format == 1)
