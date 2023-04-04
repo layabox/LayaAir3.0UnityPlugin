@@ -1,15 +1,10 @@
 using System;
 using System.Collections;
-using Unity.EditorCoroutines.Editor;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.Networking;
+using marijnz.EditorCoroutines;
 
-public class EditorCoroutineRunner : MonoBehaviour
-{
-    // 空的 MonoBehaviour 类，只用来启动协程
-}
 public class LayaAir3D : EditorWindow
 {
     private static Vector2 ScrollPosition;
@@ -28,8 +23,8 @@ public class LayaAir3D : EditorWindow
     public static LayaAir3D layaWindow;
 
     private static Texture2D exporttu;
-    private static string studyURL = "";
-    private static string layaAskURL = "";
+   
+    
 
     [MenuItem("LayaAir3D/Export Tool", false, 1)]
     public static void initLayaExport()
@@ -43,65 +38,17 @@ public class LayaAir3D : EditorWindow
     [MenuItem("LayaAir3D/Help/Study")]
     static void initLayaStudy()
     {
-        Application.OpenURL(studyURL);
+        ServeConfig.getInstance().openurl(URLType.StudyURL);
     }
 
     [MenuItem("LayaAir3D/Help/Answsers")]
     static void initLayaAsk()
     {
-        Application.OpenURL(layaAskURL);
-    }
+        ServeConfig.getInstance().openurl(URLType.LayaAskURL);
 
-    public EditorCoroutineRunner go;
-
-    void OnEnable()
-    {
-        string url = "https://ldc-1251285021.cos.ap-shanghai.myqcloud.com/layaair/unity/ExportPlugin.conf";
-        go = new GameObject("EditorCoroutineRunner").AddComponent<EditorCoroutineRunner>();
-        var editorCoroutineRunner = go;
-
-        // 使用实例启动协程
-        editorCoroutineRunner.StartCoroutine(GetJSON(url));
-        editorCoroutineRunner.tag = "EditorOnly";
-        editorCoroutineRunner.enabled = false;
-
-
-        GameObject obj = GameObject.Find("EditorCoroutineRunner");
-
-        // 如果找到了指定名称的 GameObject，就延迟三秒后删除它
-        if (obj != null)
-        {
-            // 在编辑器中延迟三秒后销毁对象
-            EditorApplication.delayCall += () => GameObject.DestroyImmediate(obj);
-        }
-    }
-
-    public struct ConfigInfo
-    {
-        public string Study;
-        public string LayaAsk;
-    }
-    private static IEnumerator GetJSON(string url)
-    {
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            yield return request.SendWebRequest();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError($"Failed to load JSON: {request.error}");
-                yield break;
-            }
-
-            string json = request.downloadHandler.text;
-            ConfigInfo jsonData = JsonUtility.FromJson<ConfigInfo>(json);
-            layaAskURL = jsonData.LayaAsk;
-            studyURL = jsonData.Study;
-        }
     }
     void OnGUI()
     {
-        //????
         ExportConfig.initConfig();
         LanguageConfig.configLanguage();
 
