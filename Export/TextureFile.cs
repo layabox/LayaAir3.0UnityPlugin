@@ -81,6 +81,10 @@ internal class TextureFile : FileData
             import.textureType = TextureImporterType.Default;
             import.isReadable = true;
             import.textureCompression = TextureImporterCompression.Uncompressed;
+            TextureImporterPlatformSettings pc = import.GetPlatformTextureSettings("Standalone");
+            pc.overridden = true;
+            pc.format = TextureImporterFormat.RGBA32;
+            import.SetPlatformTextureSettings(pc);
             AssetDatabase.ImportAsset(path);
         }
         JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
