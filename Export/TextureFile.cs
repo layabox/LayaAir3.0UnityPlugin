@@ -104,7 +104,14 @@ internal class TextureFile : FileData
          {*/
         importData.AddField("generateMipmap", true);
         importData.AddField("mipmapFilter", 1);
-        importData.AddField("anisoLevel", import.anisoLevel);
+
+        int anisoLevel = 1;
+        if (import != null)
+        {
+            anisoLevel = texture.anisoLevel;
+        }
+        anisoLevel = Math.Min(anisoLevel*4,32);
+        importData.AddField("anisoLevel", anisoLevel);
         /*}*/
         if (import.alphaSource == TextureImporterAlphaSource.FromInput)
         {
@@ -169,14 +176,8 @@ internal class TextureFile : FileData
         }
 
         //anisoLevel
-        if (import != null)
-        {
-            this._propertyParams.AddField("anisoLevel", texture.anisoLevel);
-        }
-        else
-        {
-            this._propertyParams.AddField("anisoLevel", 0);
-        }
+       
+        this._propertyParams.AddField("anisoLevel", anisoLevel);
         string ext = Path.GetExtension(this.m_path).ToLower();
         this._rgbmEncoding = ext == ".hdr" || ext == ".exr";
         string[] lastName = this.m_path.Split('.');
@@ -327,7 +328,6 @@ internal class TextureFile : FileData
         string folder = Path.GetDirectoryName(filePath);
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
-        Debug.Log(this._texture.format);
         if (this._format == 0)
         {
             byte[] bytes = this._texture.EncodeToJPG(JPGQuality);
