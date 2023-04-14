@@ -483,6 +483,11 @@ public class LayaAir3Export
             component.Add(getAnimatorComponentData(gameObject));
         }
 
+        if (components.IndexOf(ComponentType.Animation) != -1)
+        {
+            component.Add(getAnimationComponentData(gameObject));
+        }
+
         if (components.IndexOf(ComponentType.ReflectionProbe) != -1)
         {
             component.Add(getReflectionProbe(gameObject));
@@ -552,6 +557,45 @@ public class LayaAir3Export
         compData.AddField("_reflectionsIblSamples", 128);
         return compData;
     }
+
+    private static JSONObject getAnimationComponentData(GameObject gameObject)
+    {
+        Animation animation = gameObject.GetComponent<Animation>();
+        AnimationClip clip = animation.clip;
+        string animatorControllerPath = clip.name + ".controller";
+       
+        JsonFile controlFile;
+        if (!exportFiles.ContainsKey(animatorControllerPath))
+        {
+            controlFile = new JsonFile(animatorControllerPath, new JSONObject(JSONObject.Type.OBJECT));
+            exportFiles.Add(controlFile.filePath, controlFile);
+            JSONObject controllData = controlFile.jsonData;
+            controllData.AddField("_$type", "Animator");
+            controllData.AddField("enabled", true);
+            controllData.AddField("controller", "null");
+            controllData.AddField("cullingMode", 0);
+            JSONObject controllerLayers = new JSONObject(JSONObject.Type.ARRAY);
+            AnimatorController animatorController = new AnimatorController();
+            animatorController.AddLayer("base layer");
+            animatorController.AddMotion(clip, 0);
+            AnimatorControllerLayer layer = animatorController.layers[0];
+            controllerLayers.Add(getAnimaterLayerData(layer, gameObject, true,clip));
+            controllData.AddField("controllerLayers", controllerLayers);
+        }
+        else
+        {
+            controlFile = exportFiles[animatorControllerPath] as JsonFile;
+        }
+
+        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
+        compData.AddField("_$type", "Animator");
+        JSONObject controller = new JSONObject(JSONObject.Type.OBJECT);
+        compData.AddField("controller", controller);
+        controller.AddField("_$type", "AnimationController");
+        controller.AddField("_$uuid", controlFile.uuid);
+
+        return compData;
+    }
     private static JSONObject getAnimatorComponentData(GameObject gameObject)
     {
         Animator animator = gameObject.GetComponent<Animator>();
@@ -599,7 +643,7 @@ public class LayaAir3Export
     }
 
 
-    private static JSONObject getAnimaterLayerData(AnimatorControllerLayer layer, GameObject gameObject,bool isbaseLayer)
+    private static JSONObject getAnimaterLayerData(AnimatorControllerLayer layer, GameObject gameObject,bool isbaseLayer,AnimationClip clip=null)
     {
         JSONObject layarNode = new JSONObject(JSONObject.Type.OBJECT);
         layarNode.AddField("_$type", "AnimatorControllerLayer");
@@ -650,8 +694,16 @@ public class LayaAir3Export
             statueNode.AddField("clipEnd", 1);
             statueNode.AddField("x", postion.x);
             statueNode.AddField("y", postion.y);
-
-            BufferFile laniFile = getAnimationClipBuffer(state.motion as AnimationClip, gameObject);
+            BufferFile laniFile;
+            if (state.motion == null)
+            {
+                laniFile = getAnimationClipBuffer(clip, gameObject);
+            }
+            else
+            {
+                laniFile = getAnimationClipBuffer(state.motion as AnimationClip, gameObject);
+            }
+           
             JSONObject clipData = new JSONObject(JSONObject.Type.OBJECT);
             clipData.AddField("_$type", "AnimationClip");
             clipData.AddField("_$uuid", laniFile.uuid);

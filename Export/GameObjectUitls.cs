@@ -26,6 +26,7 @@ public enum ComponentType
     ConfigurableJoint = 16,
     ReflectionProbe = 17,
     LodGroup = 18,
+    Animation = 19,
 }
 
 
@@ -151,6 +152,12 @@ class GameObjectUitls
         if (animator != null)
         {
             components.Add(ComponentType.Animator);
+        }
+
+        //Animator
+        if (animation != null)
+        {
+            components.Add(ComponentType.Animation);
         }
         //Camera
         if (camera != null)
