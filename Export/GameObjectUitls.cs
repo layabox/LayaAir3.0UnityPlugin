@@ -66,7 +66,6 @@ class GameObjectUitls
 
     public static List<ComponentType> componentsOnGameObject(GameObject gameObject)
     {
-
         List<ComponentType> components = new List<ComponentType>();
 
         Camera camera = gameObject.GetComponent<Camera>();
@@ -441,7 +440,6 @@ class GameObjectUitls
     public static void writeClip(AnimationClip aniclip, FileStream fs, GameObject gameObject, string clipName)
     {
 
-
         List<string> stringDatas = new List<string>();
         stringDatas.Add("ANIMATIONS");
         stringDatas.Add(clipName);
@@ -604,14 +602,21 @@ class GameObjectUitls
         for (int j = 0; j < startTimeList.Count; j++)
         {
             Util.FileUtil.WriteData(fs, (float)startTimeList[j]);
-        }
+        } 
 
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(clipName));//动画名字符索引
 
         float aniTotalTime = startTimeList.Count == 0 ? 0.0f : (float)startTimeList[startTimeList.Count - 1];
         Util.FileUtil.WriteData(fs, aniTotalTime);///动画总时长
-
-        Util.FileUtil.WriteData(fs, aniclip.isLooping);//动画是否循环
+        if(aniclip.wrapMode == WrapMode.Loop)
+        {
+            Util.FileUtil.WriteData(fs, true);
+        }
+        else
+        {
+            Util.FileUtil.WriteData(fs, aniclip.isLooping);//动画是否循环
+        }
+       
 
         Util.FileUtil.WriteData(fs, (UInt16)clipFrameRate);//frameRate
 

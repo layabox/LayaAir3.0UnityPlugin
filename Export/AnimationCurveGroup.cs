@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using System.Linq;
 using FileUtil = Util.FileUtil;
 
 
@@ -139,9 +140,8 @@ class CustomClipCurveData
     {
         uint frameIndex = AnimationCurveGroup.getFrameByTime(time);
         Keyframe keyframe;
-        if (this.m_keyMap.TryGetValue(frameIndex, out keyframe))
+        if (!this.m_keyMap.TryGetValue(frameIndex, out keyframe))
         {
-            // Get the current value of the curve at the insertion point
             float currentValue = curveData.curve.Evaluate(time);
             float derivative = (curveData.curve.Evaluate(time + 0.0001f) - currentValue) / 0.0001f;
 
@@ -299,7 +299,7 @@ public class AnimationCurveGroup
     {
         this.addFloatTime(start);
         this.addFloatTime(end);
-
+        var sort = from pair in this._timeLists orderby pair.Key ascending select pair;
         List<string> props;
         if (!AnimationCurveGroup.keyFrameConfigs.TryGetValue(this._keyType, out props))
         {
@@ -327,7 +327,7 @@ public class AnimationCurveGroup
             }
             customCurveData.createKeyMap();
         }
-        foreach (var timeValue in this._timeLists)
+        foreach (var timeValue in sort)
         {
             float floatTime = timeValue.Value;
             FrameData frameData = new FrameData(timeValue.Key, floatTime, props);
