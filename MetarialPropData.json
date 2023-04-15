@@ -238,6 +238,40 @@
             }
         ]
     },
+    "HDRP/Lit": {
+        "targeName": "PBR",
+        "textures": [
+            {
+                "uName": "_BaseColorMap",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            },
+            {
+                "uName": "_NormalMap",
+                "layaName": "u_NormalTexture",
+                "defind": "NORMALTEXTURE",
+                "isNormal": true
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_BaseColor",
+                "layaName": "u_AlbedoColor"
+            },
+            {
+                "uName": "_EmissionColor",
+                "layaName": "u_EmissionColor",
+                "hdrName": "u_EmissionIntensity"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_EMISSION",
+                "layaName": "EMISSION",
+                "from": 1
+            }
+        ]
+    },
     "Skybox/6 Sided": {
         "targeName": "SkyBox",
         "textures": [
@@ -338,6 +372,9 @@
                 "layaName": "u_Rotation"
             }
         ]
+    },
+    "SkyBox/Cubemap" : {
+        "targeName": "SkyBox"
     },
     "Legacy Shaders/Diffuse Fast": {
         "targeName": "BLINNPHONG",
