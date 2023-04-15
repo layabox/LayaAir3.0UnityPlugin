@@ -690,7 +690,7 @@ public class LayaAir3Export
             statueNode.AddField("_$type", "AnimatorState");
             statueNode.AddField("name", state.name);
             statueNode.AddField("speed", state.speed);
-            statueNode.AddField("clipStart", 0);
+            statueNode.AddField("clipStart", state.cycleOffset);
             statueNode.AddField("clipEnd", 1);
             statueNode.AddField("x", postion.x);
             statueNode.AddField("y", postion.y);

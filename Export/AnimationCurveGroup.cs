@@ -132,22 +132,88 @@ class CustomClipCurveData
             {
                 Debug.Log("zhen" + frameIndex.ToString());
             }
-
         }
     }
 
-    public Keyframe GetKeyframeByTime(float time)
+    public Keyframe GetKeyframeByTime(float time,bool istart,bool isEnd)
     {
         uint frameIndex = AnimationCurveGroup.getFrameByTime(time);
         Keyframe keyframe;
         if (!this.m_keyMap.TryGetValue(frameIndex, out keyframe))
         {
-            float currentValue = curveData.curve.Evaluate(time);
-            float derivative = (curveData.curve.Evaluate(time + 0.0001f) - currentValue) / 0.0001f;
-
-            keyframe = new Keyframe(time, currentValue, derivative, derivative);
+            Debug.LogError("插入帧错误；请查找bug");
         }
         return keyframe;
+    }
+
+    public void addEmptyFrme(float time, bool istart, bool isEnd)
+    {
+        uint frameIndex = AnimationCurveGroup.getFrameByTime(time);
+       
+        if (!this.m_keyMap.ContainsKey(frameIndex))
+        {
+            Keyframe keyframe;
+            float currentValue = curveData.curve.Evaluate(time);
+            float derivative = (curveData.curve.Evaluate(time + 0.0001f) - currentValue) / 0.0001f;
+            if (istart)
+            {
+                this.updataNextFrmae(frameIndex, derivative);
+                keyframe = new Keyframe(time, currentValue, 0, derivative);
+            }
+            else if (isEnd)
+            {
+                this.updataLastFrmae(frameIndex, derivative);
+                keyframe = new Keyframe(time, currentValue, derivative, 0);
+            }
+            else
+            {
+                this.updataNextFrmae(frameIndex, derivative);
+                this.updataLastFrmae(frameIndex, derivative);
+                keyframe = new Keyframe(time, currentValue, derivative, derivative);
+            }
+            this.m_keyMap.Add(frameIndex, keyframe);
+
+        }
+    }
+
+    private void updataNextFrmae(uint frameIndex,float tangent)
+    {
+        uint foundIndex = uint.MaxValue;
+        foreach (var data in this.m_keyMap)
+        {
+            if(data.Key>frameIndex && data.Key < foundIndex)
+            {
+                foundIndex = data.Key;
+            }
+        }
+        Keyframe keyframe;
+        if(this.m_keyMap.TryGetValue(foundIndex,out keyframe))
+        {
+            keyframe.inTangent = tangent;
+            this.m_keyMap.Remove(foundIndex);
+            this.m_keyMap.Add(foundIndex, keyframe);
+
+        }
+    }
+
+    private void updataLastFrmae(uint frameIndex, float tangent)
+    {
+        uint foundIndex = uint.MinValue;
+        foreach (var data in this.m_keyMap)
+        {
+            if (data.Key < frameIndex && data.Key > foundIndex)
+            {
+                foundIndex = data.Key;
+            }
+        }
+        Keyframe keyframe;
+        if (this.m_keyMap.TryGetValue(foundIndex, out keyframe))
+        {
+            keyframe.outTangent = tangent;
+            this.m_keyMap.Remove(foundIndex);
+            this.m_keyMap.Add(foundIndex, keyframe);
+
+        }
     }
 }
 public class AnimationCurveGroup
@@ -327,14 +393,27 @@ public class AnimationCurveGroup
             }
             customCurveData.createKeyMap();
         }
+
+        foreach (var timeValue in sort)
+        {
+            float floatTime = timeValue.Value;;
+            bool istart = floatTime == start;
+            bool isend = floatTime == end;
+            foreach (string key in props)
+            {
+                this._curveList[key].addEmptyFrme(floatTime, istart, isend);
+            }
+        }
         foreach (var timeValue in sort)
         {
             float floatTime = timeValue.Value;
             FrameData frameData = new FrameData(timeValue.Key, floatTime, props);
             this.datas.Add(floatTime, frameData);
+            bool istart = floatTime == start;
+            bool isend = floatTime == end;
             foreach (string key in props)
             {
-                frameData.setValue(key, this._curveList[key].GetKeyframeByTime(floatTime));
+                frameData.setValue(key, this._curveList[key].GetKeyframeByTime(floatTime,istart,isend));
             }
         }
         return true;
