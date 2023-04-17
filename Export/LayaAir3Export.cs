@@ -685,12 +685,14 @@ public class LayaAir3Export
             Vector3 postion = states[i].position;
             AnimatorState state = states[i].state;
 
+
             JSONObject statueNode = new JSONObject(JSONObject.Type.OBJECT);
             statuesNode.Add(statueNode);
             statueNode.AddField("_$type", "AnimatorState");
             statueNode.AddField("name", state.name);
             statueNode.AddField("speed", state.speed);
-            statueNode.AddField("clipStart", state.cycleOffset);
+            statueNode.AddField("cycleOffset", state.cycleOffset);
+            statueNode.AddField("clipStart", 0);
             statueNode.AddField("clipEnd", 1);
             statueNode.AddField("x", postion.x);
             statueNode.AddField("y", postion.y);
