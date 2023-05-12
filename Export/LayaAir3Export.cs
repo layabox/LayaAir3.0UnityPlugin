@@ -682,9 +682,27 @@ public class LayaAir3Export
 
         for (int i = 0; i < states.Length; i++)
         {
-            Vector3 postion = states[i].position;
             AnimatorState state = states[i].state;
 
+            BufferFile laniFile;
+            if (state.motion == null)
+            {
+                if (clip != null)
+                {
+                    laniFile = getAnimationClipBuffer(clip, gameObject);
+                }
+                else
+                {
+                    Debug.LogWarning(string.Format("The motion of the state '{0}' is null, skip to export it.", state.name));
+                    continue;
+                }
+            }
+            else
+            {
+                laniFile = getAnimationClipBuffer(state.motion as AnimationClip, gameObject);
+            }
+            
+            Vector3 postion = states[i].position;
 
             JSONObject statueNode = new JSONObject(JSONObject.Type.OBJECT);
             statuesNode.Add(statueNode);
@@ -696,15 +714,6 @@ public class LayaAir3Export
             statueNode.AddField("clipEnd", 1);
             statueNode.AddField("x", postion.x);
             statueNode.AddField("y", postion.y);
-            BufferFile laniFile;
-            if (state.motion == null)
-            {
-                laniFile = getAnimationClipBuffer(clip, gameObject);
-            }
-            else
-            {
-                laniFile = getAnimationClipBuffer(state.motion as AnimationClip, gameObject);
-            }
            
             JSONObject clipData = new JSONObject(JSONObject.Type.OBJECT);
             clipData.AddField("_$type", "AnimationClip");
