@@ -1,12 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 
 namespace Util
 {
     internal class FileUtil
     {
+        static bool ExportStatuse = true;
         //存储文件
         public static FileStream saveFile(string fileName, JSONObject node = null)
         {
@@ -25,6 +27,16 @@ namespace Util
             writer.Close();
 
             return fs;
+        }
+
+        static public void setStatuse(bool statuse)
+        {
+            FileUtil.ExportStatuse = statuse;
+        }
+
+        static public bool getStatuse()
+        {
+            return FileUtil.ExportStatuse;
         }
 
         public static FileStream saveFile(string fileName)
@@ -181,6 +193,25 @@ namespace Util
             {
                 Debug.Log("Texture存在但生成Texture失败");
             }
+        }
+
+        static string GetPath(string _scriptName)
+        {
+            string[] path = UnityEditor.AssetDatabase.FindAssets(_scriptName);
+            if(path.Length>1)
+            {
+                FileUtil.setStatuse(false);
+                Debug.LogError("File Name Clash"+_scriptName+"Get Path ERROR!!");
+                return null;
+            }
+            string _path = AssetDatabase.GUIDToAssetPath(path[0]).Replace((@"Export" + @"/"+_scriptName+".cs"),"");
+            return _path;
+        }
+
+        public static string getPluginResUrl(string url)
+        {
+            string rootPath = GetPath("LanguageConfig");
+            return rootPath + url;
         }
 
     }

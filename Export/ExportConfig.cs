@@ -1,34 +1,35 @@
 using System.IO;
 using System.Xml;
-public class ExportConfig 
+using UnityEngine;
+
+public class ExportConfig
 {
-    private static string EditorConfig = "Assets/LayaAir3D/Configuration.xml";
     private static bool _updateConfig = false;
-    //³¡¾° or Ô¤ÖÆÌå
+    //åœºæ™¯ or é¢„åˆ¶ä½“
     private static int _FirstlevelMenu = -1;
-    //ºöÂÔÎ´¼¤»î½Úµã
+    //å¿½ç•¥æœªæ¿€æ´»èŠ‚ç‚¹
     private static bool _IgnoreNotActiveGameObject;
-    //ÅúÁ¿µ¼³öÒ»¼¶½Úµã
+    //æ‰¹é‡å¯¼å‡ºä¸€çº§èŠ‚ç‚¹
     private static bool _BatchMade;
-    //ºöÂÔuv
+    //å¿½ç•¥uv
     private static bool _IgnoreVerticesUV;
-    //ºöÂÔNormal
+    //å¿½ç•¥Normal
     private static bool _IgnoreVerticesNormal;
-    //ºöÂÔtangent
+    //å¿½ç•¥tangent
     private static bool _IgnoreVerticesTangent;
-    //ºöÂÔColor
+    //å¿½ç•¥Color
     private static bool _IgnoreVerticesColor;
-    //×Ô¶¯Éú³Éuv1
+    //è‡ªåŠ¨ç”Ÿæˆuv1
     private static bool _AutoVerticesUV1;
-    //×Ô¶¨Òå¸ùÄ¿Â¼
+    //è‡ªå®šä¹‰æ ¹ç›®å½•
     private static bool _CustomizeDirectory;
-    //×Ô¶¨Òå¸ùÄ¿Â¼Ãû
+    //è‡ªå®šä¹‰æ ¹ç›®å½•å
     private static string _CustomizeDirectoryName = "";
 
-    //µ¼³öµØÖ·
+    //å¯¼å‡ºåœ°å€
     private static string _SAVEPATH = "Assets";
 
-    //³¡¾° or Ô¤ÖÆÌå
+    //åœºæ™¯ or é¢„åˆ¶ä½“
     public static int FirstlevelMenu
     {
         get { return _FirstlevelMenu; }
@@ -41,7 +42,7 @@ public class ExportConfig
             }
         }
     }
-    //ºöÂÔÎ´¼¤»î½Úµã
+    //å¿½ç•¥æœªæ¿€æ´»èŠ‚ç‚¹
     public static bool IgnoreNotActiveGameObject
     {
         get { return _IgnoreNotActiveGameObject; }
@@ -54,7 +55,7 @@ public class ExportConfig
             }
         }
     }
-    //ÅúÁ¿µ¼³öÒ»¼¶½Úµã
+    //æ‰¹é‡å¯¼å‡ºä¸€çº§èŠ‚ç‚¹
     public static bool BatchMade
     {
         get { return _BatchMade; }
@@ -67,7 +68,7 @@ public class ExportConfig
             }
         }
     }
-    //ºöÂÔuv
+    //å¿½ç•¥uv
     public static bool IgnoreVerticesUV
     {
         get { return _IgnoreVerticesUV; }
@@ -80,7 +81,7 @@ public class ExportConfig
             }
         }
     }
-    //ºöÂÔNormal
+    //å¿½ç•¥Normal
     public static bool IgnoreVerticesNormal
     {
         get { return _IgnoreVerticesNormal; }
@@ -93,7 +94,7 @@ public class ExportConfig
             }
         }
     }
-    //ºöÂÔtangent
+    //å¿½ç•¥tangent
     public static bool IgnoreVerticesTangent
     {
         get { return _IgnoreVerticesTangent; }
@@ -106,7 +107,7 @@ public class ExportConfig
             }
         }
     }
-    //×Ô¶¯Éú³Éuv1
+    //è‡ªåŠ¨ç”Ÿæˆuv1
     public static bool AutoVerticesUV1
     {
         get { return _AutoVerticesUV1; }
@@ -119,8 +120,8 @@ public class ExportConfig
             }
         }
     }
-    
-    //ºöÂÔColor
+
+    //å¿½ç•¥Color
     public static bool IgnoreVerticesColor
     {
         get { return _IgnoreVerticesColor; }
@@ -133,7 +134,7 @@ public class ExportConfig
             }
         }
     }
-    //×Ô¶¨Òå¸ùÄ¿Â¼
+    //è‡ªå®šä¹‰æ ¹ç›®å½•
     public static bool CustomizeDirectory
     {
         get { return _CustomizeDirectory; }
@@ -147,7 +148,7 @@ public class ExportConfig
         }
     }
 
-    //×Ô¶¨Òå¸ùÄ¿Â¼Ãû
+    //è‡ªå®šä¹‰æ ¹ç›®å½•å
     public static string CustomizeDirectoryName
     {
         get { return _CustomizeDirectoryName; }
@@ -161,7 +162,7 @@ public class ExportConfig
         }
     }
 
-    //µ¼³öµØÖ·
+    //å¯¼å‡ºåœ°å€
     public static string SAVEPATH
     {
         get { return _SAVEPATH; }
@@ -189,12 +190,13 @@ public class ExportConfig
     }
     public static void initConfig()
     {
-        if (_FirstlevelMenu != -1)
+        if (_FirstlevelMenu>=0)
         {
             return;
         }
+        string configUrl = getConfig();
         XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.Load(EditorConfig);
+        xmlDoc.Load(configUrl);
         XmlNode xn = xmlDoc.SelectSingleNode("LayaExportSetting");
         FirstlevelMenu = int.Parse(xn.SelectSingleNode("FirstlevelMenu").InnerText);
         IgnoreNotActiveGameObject = bool.Parse(xn.SelectSingleNode("IgnoreNotActiveGameObject").InnerText);
@@ -216,8 +218,9 @@ public class ExportConfig
             return;
         }
         _updateConfig = false;
+        string configUrl = getConfig();
         XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.Load(EditorConfig);
+        xmlDoc.Load(configUrl);
         XmlNode xn = xmlDoc.SelectSingleNode("LayaExportSetting");
         xn.SelectSingleNode("FirstlevelMenu").InnerText = FirstlevelMenu.ToString();
         xn.SelectSingleNode("IgnoreNotActiveGameObject").InnerText = IgnoreNotActiveGameObject.ToString();
@@ -230,12 +233,17 @@ public class ExportConfig
         xn.SelectSingleNode("CustomizeDirectory").InnerText = CustomizeDirectory.ToString();
         xn.SelectSingleNode("CustomizeDirectoryName").InnerText = CustomizeDirectoryName;
         xn.SelectSingleNode("SavePath").InnerText = SAVEPATH;
-        xmlDoc.Save(EditorConfig);
+        xmlDoc.Save(configUrl);
+    }
+
+    private static string getConfig()
+    {
+        return Util.FileUtil.getPluginResUrl("Configuration.xml");
     }
 
     public static void ResetConfig()
     {
-        FirstlevelMenu =0;
+        FirstlevelMenu = 0;
         IgnoreNotActiveGameObject = false;
         BatchMade = false;
         IgnoreVerticesUV = false;
@@ -244,7 +252,7 @@ public class ExportConfig
         IgnoreVerticesColor = false;
         AutoVerticesUV1 = true;
         CustomizeDirectory = false;
-        CustomizeDirectoryName ="";
+        CustomizeDirectoryName = "";
         _SAVEPATH = "Assets";
     }
 }

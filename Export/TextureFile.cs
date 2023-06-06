@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEngine;
+using FileUtil = Util.FileUtil;
+
 
 // [DllImport("OpenEXRPlugin")]
 // private static extern void EncodeHDR(Texture2D texture, string fileName);
@@ -73,6 +75,7 @@ internal class TextureFile : FileData
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
         if (import == null)//dds?????????????
         {
+            FileUtil.setStatuse(false);
             Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
             return;
         }
@@ -81,6 +84,10 @@ internal class TextureFile : FileData
             import.textureType = TextureImporterType.Default;
             import.isReadable = true;
             import.textureCompression = TextureImporterCompression.Uncompressed;
+            TextureImporterPlatformSettings pc = import.GetPlatformTextureSettings("Standalone");
+            pc.overridden = true;
+            pc.format = TextureImporterFormat.RGBA32;
+            import.SetPlatformTextureSettings(pc);
             AssetDatabase.ImportAsset(path);
         }
         JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
@@ -97,6 +104,14 @@ internal class TextureFile : FileData
          {*/
         importData.AddField("generateMipmap", true);
         importData.AddField("mipmapFilter", 1);
+
+        int anisoLevel = 1;
+        if (import != null)
+        {
+            anisoLevel = texture.anisoLevel;
+        }
+        anisoLevel = Math.Min(anisoLevel*4,32);
+        importData.AddField("anisoLevel", anisoLevel);
         /*}*/
         if (import.alphaSource == TextureImporterAlphaSource.FromInput)
         {
@@ -107,11 +122,12 @@ internal class TextureFile : FileData
         this._constructParams.Add(texture.height);
         if (texture.format == TextureFormat.RGB24 || texture.format == TextureFormat.DXT1 || texture.format == TextureFormat.DXT1Crunched)
         {
-            //?????
+            // RGB
             this._format = 0;
         }
         else
         {
+            // RGBA
             this._format = 1;
         }
         this._constructParams.Add(this._format);
@@ -160,14 +176,8 @@ internal class TextureFile : FileData
         }
 
         //anisoLevel
-        if (import != null)
-        {
-            this._propertyParams.AddField("anisoLevel", texture.anisoLevel);
-        }
-        else
-        {
-            this._propertyParams.AddField("anisoLevel", 0);
-        }
+       
+        this._propertyParams.AddField("anisoLevel", anisoLevel);
         string ext = Path.GetExtension(this.m_path).ToLower();
         this._rgbmEncoding = ext == ".hdr" || ext == ".exr";
         string[] lastName = this.m_path.Split('.');
@@ -284,7 +294,7 @@ internal class TextureFile : FileData
             var pixleCount = width * height;
             // if (!(width < 8 || width > 32768))
             {
-                for (int i = height - 1; i > 0; --i)
+                for (int i = height - 1; i >= 0; --i)
                 {
                     for (int j = 0; j < width; ++j)
                     {
@@ -303,6 +313,15 @@ internal class TextureFile : FileData
         }
     }
 
+    public void gammaColorsToLinear(Color[] gColor)
+    {
+        for (var i = 0; i < gColor.Length; ++i)
+        {
+            gColor[i].r = Mathf.GammaToLinearSpace(gColor[i].r);
+            gColor[i].g = Mathf.GammaToLinearSpace(gColor[i].g);
+            gColor[i].b = Mathf.GammaToLinearSpace(gColor[i].b);
+        }
+    }
     public override void SaveFile(Dictionary<string, FileData> exportFiles)
     {
         string filePath = outPath;
@@ -319,11 +338,12 @@ internal class TextureFile : FileData
             if (this._rgbmEncoding)
             {
                 Color[] pixels = this._texture.GetPixels(0);
-                this.exportHDRFile(filePath, pixels, this._texture.width, this._texture.height);
-               /* for (int j = 0, m = pixels.Length; j < m; j++)
-                    pixels[j] = GameObjectUitls.EncodeRGBM(pixels[j], 5.0f);*/
-            /*    rgbmTexture.SetPixels(pixels);
-                File.WriteAllBytes(filePath, rgbmTexture.EncodeToPNG());*/
+                if (QualitySettings.activeColorSpace == ColorSpace.Gamma)
+                {
+                    Debug.Log("Current color space is gamma.. Your Img will change to Linear Space");
+                    gammaColorsToLinear(pixels);
+                }
+                this.exportHDRFile(filePath, pixels, this._texture.height, this._texture.width);
             }
             else if (this._format == 1)
             {

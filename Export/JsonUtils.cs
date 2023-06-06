@@ -60,6 +60,36 @@ internal class JsonUtils
         Light light = gameObject.GetComponent<Light>();
         JSONObject lightData = new JSONObject(JSONObject.Type.OBJECT);
         lightData.AddField("_$type", "DirectionLightCom");
+        
+        SetLightData(light, lightData);
+        return lightData;
+    }
+
+    public static JSONObject GetPointLightComponentData(GameObject gameObject)
+    {
+        Light light = gameObject.GetComponent<Light>();
+        JSONObject lightData = new JSONObject(JSONObject.Type.OBJECT);
+        lightData.AddField("_$type", "PointLightCom");
+        SetLightData(light, lightData);
+        lightData.AddField("range", light.range);
+
+        return lightData;
+    }
+
+    public static JSONObject GetSpotLightComponentData(GameObject gameObject)
+    {
+        Light light = gameObject.GetComponent<Light>();
+        JSONObject lightData = new JSONObject(JSONObject.Type.OBJECT);
+        lightData.AddField("_$type", "SpotLightCom");
+        SetLightData(light, lightData);
+        lightData.AddField("range", light.range);
+        lightData.AddField("spotAngle", light.spotAngle);
+
+        return lightData;
+    }
+
+    private static void SetLightData(Light light, JSONObject lightData)
+    {
         lightData.AddField("intensity", light.intensity);
         switch (light.lightmapBakeType)
         {
@@ -77,8 +107,22 @@ internal class JsonUtils
                 break;
         }
         lightData.AddField("color", GetColorObject(light.color));
-
-        return lightData;
+        switch (light.shadows)
+        {
+            case LightShadows.Hard:
+                lightData.AddField("shadowMode", 1);
+                break;
+            case LightShadows.Soft:
+                lightData.AddField("shadowMode", 2);
+                break;
+            default:
+                lightData.AddField("shadowMode", 0);
+                break;
+        }
+        lightData.AddField("shadowStrength", light.shadowStrength);
+        lightData.AddField("shadowDepthBias", light.shadowBias);
+        lightData.AddField("shadowNormalBias", light.shadowNormalBias);
+        lightData.AddField("shadowNearPlane", light.shadowNearPlane);
     }
 
 
