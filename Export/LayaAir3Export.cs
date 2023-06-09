@@ -223,43 +223,47 @@ public class LayaAir3Export
     private static JSONObject getMeshFilterComponentData(GameObject gameObject, JsonFile file)
     {
         Mesh mesh = gameObject.GetComponent<MeshFilter>().sharedMesh;
+        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
+        compData.AddField("_$type", "MeshFilter");
+
         if (mesh == null)
         {
             Debug.LogWarning("LayaAir3D Warning(Code:1001) : " + gameObject.name + "'s MeshFilter Component Mesh data can't be null!");
-        }
 
-        string meshName = GameObjectUitls.cleanIllegalChar(mesh.name, true);
-        string path = AssetDatabase.GetAssetPath(mesh.GetInstanceID());
-        string lmPath = GameObjectUitls.cleanIllegalChar(path.Split('.')[0], false) + "-" + meshName;
-        lmPath += ".lm";
-        BufferFile meshFile;
-        if (!exportFiles.ContainsKey(lmPath))
-        {
-            meshFile = new BufferFile(lmPath);
-            MeshUitls.writeMesh(mesh, meshName, meshFile.filesteam);
-            exportFiles.Add(meshFile.filePath, meshFile);
-            if (mesh.uv2.Length > 0 && ExportConfig.AutoVerticesUV1)
-            {
-                JSONObject autouv1 = new JSONObject(JSONObject.Type.OBJECT);
-                autouv1.AddField("generateLightmapUVs", true);
-                meshFile.metaData().AddField("importer", autouv1);
-            }
         }
         else
         {
-            meshFile = exportFiles[lmPath] as BufferFile;
+            BufferFile meshFile;
+            string meshName = GameObjectUitls.cleanIllegalChar(mesh.name, true);
+            string path = AssetDatabase.GetAssetPath(mesh.GetInstanceID());
+            string lmPath = GameObjectUitls.cleanIllegalChar(path.Split('.')[0], false) + "-" + meshName;
+            lmPath += ".lm";
+            JSONObject meshFiledata = new JSONObject(JSONObject.Type.OBJECT);
+            if (!exportFiles.ContainsKey(lmPath))
+            {
+                meshFile = new BufferFile(lmPath);
+                MeshUitls.writeMesh(mesh, meshName, meshFile.filesteam);
+                exportFiles.Add(meshFile.filePath, meshFile);
+                if (mesh.uv2.Length > 0 && ExportConfig.AutoVerticesUV1)
+                {
+                    JSONObject autouv1 = new JSONObject(JSONObject.Type.OBJECT);
+                    autouv1.AddField("generateLightmapUVs", true);
+                    meshFile.metaData().AddField("importer", autouv1);
+                }
+            }
+            else
+            {
+                meshFile = exportFiles[lmPath] as BufferFile;
+            }
+            meshFiledata.AddField("_$uuid", meshFile.filePath);
+            meshFiledata.AddField("_$type", "mesh");
+            if (file != null)
+            {
+                file.AddRegistList(meshFile.filePath);
+            }
+            compData.AddField("sharedMesh", meshFiledata);
         }
 
-        JSONObject meshFiledata = new JSONObject(JSONObject.Type.OBJECT);
-        meshFiledata.AddField("_$uuid", meshFile.filePath);
-        meshFiledata.AddField("_$type", "mesh");
-        if (file != null)
-        {
-            file.AddRegistList(meshFile.filePath);
-        }
-        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
-        compData.AddField("_$type", "MeshFilter");
-        compData.AddField("sharedMesh", meshFiledata);
         return compData;
 
     }
@@ -397,7 +401,7 @@ public class LayaAir3Export
         }
         return unityToLayaInstance[objectId];
     }
-    private static void getGameObjectData(GameObject gameObject, JSONObject parentsChildNodes, JsonFile file)
+    private static void getGameObjectData(GameObject gameObject, JSONObject parentsChildNodes, JsonFile file,string path = "")
     {
         if (ExportConfig.IgnoreNotActiveGameObject && !gameObject.activeSelf)
         {
@@ -416,13 +420,15 @@ public class LayaAir3Export
         node.AddField("transform", JsonUtils.GetTransfrom(gameObject));
 
         getComponentsData(gameObject, node,file);
+        path +="/"+gameObject.name;
+        //Debug.Log(path);
 
         if (gameObject.transform.childCount > 0)
         {
             JSONObject child = new JSONObject(JSONObject.Type.ARRAY);
             for (int i = 0; i < gameObject.transform.childCount; i++)
             {
-                getGameObjectData(gameObject.transform.GetChild(i).gameObject, child,file);
+                getGameObjectData(gameObject.transform.GetChild(i).gameObject, child,file,path);
             }
             node.AddField("_$child", child);
         }
@@ -481,11 +487,6 @@ public class LayaAir3Export
         if (components.IndexOf(ComponentType.Animator) != -1)
         {
             component.Add(getAnimatorComponentData(gameObject));
-        }
-
-        if (components.IndexOf(ComponentType.Animation) != -1)
-        {
-            component.Add(getAnimationComponentData(gameObject));
         }
 
         if (components.IndexOf(ComponentType.ReflectionProbe) != -1)
@@ -557,45 +558,6 @@ public class LayaAir3Export
         compData.AddField("_reflectionsIblSamples", 128);
         return compData;
     }
-
-    private static JSONObject getAnimationComponentData(GameObject gameObject)
-    {
-        Animation animation = gameObject.GetComponent<Animation>();
-        AnimationClip clip = animation.clip;
-        string animatorControllerPath = clip.name + ".controller";
-       
-        JsonFile controlFile;
-        if (!exportFiles.ContainsKey(animatorControllerPath))
-        {
-            controlFile = new JsonFile(animatorControllerPath, new JSONObject(JSONObject.Type.OBJECT));
-            exportFiles.Add(controlFile.filePath, controlFile);
-            JSONObject controllData = controlFile.jsonData;
-            controllData.AddField("_$type", "Animator");
-            controllData.AddField("enabled", true);
-            controllData.AddField("controller", "null");
-            controllData.AddField("cullingMode", 0);
-            JSONObject controllerLayers = new JSONObject(JSONObject.Type.ARRAY);
-            AnimatorController animatorController = new AnimatorController();
-            animatorController.AddLayer("base layer");
-            animatorController.AddMotion(clip, 0);
-            AnimatorControllerLayer layer = animatorController.layers[0];
-            controllerLayers.Add(getAnimaterLayerData(layer, gameObject, true,clip));
-            controllData.AddField("controllerLayers", controllerLayers);
-        }
-        else
-        {
-            controlFile = exportFiles[animatorControllerPath] as JsonFile;
-        }
-
-        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
-        compData.AddField("_$type", "Animator");
-        JSONObject controller = new JSONObject(JSONObject.Type.OBJECT);
-        compData.AddField("controller", controller);
-        controller.AddField("_$type", "AnimationController");
-        controller.AddField("_$uuid", controlFile.uuid);
-
-        return compData;
-    }
     private static JSONObject getAnimatorComponentData(GameObject gameObject)
     {
         Animator animator = gameObject.GetComponent<Animator>();
@@ -643,7 +605,7 @@ public class LayaAir3Export
     }
 
 
-    private static JSONObject getAnimaterLayerData(AnimatorControllerLayer layer, GameObject gameObject,bool isbaseLayer,AnimationClip clip=null)
+    private static JSONObject getAnimaterLayerData(AnimatorControllerLayer layer, GameObject gameObject,bool isbaseLayer)
     {
         JSONObject layarNode = new JSONObject(JSONObject.Type.OBJECT);
         layarNode.AddField("_$type", "AnimatorControllerLayer");
@@ -685,37 +647,20 @@ public class LayaAir3Export
             Vector3 postion = states[i].position;
             AnimatorState state = states[i].state;
 
-
             JSONObject statueNode = new JSONObject(JSONObject.Type.OBJECT);
             statuesNode.Add(statueNode);
             statueNode.AddField("_$type", "AnimatorState");
             statueNode.AddField("name", state.name);
             statueNode.AddField("speed", state.speed);
-            statueNode.AddField("cycleOffset", state.cycleOffset);
             statueNode.AddField("clipStart", 0);
             statueNode.AddField("clipEnd", 1);
             statueNode.AddField("x", postion.x);
             statueNode.AddField("y", postion.y);
-            BufferFile laniFile = null;
-            if (state.motion != null)
-            {
-                laniFile = getAnimationClipBuffer(state.motion as AnimationClip, gameObject);
-               
-            }
-            else if(clip != null)
-            {
-                laniFile = getAnimationClipBuffer(clip, gameObject);
-            }else
-            {
-                Debug.Log("not get motion " + state.name);
-            }
-           
+
+            BufferFile laniFile = getAnimationClipBuffer(state.motion as AnimationClip, gameObject);
             JSONObject clipData = new JSONObject(JSONObject.Type.OBJECT);
             clipData.AddField("_$type", "AnimationClip");
-            if(laniFile != null)
-            {
-                clipData.AddField("_$uuid", laniFile.uuid);
-            }
+            clipData.AddField("_$uuid", laniFile.uuid);
             statueNode.AddField("clip", clipData);
             statueNode.AddField("id", stateMap[state.name].ToString());
 

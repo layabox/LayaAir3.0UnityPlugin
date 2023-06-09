@@ -40,8 +40,17 @@ internal class FileData
     }
     public FileData(string path)
     {
+        this.updatePath(path);
+    }
+
+    protected void updatePath(string path)
+    {
+        if (path == null)
+        {
+            return;
+        }
         this.m_path = path;
-      
+
         if (File.Exists(metaPath))
         {
             JSONObject customMap = this.m_metaData = JSONObject.Create(File.ReadAllText(metaPath));
@@ -53,7 +62,6 @@ internal class FileData
             this.m_metaData = new JSONObject(JSONObject.Type.OBJECT);
             this.m_metaData.SetField("uuid", this.m_uuid);
         }
-
     }
 
     public JSONObject metaData()
@@ -63,6 +71,10 @@ internal class FileData
 
     public void saveMeta()
     {
+        if (this.m_metaData == null)
+        {
+            return;
+        }
         string filePath = metaPath;
         FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
         StreamWriter writer = new StreamWriter(fs);
@@ -70,10 +82,10 @@ internal class FileData
         writer.Close();
     }
 
-  
+
     public virtual void SaveFile(Dictionary<string, FileData> exportFiles)
     {
-       
+
     }
 
 }

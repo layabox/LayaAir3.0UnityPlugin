@@ -46,7 +46,9 @@ internal class TextureFile : FileData
     private int _format;
     private bool _rgbmEncoding;
     private bool _isNormal;
-    public TextureFile(string path, string originPath, Texture2D texture, bool isNormal) : base(path)
+    private bool _isSRGB;
+    private bool _isCopy;
+    public TextureFile(string path, string originPath, Texture2D texture, bool isNormal) : base(null)
     {
         this._texture = texture;
         this._originPath = originPath;
@@ -61,19 +63,55 @@ internal class TextureFile : FileData
             return this._originPath;
         }
     }
-
+    private int getFormat()
+    {
+        switch (this._texture.format)
+        {
+            case TextureFormat.DXT1:
+                return 3;
+            case TextureFormat.DXT5:
+                return 5;
+            case TextureFormat.RGB24:
+                return 0;
+            default:
+                return 1;
+        }
+    }
     private void getTexureInfo()
     {
-        this._constructParams = new JSONObject(JSONObject.Type.ARRAY);
-        this._propertyParams = new JSONObject(JSONObject.Type.ARRAY);
         Texture2D texture = this._texture;
         if (this._texture == null)
         {
             return;
         }
+
+        this._format = this.getFormat();
+
+        var origpath = this._originPath;
+        string ext = Path.GetExtension(origpath).ToLower();
+        this._isCopy = ConvertOriginalTextureTypeList.IndexOf(ext) != -1;
+        string savePath = origpath.Substring(0, origpath.LastIndexOf("."));
+        this._rgbmEncoding = ext == ".hdr" || ext == ".exr";
+        if (this._rgbmEncoding)
+        {
+            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".hdr" : ext;
+        }
+        else if (this._format == 0)
+        {
+            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".jpg" : ext;
+        }
+        else
+        {
+            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".png" : ext;
+        }
+        this.updatePath(savePath);
+
+        this._constructParams = new JSONObject(JSONObject.Type.ARRAY);
+        this._propertyParams = new JSONObject(JSONObject.Type.ARRAY);
+
         string path = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
-        if (import == null)//dds?????????????
+        if (import == null)
         {
             FileUtil.setStatuse(false);
             Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
@@ -83,15 +121,10 @@ internal class TextureFile : FileData
         {
             import.textureType = TextureImporterType.Default;
             import.isReadable = true;
-            import.textureCompression = TextureImporterCompression.Uncompressed;
-            TextureImporterPlatformSettings pc = import.GetPlatformTextureSettings("Standalone");
-            pc.overridden = true;
-            pc.format = TextureImporterFormat.RGBA32;
-            import.SetPlatformTextureSettings(pc);
             AssetDatabase.ImportAsset(path);
         }
         JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
-
+        this._isSRGB = false;
         if (this._isNormal || import.textureType == TextureImporterType.NormalMap)
         {
             importData.AddField("sRGB", false);
@@ -99,6 +132,23 @@ internal class TextureFile : FileData
         else if (import.sRGBTexture)
         {
             importData.AddField("sRGB", true);
+            this._isSRGB = true;
+        }
+        if (this._format == 3)
+        {
+            importData.AddField("npot", 1);
+            JSONObject platformPC = new JSONObject(JSONObject.Type.OBJECT);
+            platformPC.AddField("format", "BC1");
+            platformPC.AddField("quality", 2);
+            importData.AddField("platformPC", platformPC);
+        }
+        else
+        {
+            importData.AddField("npot", 1);
+            JSONObject platformPC = new JSONObject(JSONObject.Type.OBJECT);
+            platformPC.AddField("format", "BC3");
+            platformPC.AddField("quality", 2);
+            importData.AddField("platformPC", platformPC);
         }
         /* if (import.generateMipsInLinearSpace)
          {*/
@@ -110,7 +160,7 @@ internal class TextureFile : FileData
         {
             anisoLevel = texture.anisoLevel;
         }
-        anisoLevel = Math.Min(anisoLevel*4,32);
+        anisoLevel = Math.Min(anisoLevel * 4, 32);
         importData.AddField("anisoLevel", anisoLevel);
         /*}*/
         if (import.alphaSource == TextureImporterAlphaSource.FromInput)
@@ -120,16 +170,7 @@ internal class TextureFile : FileData
         this.m_metaData.AddField("importer", importData);
         this._constructParams.Add(texture.width);
         this._constructParams.Add(texture.height);
-        if (texture.format == TextureFormat.RGB24 || texture.format == TextureFormat.DXT1 || texture.format == TextureFormat.DXT1Crunched)
-        {
-            // RGB
-            this._format = 0;
-        }
-        else
-        {
-            // RGBA
-            this._format = 1;
-        }
+
         this._constructParams.Add(this._format);
         this._constructParams.Add(import.mipmapEnabled);
         if (import.textureType == TextureImporterType.NormalMap || import.isReadable == false || import.textureCompression != TextureImporterCompression.Uncompressed)
@@ -175,30 +216,10 @@ internal class TextureFile : FileData
             this._propertyParams.AddField("wrapModeV", 0);
         }
 
-        //anisoLevel
-       
-        this._propertyParams.AddField("anisoLevel", anisoLevel);
-        string ext = Path.GetExtension(this.m_path).ToLower();
-        this._rgbmEncoding = ext == ".hdr" || ext == ".exr";
-        string[] lastName = this.m_path.Split('.');
-        string houzhui = lastName[lastName.Length - 1];
-        string savePath = this.m_path.Substring(0, this.m_path.LastIndexOf("."));
-        if (this._rgbmEncoding)
-        {
-            string zuihouhouzhui = ConvertOriginalTextureTypeList.IndexOf(houzhui) == -1 ? ".hdr" : houzhui;
-            this.m_path = savePath + zuihouhouzhui;
-        }
-        else  if (this._format == 0){
-            string zuihouhouzhui = ConvertOriginalTextureTypeList.IndexOf(houzhui) == -1 ? ".jpg" : houzhui;
-            this.m_path = savePath + zuihouhouzhui;
-        }
-        else
-        {
-            string zuihouhouzhui = ConvertOriginalTextureTypeList.IndexOf(houzhui) == -1 ? ".png" : houzhui;
-            this.m_path = savePath + zuihouhouzhui;
-        }
-    }
 
+        this._propertyParams.AddField("anisoLevel", anisoLevel);
+
+    }
 
     public JSONObject jsonObject(string name)
     {
@@ -328,13 +349,13 @@ internal class TextureFile : FileData
         string folder = Path.GetDirectoryName(filePath);
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
-        if (this._format == 0)
+        base.saveMeta();
+        string path = AssetDatabase.GetAssetPath(this._texture.GetInstanceID());
+        if (this._isCopy)
         {
-            byte[] bytes = this._texture.EncodeToJPG(JPGQuality);
-            File.WriteAllBytes(filePath, bytes);
+            File.Copy(path, filePath, true);
         }
-        else
-        {
+        else{
             if (this._rgbmEncoding)
             {
                 Color[] pixels = this._texture.GetPixels(0);
