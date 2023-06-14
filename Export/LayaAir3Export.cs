@@ -519,7 +519,8 @@ public class LayaAir3Export
             Renderer[] renders = lod.renderers;
             for(var j = 0; j < renders.Length; j++)
             {
-                renderDatas.Add(getRefNodeData(renders[j].gameObject));
+                if(renders[j])
+                    renderDatas.Add(getRefNodeData(renders[j].gameObject));
             }
             lodData.AddField("renders", renderDatas);
             lodDatas.Add(lodData);
