@@ -576,7 +576,7 @@ internal class MetarialUitls
             return false;
         }
     }
-    public static void WriteMetarial(Material material, JsonFile file, Dictionary<string, FileData> exportFiles)
+    public static void WriteMetarial(Material material, JSONObject jsonData, ResoureMap resoureMap)
     {
         string shaderName = material.shader.name;
         if (!MaterialPropsConfigs.ContainsKey(shaderName))
@@ -585,10 +585,10 @@ internal class MetarialUitls
             Debug.LogError("LayaAir3D Warning : not get the shader config " + shaderName);
             return;
         }
-        file.jsonData.AddField("version", "LAYAMATERIAL:04");
+        jsonData.AddField("version", "LAYAMATERIAL:04");
         JSONObject props = new JSONObject(JSONObject.Type.OBJECT);
         PropDatasConfig propsData = MaterialPropsConfigs[shaderName];
-        file.jsonData.AddField("props", props);
+        jsonData.AddField("props", props);
         props.AddField("type", propsData.materalName);
         props.AddField("s_Cull", PropDatasConfig.GetCull(material));
         props.AddField("s_Blend", PropDatasConfig.GetBlend(material));
@@ -600,12 +600,16 @@ internal class MetarialUitls
         JSONObject texture = new JSONObject(JSONObject.Type.ARRAY);
         foreach (var plist in propsData.pictureList)
         {
-            if (material.GetTexture(plist.Key) != null)
+            Texture text1 = material.GetTexture(plist.Key);
+            if (text1 != null)
             {
                 TextureConfig tConfig = plist.Value;
-                TextureFile textureFile = GameObjectUitls.writePicture(material.GetTexture(plist.Key), exportFiles, tConfig.isNormal);
+                TextureFile textureFile = resoureMap.GetTextureFile(text1, tConfig.isNormal);
+                if(textureFile == null)
+                {
+                    Debug.LogError("资源错误");
+                }
                 texture.Add(textureFile.jsonObject(tConfig.keyName));
-                file.AddRegistList(textureFile.filePath);
             }
         }
         props.AddField("textures", texture);
@@ -718,11 +722,12 @@ internal class MetarialUitls
         props.AddField("defines", definds);
     }
 
-    public static void WriteSkyMetarial(Material material, JsonFile file, Dictionary<string, FileData> exportFiles)
+    public static void WriteSkyMetarial(Material material, JSONObject jsonData, ResoureMap resoureMap)
     {
-        string cubeMapPath = file.filePath.Split('.')[0] + ".cubemap";
+        string materialPath = AssetsUtil.GetMaterialPath(material);
+        string cubeMapPath = materialPath.Split('.')[0] + ".cubemap";
         JsonFile cubeMapData = new JsonFile(cubeMapPath, new JSONObject(JSONObject.Type.OBJECT));
-        exportFiles.Add(cubeMapData.filePath, cubeMapData);
+        resoureMap.AddExportFile(cubeMapData);
         string shaderName = material.shader.name;
         if (!MaterialPropsConfigs.ContainsKey(shaderName))
         {
@@ -736,7 +741,7 @@ internal class MetarialUitls
             if (material.GetTexture(plist.Key) != null)
             {
                 TextureConfig tConfig = plist.Value;
-                TextureFile textureFile = GameObjectUitls.writePicture(material.GetTexture(plist.Key), exportFiles, tConfig.isNormal);
+                TextureFile textureFile = resoureMap.GetTextureFile(material.GetTexture(plist.Key), tConfig.isNormal);
                 cubeMapData.jsonData.AddField(tConfig.keyName, "res://" + textureFile.filePath);
                 cubeMapData.AddRegistList(textureFile.filePath);
             }
@@ -748,8 +753,8 @@ internal class MetarialUitls
         cubeMapData.jsonData.AddField("generateMipmap", true);
         cubeMapData.jsonData.AddField("sRGB", true);
 
-        JSONObject materialData = file.jsonData;
-        materialData.AddField("version", "LAYAMATERIAL:04");
+
+        jsonData.AddField("version", "LAYAMATERIAL:04");
 
         JSONObject textures = new JSONObject(JSONObject.Type.ARRAY);
         JSONObject constructParams = new JSONObject(JSONObject.Type.ARRAY);
@@ -816,7 +821,7 @@ internal class MetarialUitls
             props.AddField(flist.Value.keyName, material.GetFloat(flist.Key));
 
         }
-        materialData.AddField("props", props);
+        jsonData.AddField("props", props);
     }
 
 }

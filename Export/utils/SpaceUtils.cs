@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SpaceChange
+public class SpaceUtils
 {
     private static readonly Quaternion HelpRotation = new Quaternion(0, 1, 0, 0);
     private static Quaternion HelpRotation1 = new Quaternion();

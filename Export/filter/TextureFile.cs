@@ -48,7 +48,7 @@ internal class TextureFile : FileData
     private bool _isNormal;
     private bool _isSRGB;
     private bool _isCopy;
-    public TextureFile(string path, string originPath, Texture2D texture, bool isNormal) : base(null)
+    public TextureFile(string originPath, Texture2D texture, bool isNormal) : base(null)
     {
         this._texture = texture;
         this._originPath = originPath;
@@ -56,7 +56,7 @@ internal class TextureFile : FileData
         this.getTexureInfo();
     }
 
-    public new string filePath
+    override public string filePath
     {
         get
         {
@@ -227,7 +227,7 @@ internal class TextureFile : FileData
         data.AddField("name", name);
         data.AddField("constructParams", this._constructParams);
         data.AddField("propertyParams", this._propertyParams);
-        data.AddField("path", "res://" + this.filePath);
+        data.AddField("path", "res://" + this.uuid);
         return data;
     }
 
@@ -377,8 +377,6 @@ internal class TextureFile : FileData
                 File.WriteAllBytes(filePath, bytes);
             }
         }
-
-        base.saveMeta();
     }
 
 

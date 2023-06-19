@@ -326,22 +326,6 @@ class GameObjectUitls
             baseLinearColor.b = Mathf.GammaToLinearSpace(linearColorHdr.b / maxColorComponent);
         }
     }
-    public static TextureFile writePicture(Texture texture, Dictionary<string, FileData> exportFiles, bool isNormal)
-    {
-        string picturePath = AssetDatabase.GetAssetPath(texture.GetInstanceID());
-        TextureFile textureFile;
-        if (!exportFiles.ContainsKey(picturePath))
-        {
-            textureFile = new TextureFile(picturePath, picturePath, texture as Texture2D, isNormal);
-            exportFiles.Add(textureFile.filePath, textureFile);
-        }
-        else
-        {
-            textureFile = exportFiles[picturePath] as TextureFile;
-        }
-
-        return textureFile;
-    }
 
 
     public static string cleanIllegalChar(string str, bool heightLevel)

@@ -1,6 +1,5 @@
-
-
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 internal class JsonUtils 
@@ -40,7 +39,7 @@ internal class JsonUtils
         List<ComponentType> components = GameObjectUitls.componentsOnGameObject(gObject);
         JSONObject transfrom = new JSONObject(JSONObject.Type.OBJECT);
         Vector3 position = gObject.transform.localPosition;
-        SpaceChange.changePostion(ref position);
+        SpaceUtils.changePostion(ref position);
         transfrom.AddField("localPosition", GetVector3Object(position));
       
         Quaternion rotation = gObject.transform.localRotation;
@@ -49,12 +48,27 @@ internal class JsonUtils
         {
             isRotate = true;
         }
-        SpaceChange.changeRotate(ref rotation, isRotate);
+        SpaceUtils.changeRotate(ref rotation, isRotate);
         transfrom.AddField("localRotation", GetQuaternionObject(rotation));
         transfrom.AddField("localScale", GetVector3Object(gObject.transform.localScale));
         return transfrom;
     }
 
+    public static JSONObject GetGameObject(GameObject gObject,bool isperfab =false)
+    {
+        JSONObject nodeData = new JSONObject(JSONObject.Type.OBJECT);
+        if (isperfab)
+        {
+            nodeData.AddField("_$ver", 1);
+        }
+        nodeData.AddField("name", gObject.name);
+        nodeData.AddField("active", gObject.activeSelf);
+        StaticEditorFlags staticEditorFlags = GameObjectUtility.GetStaticEditorFlags(gObject);
+        nodeData.AddField("isStatic", ((int)staticEditorFlags & (int)StaticEditorFlags.BatchingStatic) > 0);
+        nodeData.AddField("layer", gObject.layer);
+        nodeData.AddField("transform", JsonUtils.GetTransfrom(gObject));
+        return nodeData;
+    }
     public static JSONObject GetDirectionalLightComponentData(GameObject gameObject)
     {
         Light light = gameObject.GetComponent<Light>();

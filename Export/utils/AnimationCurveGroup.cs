@@ -508,25 +508,25 @@ public class AnimationCurveGroup
 
     private static void writePosition(FrameData frame, ref AniNodeFrameData data, bool isRotate)
     {
-        SpaceChange.changePostion(ref frame.valueNumbers);
-        SpaceChange.changePostion(ref frame.inTangentNumbers);
-        SpaceChange.changePostion(ref frame.outTangentNumbers);
+        SpaceUtils.changePostion(ref frame.valueNumbers);
+        SpaceUtils.changePostion(ref frame.inTangentNumbers);
+        SpaceUtils.changePostion(ref frame.outTangentNumbers);
         writeValue(frame, ref data, isRotate);
     }
 
     private static void writeRotate(FrameData frame, ref AniNodeFrameData data, bool isRotate)
     {
-        SpaceChange.changeRotate(ref frame.valueNumbers, isRotate);
-        SpaceChange.changeRotateTangle(ref frame.inTangentNumbers);
-        SpaceChange.changeRotateTangle(ref frame.outTangentNumbers);
+        SpaceUtils.changeRotate(ref frame.valueNumbers, isRotate);
+        SpaceUtils.changeRotateTangle(ref frame.inTangentNumbers);
+        SpaceUtils.changeRotateTangle(ref frame.outTangentNumbers);
         writeValue(frame, ref data, isRotate);
     }
 
     private static void writeRotateEuler(FrameData frame, ref AniNodeFrameData data, bool isRotate)
     {
-        SpaceChange.changeRotateEuler(ref frame.valueNumbers, isRotate);
-        SpaceChange.changeRotateEulerTangent(ref frame.inTangentNumbers, false);
-        SpaceChange.changeRotateEulerTangent(ref frame.outTangentNumbers, false);
+        SpaceUtils.changeRotateEuler(ref frame.valueNumbers, isRotate);
+        SpaceUtils.changeRotateEulerTangent(ref frame.inTangentNumbers, false);
+        SpaceUtils.changeRotateEulerTangent(ref frame.outTangentNumbers, false);
         writeValue(frame, ref data, isRotate);
     }
 

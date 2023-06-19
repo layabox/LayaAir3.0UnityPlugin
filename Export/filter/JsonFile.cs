@@ -4,7 +4,7 @@ using UnityEngine;
 
 internal class JsonFile : FileData
 {
-    private JSONObject m_data;
+    protected JSONObject m_data;
     private List<string> m_regexlist;
     public JsonFile(string path,JSONObject data):base(path)
     {

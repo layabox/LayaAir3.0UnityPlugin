@@ -3,6 +3,7 @@ using System.IO;
 
 internal class FileData
 {
+    public ResoureMap resoureMap;
     protected string m_path;
     private string m_uuid;
 
@@ -23,7 +24,7 @@ internal class FileData
         }
     }
 
-    public string outPath
+    virtual public string outPath
     {
         get
         {
@@ -31,7 +32,7 @@ internal class FileData
         }
     }
 
-    public string filePath
+    virtual public string filePath
     {
         get
         {
@@ -76,6 +77,10 @@ internal class FileData
             return;
         }
         string filePath = metaPath;
+        string folder = Path.GetDirectoryName(filePath);
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
         FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
         StreamWriter writer = new StreamWriter(fs);
         writer.Write(this.m_metaData.Print(true));
