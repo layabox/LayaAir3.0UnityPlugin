@@ -64,244 +64,20 @@ class GameObjectUitls
         return new Color(rgb.r / alpha, rgb.g / alpha, rgb.b / alpha, alpha);
     }
 
-    public static List<ComponentType> componentsOnGameObject(GameObject gameObject)
+    public static bool isCameraOrLight(GameObject gameObject)
     {
-        List<ComponentType> components = new List<ComponentType>();
-
-        Camera camera = gameObject.GetComponent<Camera>();
-
-        Light light = gameObject.GetComponent<Light>();
-
-        MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-        MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
-
-        SkinnedMeshRenderer skinnedMeshRenderer = gameObject.GetComponent<SkinnedMeshRenderer>();
-
-        Animation animation = gameObject.GetComponent<Animation>();
-        Animator animator = gameObject.GetComponent<Animator>();
-
-        ParticleSystem particleSystem = gameObject.GetComponent<ParticleSystem>();
-
-        Terrain terrain = gameObject.GetComponent<Terrain>();
-
-        BoxCollider boxCollider = gameObject.GetComponent<BoxCollider>();
-        SphereCollider sphereCollider = gameObject.GetComponent<SphereCollider>();
-        CapsuleCollider capsuleCollider = gameObject.GetComponent<CapsuleCollider>();
-        MeshCollider meshcollider = gameObject.GetComponent<MeshCollider>();
-
-
-
-        Rigidbody rigidbody = gameObject.GetComponent<Rigidbody>();
-
-        TrailRenderer trailRenderer = gameObject.GetComponent<TrailRenderer>();
-
-        LineRenderer lineRenderer = gameObject.GetComponent<LineRenderer>();
-
-        FixedJoint fixedJoint = gameObject.GetComponent<FixedJoint>();
-        ConfigurableJoint configurableJoint = gameObject.GetComponent<ConfigurableJoint>();
-
-        ReflectionProbe reflectionProbe = gameObject.GetComponent<ReflectionProbe>();
-        LODGroup lodGroup = gameObject.GetComponent<LODGroup>();
-
-        components.Add(ComponentType.Transform);
-        if (lodGroup != null)
+        if (gameObject.GetComponent<Camera>() != null)
         {
-            components.Add(ComponentType.LodGroup);
-        }
-        // reflectionProbe
-        if (reflectionProbe != null)
+            return true;
+        }else if (gameObject.GetComponent<Light>() != null)
         {
-            components.Add(ComponentType.ReflectionProbe);
+            return true;
         }
-
-        // fixed joint
-        if (fixedJoint != null)
+        else
         {
-            components.Add(ComponentType.Fixedjoint);
+            return false;
         }
-
-        // configurableJoint QTE
-        if (configurableJoint != null)
-        {
-            components.Add(ComponentType.ConfigurableJoint);
-        }
-
-        //Line Renderer
-        if (lineRenderer != null)
-        {
-            components.Add(ComponentType.LineRenderer);
-        }
-        //Trail Renderer
-        if (trailRenderer != null)
-        {
-            components.Add(ComponentType.TrailRenderer);
-        }
-        //Rigidbody
-        if (rigidbody != null)
-        {
-            components.Add(ComponentType.Rigidbody3D);
-        }
-        //PhysicsCollider
-        else if (boxCollider != null || sphereCollider != null || capsuleCollider != null || meshcollider != null)
-        {
-            components.Add(ComponentType.PhysicsCollider);
-        }
-
-        //Animator
-        if (animator != null)
-        {
-            components.Add(ComponentType.Animator);
-        }
-
-        //Animator
-        if (animation != null)
-        {
-            components.Add(ComponentType.Animation);
-        }
-        //Camera
-        if (camera != null)
-        {
-            components.Add(ComponentType.Camera);
-        }
-        //�ƹ�
-        if (light != null)
-        {
-            if (light.type == LightType.Directional)
-            {
-                components.Add(ComponentType.DirectionalLight);
-            }
-            else if (light.type == LightType.Point)
-            {
-                components.Add(ComponentType.PointLight);
-            }
-            else if (light.type == LightType.Spot)
-            {
-                components.Add(ComponentType.SpotLight);
-            }
-        }
-        //MeshFilter
-        if (meshFilter != null)
-        {
-            if (camera == null)
-            {
-                components.Add(ComponentType.MeshFilter);
-                if (meshRenderer == null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " need a MeshRenderer ComponentType !");
-                }
-            }
-            else
-            {
-                if (camera != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " Camera and MeshFilter can't exist at the same time !");
-                }
-            }
-        }
-        //MeshRenderer
-        if (meshRenderer != null)
-        {
-            if (camera == null)
-            {
-                components.Add(ComponentType.MeshRenderer);
-                if (meshFilter == null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " need a meshFilter ComponentType !");
-                }
-            }
-            else
-            {
-                if (camera != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " Camera and MeshRenderer can't exist at the same time !");
-                }
-            }
-        }
-        //SkinnedMeshRenderer
-        if (skinnedMeshRenderer != null)
-        {
-            if (camera == null && meshFilter == null && meshRenderer == null)
-            {
-                components.Add(ComponentType.SkinnedMeshRenderer);
-            }
-            else
-            {
-                if (camera != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " Camera and SkinnedMeshRenderer can't exist at the same time !");
-                }
-                if (meshFilter != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " MeshFilter and SkinnedMeshRenderer can't exist at the same time !");
-                }
-                if (meshRenderer != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " MeshRenderer and SkinnedMeshRenderer can't exist at the same time !");
-                }
-            }
-        }
-        //ParticleSystem
-        if (particleSystem != null)
-        {
-            if (camera == null && meshFilter == null && meshRenderer == null && skinnedMeshRenderer == null)
-            {
-                components.Add(ComponentType.ParticleSystem);
-            }
-            else
-            {
-                if (camera != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " Camera and ParticleSystem can't exist at the same time !");
-                }
-                if (meshFilter != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " MeshFilter and ParticleSystem can't exist at the same time !");
-                }
-                if (meshRenderer != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " MeshRenderer and ParticleSystem can't exist at the same time !");
-                }
-                if (skinnedMeshRenderer != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " SkinnedMeshRenderer and ParticleSystem can't exist at the same time !");
-                }
-            }
-        }
-        //Terrain
-        if (terrain != null)
-        {
-            if (camera == null && meshFilter == null && meshRenderer == null && skinnedMeshRenderer == null && particleSystem == null)
-            {
-                components.Add(ComponentType.Terrain);
-            }
-            else
-            {
-                if (camera != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " Camera and Terrain can't exist at the same time !");
-                }
-                if (meshFilter != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " MeshFilter and Terrain can't exist at the same time !");
-                }
-                if (meshRenderer != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " MeshRenderer and Terrain can't exist at the same time !");
-                }
-                if (skinnedMeshRenderer != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " SkinnedMeshRenderer and Terrain can't exist at the same time !");
-                }
-                if (particleSystem != null)
-                {
-                    Debug.LogWarning("LayaAir3D : " + gameObject.name + " ParticleSystem and Terrain can't exist at the same time !");
-                }
-            }
-        }
-
-        return components;
     }
-   
    
 
     private const byte k_MaxByteForOverexposedColor = 191;
@@ -429,7 +205,6 @@ class GameObjectUitls
         stringDatas.Add(clipName);
         int clipFrameRate = (int)aniclip.frameRate;
 
-        List<ComponentType> components = GameObjectUitls.componentsOnGameObject(gameObject);
         //list Curve 数据
         List<EditorCurveBinding> editorCurveBindingList = new List<EditorCurveBinding>();
 

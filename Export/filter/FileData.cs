@@ -6,7 +6,7 @@ internal class FileData
     public ResoureMap resoureMap;
     protected string m_path;
     private string m_uuid;
-
+    protected string m_outPath;
     protected JSONObject m_metaData;
     public string metaPath
     {
@@ -28,7 +28,7 @@ internal class FileData
     {
         get
         {
-            return ExportConfig.SavePath() + "/" + this.m_path;
+            return ExportConfig.SavePath() + "/" + this.m_outPath;
         }
     }
 
@@ -51,7 +51,7 @@ internal class FileData
             return;
         }
         this.m_path = path;
-
+        this.m_outPath = this.getOutFilePath(path);
         if (File.Exists(metaPath))
         {
             JSONObject customMap = this.m_metaData = JSONObject.Create(File.ReadAllText(metaPath));
@@ -64,7 +64,10 @@ internal class FileData
             this.m_metaData.SetField("uuid", this.m_uuid);
         }
     }
-
+    virtual protected string  getOutFilePath(string path)
+    {
+        return path;
+    }
     public JSONObject metaData()
     {
         return this.m_metaData;

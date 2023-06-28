@@ -266,11 +266,11 @@ public class AnimationCurveGroup
     private GameObject _gameobject;
     private Dictionary<float, FrameData> datas;
     private Dictionary<uint, float> _timeLists;
-    private List<ComponentType> components;
+    private bool iscameraOrLight;
     public AnimationCurveGroup(string path, GameObject gameObject, Type type, string conpomentType, string propertyName, KeyFrameValueType keyType)
     {
         this._curveList = new Dictionary<string, CustomClipCurveData>();
-        this.components = GameObjectUitls.componentsOnGameObject(gameObject);
+        this.iscameraOrLight = GameObjectUitls.isCameraOrLight(gameObject);
         this._path = path;
         this._gameobject = gameObject;
         this._keyType = keyType;
@@ -476,11 +476,6 @@ public class AnimationCurveGroup
         {
             frameDelegate = writeValue;
         }
-        bool isRotate = false;
-        if (components.IndexOf(ComponentType.Camera) != -1 || components.IndexOf(ComponentType.DirectionalLight) != -1 || components.IndexOf(ComponentType.SpotLight) != -1)
-        {
-            isRotate = true;
-        }
         int porpCount = props.Count;
         aniNodeData.keyFrameCount = (ushort)this.datas.Values.Count;
         foreach (FrameData frame in this.datas.Values)
@@ -498,10 +493,10 @@ public class AnimationCurveGroup
             else
             {
                 FileUtil.setStatuse(false);     
-                Debug.LogError("not get the frameIndex by time��" + frame.floatTime.ToString());
+                Debug.LogError("not get the frameIndex by time:" + frame.floatTime.ToString());
             }
 
-            frameDelegate(frame, ref data, isRotate);
+            frameDelegate(frame, ref data, this.iscameraOrLight);
             aniNodeFrameDatas.Add(data);
         }
     }

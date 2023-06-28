@@ -30,10 +30,10 @@ internal class HierarchyFile
                 }
                 continue;
             }
-            perfabList.Add(rt, perfabRoot);//增加到列表中
+            perfabList.Add(rt, perfabRoot);//增加到列表中=
         }
         this.resouremap = new ResoureMap(perfabList);
-        this.nodeMap = this.resouremap.addNodeMap(2);
+        this.nodeMap = this.resouremap.AddNodeMap(2);
 
         GameObject[] gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
 
@@ -51,6 +51,10 @@ internal class HierarchyFile
         if (this.notPerfabNodes.Contains(gameObject))
         {
             JSONObject nodeData = JsonUtils.GetGameObject(gameObject);
+            if(!gameObject.activeInHierarchy&& ExportConfig.IgnoreNotActiveGameObject)
+            {
+                return;
+            }
             this.nodeMap.addNodeMap(gameObject, nodeData, gameObject == PerfabFile.getPerfabObject(gameObject));
         }
         if (gameObject.transform.childCount > 0)
@@ -78,7 +82,7 @@ internal class HierarchyFile
             }
         }
         
-        this.resouremap.saveAllFile();
+        this.resouremap.SaveAllFile();
     }
 
     private void getSceneNode()
@@ -106,7 +110,7 @@ internal class HierarchyFile
         {
             JSONObject skyRender = new JSONObject(JSONObject.Type.OBJECT);
             skyRender.AddField("meshType", "dome");
-            JSONObject filedata = this.resouremap.getMaterialData(skyBoxMaterial);
+            JSONObject filedata = this.resouremap.GetMaterialData(skyBoxMaterial);
             skyRender.AddField("material", filedata);
             scene3dNode.AddField("skyRenderer", skyRender);
         }
@@ -125,7 +129,7 @@ internal class HierarchyFile
             ambientProbe.AddField("_$type", "Float32Array");
             JSONObject ambientValue = new JSONObject(JSONObject.Type.ARRAY);
             ambientProbe.AddField("value", ambientValue);
-            this.resouremap.getSHOrigin(ambientValue);
+            this.resouremap.GetSHOrigin(ambientValue);
             scene3dNode.AddField("ambientSphericalHarmonicsIntensity", RenderSettings.ambientIntensity);
         }
         else

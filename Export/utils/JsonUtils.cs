@@ -36,27 +36,25 @@ internal class JsonUtils
     }
     public static JSONObject GetTransfrom(GameObject gObject)
     {
-        List<ComponentType> components = GameObjectUitls.componentsOnGameObject(gObject);
         JSONObject transfrom = new JSONObject(JSONObject.Type.OBJECT);
         Vector3 position = gObject.transform.localPosition;
         SpaceUtils.changePostion(ref position);
         transfrom.AddField("localPosition", GetVector3Object(position));
       
         Quaternion rotation = gObject.transform.localRotation;
-        bool isRotate = false;
-        if (components.IndexOf(ComponentType.Camera) != -1 || components.IndexOf(ComponentType.DirectionalLight) != -1 || components.IndexOf(ComponentType.SpotLight) != -1)
-        {
-            isRotate = true;
-        }
+        bool isRotate = GameObjectUitls.isCameraOrLight(gObject);
         SpaceUtils.changeRotate(ref rotation, isRotate);
         transfrom.AddField("localRotation", GetQuaternionObject(rotation));
         transfrom.AddField("localScale", GetVector3Object(gObject.transform.localScale));
         return transfrom;
     }
 
-    public static JSONObject GetGameObject(GameObject gObject,bool isperfab =false)
+    public static JSONObject GetGameObject(GameObject gObject,bool isperfab =false, JSONObject nodeData = null)
     {
-        JSONObject nodeData = new JSONObject(JSONObject.Type.OBJECT);
+        if(nodeData == null)
+        {
+            nodeData = new JSONObject(JSONObject.Type.OBJECT);
+        }
         if (isperfab)
         {
             nodeData.AddField("_$ver", 1);
@@ -69,32 +67,25 @@ internal class JsonUtils
         nodeData.AddField("transform", JsonUtils.GetTransfrom(gObject));
         return nodeData;
     }
-    public static JSONObject GetDirectionalLightComponentData(GameObject gameObject)
+    public static JSONObject GetDirectionalLightComponentData(Light light, bool isOverride)
     {
-        Light light = gameObject.GetComponent<Light>();
-        JSONObject lightData = new JSONObject(JSONObject.Type.OBJECT);
-        lightData.AddField("_$type", "DirectionLightCom");
-        
+        JSONObject lightData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "DirectionLightCom",isOverride);
         SetLightData(light, lightData);
         return lightData;
     }
 
-    public static JSONObject GetPointLightComponentData(GameObject gameObject)
+    public static JSONObject GetPointLightComponentData(Light light, bool isOverride)
     {
-        Light light = gameObject.GetComponent<Light>();
-        JSONObject lightData = new JSONObject(JSONObject.Type.OBJECT);
-        lightData.AddField("_$type", "PointLightCom");
+        JSONObject lightData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "PointLightCom", isOverride);
         SetLightData(light, lightData);
         lightData.AddField("range", light.range);
 
         return lightData;
     }
 
-    public static JSONObject GetSpotLightComponentData(GameObject gameObject)
+    public static JSONObject GetSpotLightComponentData(Light light, bool isOverride)
     {
-        Light light = gameObject.GetComponent<Light>();
-        JSONObject lightData = new JSONObject(JSONObject.Type.OBJECT);
-        lightData.AddField("_$type", "SpotLightCom");
+        JSONObject lightData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "SpotLightCom", isOverride);
         SetLightData(light, lightData);
         lightData.AddField("range", light.range);
         lightData.AddField("spotAngle", light.spotAngle);
@@ -139,6 +130,18 @@ internal class JsonUtils
         lightData.AddField("shadowNearPlane", light.shadowNearPlane);
     }
 
+    public static JSONObject SetComponentsType(JSONObject compData, string componentsname, bool isOverride)
+    {
+        if (isOverride)
+        {
+            compData.AddField("_$override", componentsname);
+        }
+        else
+        {
+            compData.AddField("_$type", componentsname);
+        }
+        return compData;
+    }
 
     public static void getCameraComponentData(GameObject gameObject, JSONObject props)
     {

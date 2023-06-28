@@ -6,21 +6,11 @@ using System.IO;
 
 internal class MaterialFile : JsonFile
 {
-    private string outUrl;
     private Material m_material;
-    override public string outPath
-    {
-        get
-        {
-            return ExportConfig.SavePath() + "/" + this.outUrl;
-        }
-    }
     public MaterialFile(ResoureMap map, Material material) : base(null,new JSONObject(JSONObject.Type.OBJECT))
     {
         this.resoureMap = map;
-        string materialPath = AssetsUtil.GetMaterialPath(material);
-        this.updatePath(materialPath);
-        this.outUrl =  GameObjectUitls.cleanIllegalChar(materialPath.Split('.')[0], false) + ".lmat";
+        this.updatePath(AssetsUtil.GetMaterialPath(material));
         this.m_material = material;
         if(material.shader.name == "Skybox/6 Sided")
         {
@@ -31,6 +21,11 @@ internal class MaterialFile : JsonFile
             MetarialUitls.WriteMetarial(material, this.jsonData, map);
         }
       
+    }
+
+    protected override string getOutFilePath(string path)
+    {
+        return GameObjectUitls.cleanIllegalChar(path.Split('.')[0], false) + ".lmat";
     }
 
     public override void SaveFile(Dictionary<string, FileData> exportFiles)

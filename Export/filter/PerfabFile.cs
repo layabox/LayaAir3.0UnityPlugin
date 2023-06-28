@@ -48,16 +48,13 @@ internal class PerfabFile :FileData
         {
             return null;
         }
-        //return PrefabUtility.FindValidUploadPrefabInstanceRoot(gameObject);//物体的Prefab根节点
         return PrefabUtility.GetOutermostPrefabInstanceRoot(gameObject);//物体的Prefab根节点
     }
 
     private GameObject gameObject;
     private NodeMap _nodeMap;
-    private string outUrl;
     public PerfabFile(NodeMap nodeMap,string perfabPath) : base(perfabPath)
     {
-        this.outUrl = perfabPath.Replace(".prefab", ".lh");
         this.gameObject = PrefabUtility.LoadPrefabContents(perfabPath) as GameObject;
         this._nodeMap = nodeMap;
         this.getGameObjectData(this.gameObject,true);
@@ -73,12 +70,10 @@ internal class PerfabFile :FileData
             return this._nodeMap;
         }
     }
-    override public string outPath
+    
+    override protected string getOutFilePath(string path)
     {
-        get
-        {
-            return ExportConfig.SavePath() + "/" + this.outUrl;
-        }
+        return path.Replace(".prefab", ".lh");
     }
 
     private JSONObject getGameObjectData(GameObject gameObject, bool isperfab = false)

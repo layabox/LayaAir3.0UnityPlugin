@@ -1,26 +1,17 @@
 
 using System.Collections.Generic;
 using System.IO;
-using UnityEditor;
 using UnityEngine;
 
 internal class MeshFile : FileData
 {
     private Mesh m_mesh;
-    private string outUrl;
     private Renderer render;
-    override public string outPath
-    {
-        get
-        {
-            return ExportConfig.SavePath() + "/" + this.outUrl;
-        }
-    }
+
     public MeshFile(Mesh mesh,Renderer render) :base(null)
     {
         string path = AssetsUtil.GetMeshPath(mesh);
         this.updatePath(path);
-        this.outUrl = path;
         this.m_mesh = mesh;
         this.render = render;
     }

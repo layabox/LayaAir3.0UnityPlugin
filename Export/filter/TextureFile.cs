@@ -39,7 +39,6 @@ internal class TextureFile : FileData
         ConvertOriginalTextureTypeList.Add(".HDR");
     }
     public static string LOGHEAD = "LayaAir3D UnityPlugin: ";
-    private string _originPath;
     private Texture2D _texture;
     private JSONObject _constructParams;
     private JSONObject _propertyParams;
@@ -51,61 +50,14 @@ internal class TextureFile : FileData
     public TextureFile(string originPath, Texture2D texture, bool isNormal) : base(null)
     {
         this._texture = texture;
-        this._originPath = originPath;
         this._isNormal = isNormal;
-        this.getTexureInfo();
+        this.updatePath(originPath);
+        this.getTextureInfo();
     }
 
-    override public string filePath
-    {
-        get
-        {
-            return this._originPath;
-        }
-    }
-    private int getFormat()
-    {
-        switch (this._texture.format)
-        {
-            case TextureFormat.DXT1:
-                return 3;
-            case TextureFormat.DXT5:
-                return 5;
-            case TextureFormat.RGB24:
-                return 0;
-            default:
-                return 1;
-        }
-    }
-    private void getTexureInfo()
+    private void getTextureInfo()
     {
         Texture2D texture = this._texture;
-        if (this._texture == null)
-        {
-            return;
-        }
-
-        this._format = this.getFormat();
-
-        var origpath = this._originPath;
-        string ext = Path.GetExtension(origpath).ToLower();
-        this._isCopy = ConvertOriginalTextureTypeList.IndexOf(ext) != -1;
-        string savePath = origpath.Substring(0, origpath.LastIndexOf("."));
-        this._rgbmEncoding = ext == ".hdr" || ext == ".exr";
-        if (this._rgbmEncoding)
-        {
-            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".hdr" : ext;
-        }
-        else if (this._format == 0)
-        {
-            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".jpg" : ext;
-        }
-        else
-        {
-            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".png" : ext;
-        }
-        this.updatePath(savePath);
-
         this._constructParams = new JSONObject(JSONObject.Type.ARRAY);
         this._propertyParams = new JSONObject(JSONObject.Type.ARRAY);
 
@@ -115,7 +67,6 @@ internal class TextureFile : FileData
         {
             FileUtil.setStatuse(false);
             Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
-            return;
         }
         else
         {
@@ -216,9 +167,43 @@ internal class TextureFile : FileData
             this._propertyParams.AddField("wrapModeV", 0);
         }
 
-
         this._propertyParams.AddField("anisoLevel", anisoLevel);
+    }
 
+    private int getFormat()
+    {
+        switch (this._texture.format)
+        {
+            case TextureFormat.DXT1:
+                return 3;
+            case TextureFormat.DXT5:
+                return 5;
+            case TextureFormat.RGB24:
+                return 0;
+            default:
+                return 1;
+        }
+    }
+    override protected string getOutFilePath(string origpath)
+    {
+        this._format = this.getFormat();
+        string ext = Path.GetExtension(origpath).ToLower();
+        this._isCopy = ConvertOriginalTextureTypeList.IndexOf(ext) != -1;
+        string savePath = origpath.Substring(0, origpath.LastIndexOf("."));
+        this._rgbmEncoding = ext == ".hdr" || ext == ".exr";
+        if (this._rgbmEncoding)
+        {
+            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".hdr" : ext;
+        }
+        else if (this._format == 0)
+        {
+            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".jpg" : ext;
+        }
+        else
+        {
+            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".png" : ext;
+        }
+        return savePath;
     }
 
     public JSONObject jsonObject(string name)
@@ -345,15 +330,11 @@ internal class TextureFile : FileData
     }
     public override void SaveFile(Dictionary<string, FileData> exportFiles)
     {
-        string filePath = outPath;
-        string folder = Path.GetDirectoryName(filePath);
-        if (!Directory.Exists(folder))
-            Directory.CreateDirectory(folder);
         base.saveMeta();
-        string path = AssetDatabase.GetAssetPath(this._texture.GetInstanceID());
+        string filePath = this.filePath;
         if (this._isCopy)
         {
-            File.Copy(path, filePath, true);
+            File.Copy(filePath, this.outPath, true);
         }
         else{
             if (this._rgbmEncoding)
@@ -364,17 +345,17 @@ internal class TextureFile : FileData
                     Debug.Log("Current color space is gamma.. Your Img will change to Linear Space");
                     gammaColorsToLinear(pixels);
                 }
-                this.exportHDRFile(filePath, pixels, this._texture.height, this._texture.width);
+                this.exportHDRFile(this.outPath, pixels, this._texture.height, this._texture.width);
             }
             else if (this._format == 1)
             {
                 byte[] bytes = this._texture.EncodeToPNG();
-                File.WriteAllBytes(filePath, bytes);
+                File.WriteAllBytes(this.outPath, bytes);
             }
             else if (this._format == 0)
             {
                 byte[] bytes = this._texture.EncodeToJPG();
-                File.WriteAllBytes(filePath, bytes);
+                File.WriteAllBytes(this.outPath, bytes);
             }
         }
     }

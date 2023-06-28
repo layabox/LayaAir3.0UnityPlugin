@@ -4,24 +4,16 @@ using UnityEngine;
 
 internal class AnimationClipFile : FileData
 {
-    private string outUrl;
     private AnimationClip m_clip;
     private GameObject m_root;
-    override public string outPath
-    {
-        get
-        {
-            return ExportConfig.SavePath() + "/" + this.outUrl;
-        }
-    }
     public AnimationClipFile(AnimationClip clip,GameObject root):base(null)
     {
         this.m_clip = clip;
         this.m_root = root;
-        string path = AssetsUtil.GetAnimationClipPath(clip);
-        this.updatePath(path);
-        this.outUrl = path;
+        this.updatePath(AssetsUtil.GetAnimationClipPath(clip));
     }
+
+
     public override void SaveFile(Dictionary<string, FileData> exportFiles)
     {
         base.saveMeta();

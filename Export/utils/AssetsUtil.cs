@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 
 internal class AssetsUtil 
@@ -12,10 +13,17 @@ internal class AssetsUtil
     {
         return AssetsUtil.GetFilePath(AssetDatabase.GetAssetPath(clip.GetInstanceID()), ".lani", clip.name);
     }
+    public static string GetAnimatorControllerPath(AnimatorController animatorController)
+    {
+        return AssetsUtil.GetFilePath(AssetDatabase.GetAssetPath(animatorController.GetInstanceID()), ".controller", animatorController.name);
+    }
     public static string GetMaterialPath(Material material)
     {
         string materialPath = AssetDatabase.GetAssetPath(material.GetInstanceID());
-        if (materialPath == "Resources/unity_builtin_extra")
+        if (materialPath.Length < 1)
+        {
+            return material.name + ".lmat";
+        }else if (materialPath == "Resources/unity_builtin_extra")
         {
             return "Resources/" + material.name+ ".lmat";
         }

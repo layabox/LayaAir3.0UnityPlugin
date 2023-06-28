@@ -14,11 +14,11 @@ internal class ResoureMap
         this.nodemaps = new List<NodeMap>();
         foreach (var map in maps)
         {
-            this.AddExportFile(new PerfabFile(this.addNodeMap(), map.Key));
+            this.AddExportFile(new PerfabFile(this.AddNodeMap(), map.Key));
         }
     }
 
-    public NodeMap addNodeMap(int idOff = 0)
+    public NodeMap AddNodeMap(int idOff = 0)
     {
         NodeMap nodemap = new NodeMap(this,idOff);
         this.nodemaps.Add(nodemap);
@@ -57,45 +57,45 @@ internal class ResoureMap
     public MeshFile GetMeshFile(Mesh mesh,Renderer renderer)
     {
         string path = AssetsUtil.GetMeshPath(mesh);
-        if (!this.haveFileData(path))
+        if (!this.HaveFileData(path))
         {
             this.AddExportFile(new MeshFile(mesh, renderer));
         }
-        return this.getFileData(path) as MeshFile;
+        return this.GetFileData(path) as MeshFile;
     }
 
     public MaterialFile GetMaterialFile(Material material)
     {
         string path = AssetsUtil.GetMaterialPath(material);
-        if (!this.haveFileData(path))
+        if (!this.HaveFileData(path))
         {
             this.AddExportFile(new MaterialFile(this,material));
         }
-        return this.getFileData(path) as MaterialFile;
+        return this.GetFileData(path) as MaterialFile;
     }
 
     public TextureFile GetTextureFile(Texture texture, bool isNormal)
     {
         string picturePath = AssetsUtil.GetTextureFile(texture);
         
-        if (!this.haveFileData(picturePath))
+        if (!this.HaveFileData(picturePath))
         {
             this.AddExportFile(new TextureFile(picturePath,texture as Texture2D, isNormal));
         }
-        return this.getFileData(picturePath) as TextureFile;
+        return this.GetFileData(picturePath) as TextureFile;
     }
 
-    private AnimationClipFile GetAnimationClipFile(AnimationClip aniclip, GameObject gameObject)
+    public AnimationClipFile GetAnimationClipFile(AnimationClip aniclip, GameObject gameObject)
     {
         string laniPath = AssetsUtil.GetAnimationClipPath(aniclip);
 
-        if (!exportFiles.ContainsKey(laniPath))
+        if (!this.HaveFileData(laniPath))
         {
             this.AddExportFile(new AnimationClipFile(aniclip, gameObject));
         }
 
 
-        return this.getFileData(laniPath) as AnimationClipFile;
+        return this.GetFileData(laniPath) as AnimationClipFile;
 
     }
     public void AddExportFile(FileData file)
@@ -104,7 +104,7 @@ internal class ResoureMap
         exportFiles.Add(file.filePath, file);
     }
 
-    public FileData getFileData(string path)
+    public FileData GetFileData(string path)
     {
         if (!exportFiles.ContainsKey(path))
         {
@@ -117,12 +117,12 @@ internal class ResoureMap
     }
 
 
-    public bool haveFileData(string path)
+    public bool HaveFileData(string path)
     {
         return exportFiles.ContainsKey(path);
     }
 
-    public void saveAllFile()
+    public void SaveAllFile()
     {
         foreach (var file in exportFiles)
         {
@@ -132,30 +132,8 @@ internal class ResoureMap
 
     public void getComponentsData(GameObject gameObject, JSONObject node,NodeMap map)
     {
-        List<ComponentType> components = GameObjectUitls.componentsOnGameObject(gameObject);
-
-        JSONObject component = new JSONObject(JSONObject.Type.ARRAY);
-
-
-        // components
-        node.AddField("_$comp", component);
-
-        //-----------------------------------------------------------------------------------------------------------//
-        //DirectionalLight
-        if (components.IndexOf(ComponentType.DirectionalLight) != -1)
-        {
-            component.Add(JsonUtils.GetDirectionalLightComponentData(gameObject));
-        }
-        if (components.IndexOf(ComponentType.PointLight) != -1)
-        {
-            component.Add(JsonUtils.GetPointLightComponentData(gameObject));
-        }
-        if (components.IndexOf(ComponentType.SpotLight) != -1)
-        {
-            component.Add(JsonUtils.GetSpotLightComponentData(gameObject));
-        }
-        //Camera
-        if (components.IndexOf(ComponentType.Camera) != -1)
+        Camera camera = gameObject.GetComponent<Camera>();
+        if (camera != null)
         {
             JsonUtils.getCameraComponentData(gameObject, node);
             node.AddField("_$type", "Camera");
@@ -165,48 +143,82 @@ internal class ResoureMap
             node.AddField("_$type", "Sprite3D");
         }
 
-        if (components.IndexOf(ComponentType.MeshFilter) != -1)
+        JSONObject compents = new JSONObject(JSONObject.Type.ARRAY);
+        node.AddField("_$comp", compents);
+        List<Component> componentsList = new List<Component>();
+        gameObject.GetComponents(componentsList);
+        foreach(Component comp in componentsList)
         {
-            component.Add(this.getMeshFilterComponentData(gameObject));
-        }
-        if (components.IndexOf(ComponentType.MeshRenderer) != -1)
-        {
-            component.Add(getMeshRenderComponmentData(gameObject));
-        }
-        if (components.IndexOf(ComponentType.SkinnedMeshRenderer) != -1)
-        {
-            this.getSkinnerMeshRenderComponmentData(gameObject, component, map);
-        }
-
-        if (components.IndexOf(ComponentType.Animator) != -1)
-        {
-            component.Add(getAnimatorComponentData(gameObject));
-        }
-
-        if (components.IndexOf(ComponentType.ReflectionProbe) != -1)
-        {
-            component.Add(getReflectionProbe(gameObject));
-        }
-
-        if (components.IndexOf(ComponentType.LodGroup) != -1)
-        {
-            component.Add(getLodGroup(gameObject,map));
+            this.writeComponentData(compents, comp, map,false);
         }
 
     }
-    private JSONObject getMeshFilterComponentData(GameObject gameObject)
-    {
-        Mesh mesh = gameObject.GetComponent<MeshFilter>().sharedMesh;
-        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
-        compData.AddField("_$type", "MeshFilter");
 
-        if (mesh == null)
+    public void writeComponentData(JSONObject compents,Component comp, NodeMap map, bool isOverride)
+    {
+        GameObject gameObject = comp.gameObject;
+        if(comp is MeshRenderer)
         {
-            Debug.LogWarning("LayaAir3D Warning(Code:1001) : " + gameObject.name + "'s MeshFilter Component Mesh data can't be null!");
+            compents.Add(this.GetMeshRenderComponmentData(comp as MeshRenderer, isOverride));
+        }else if(comp is MeshFilter)
+        {
+            MeshFilter filter = comp as MeshFilter;
+            compents.Add(this.GetMeshFilterComponentData(filter.sharedMesh, gameObject.GetComponent<MeshRenderer>(), isOverride));
+        }else if(comp is SkinnedMeshRenderer)
+        {
+            SkinnedMeshRenderer render = comp as SkinnedMeshRenderer;
+            compents.Add(this.GetMeshFilterComponentData(render.sharedMesh, render, isOverride));
+            compents.Add(this.GetSkinnerMeshRenderComponmentData(render, map, isOverride));
+        }else if(comp is Light)
+        {
+            compents.Add(this.GetLightComponentData(comp as Light, isOverride));
+        }
+        else if(comp is Animator)
+        {
+            compents.Add(this.GetAnimatorComponentData(comp as Animator, isOverride));
+        }else if (comp is ReflectionProbe)
+        {
+            compents.Add(this.GetReflectionProbe(comp as ReflectionProbe, isOverride));
+        }else if(comp is LODGroup)
+        {
+            compents.Add(this.GetLodGroup(comp as LODGroup, map, isOverride));
+        }
+    }
+
+    public JSONObject GetLightComponentData(Light light,bool isOverride)
+    {
+        if (light.type == LightType.Directional)
+        {
+            return JsonUtils.GetDirectionalLightComponentData(light, isOverride);
+        }
+        else if (light.type == LightType.Point)
+        {
+            return JsonUtils.GetPointLightComponentData(light, isOverride);
+        }
+        else if (light.type == LightType.Spot)
+        {
+            return JsonUtils.GetSpotLightComponentData(light, isOverride);
         }
         else
         {
-            MeshFile meshFile = this.GetMeshFile(mesh,gameObject.GetComponent<Renderer>());
+            return null;
+        }
+    }
+    public JSONObject GetMeshFilterComponentData(Mesh mesh, Renderer render,bool isOverride)
+    {
+        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
+        if (isOverride)
+        {
+            compData.AddField("_$override", "MeshFilter");
+        }
+        else
+        {
+            compData.AddField("_$type", "MeshFilter");
+        }
+       
+        if (mesh != null)
+        {
+            MeshFile meshFile = this.GetMeshFile(mesh, render);
             JSONObject meshFiledata = new JSONObject(JSONObject.Type.OBJECT);
             meshFiledata.AddField("_$uuid", meshFile.uuid);
             meshFiledata.AddField("_$type", "mesh");
@@ -216,45 +228,20 @@ internal class ResoureMap
         return compData;
 
     }
-    private void getSkinnerMeshRenderComponmentData(GameObject gameObject,JSONObject components, NodeMap map)
+    public JSONObject GetSkinnerMeshRenderComponmentData(SkinnedMeshRenderer skinnedMeshRenderer, NodeMap map,bool isOverride)
     {
-        SkinnedMeshRenderer skinnedMeshRenderer = gameObject.GetComponent<SkinnedMeshRenderer>();
-        Mesh mesh = skinnedMeshRenderer.sharedMesh;
-        if (mesh != null)
-        {
-            MeshFile meshFile = this.GetMeshFile(mesh, skinnedMeshRenderer);
-            JSONObject meshFiledata = new JSONObject(JSONObject.Type.OBJECT);
-            meshFiledata.AddField("_$uuid", meshFile.uuid);
-            meshFiledata.AddField("_$type", "mesh");
-            JSONObject fileterData = new JSONObject(JSONObject.Type.OBJECT);
-            fileterData.AddField("_$type", "MeshFilter");
-            fileterData.AddField("sharedMesh", meshFiledata);
-            components.Add(fileterData);
-        }
-        else
-        {
-            Debug.LogWarning("LayaAir3D Warning(Code:1001) : " + gameObject.name + "'s MeshFilter Component Mesh data can't be null!");
-        }
-
-
         Material[] materials = skinnedMeshRenderer.sharedMaterials;
         JSONObject sharedMaterials = new JSONObject(JSONObject.Type.ARRAY);
+        GameObject gameObject = skinnedMeshRenderer.gameObject;
         for (var i = 0; i < materials.Length; i++)
         {
-            Material mat = materials[i];
-            if (mat == null)
-            {
-                Debug.LogWarning("LayaAir3D Warning(Code:1002) : " + gameObject.name + "'s MeshRender Component materials data can't be null!");
-            }
-            else
-            {
-                sharedMaterials.Add(getMaterialData(mat));
-            }
+            sharedMaterials.Add(this.GetMaterialData(materials[i]));
         }
 
         JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
         compData.AddField("_$type", "SkinnedMeshRenderer");
         compData.AddField("sharedMaterials", sharedMaterials);
+        compData.AddField("enabled", skinnedMeshRenderer.enabled);
 
 
         Bounds bounds = skinnedMeshRenderer.localBounds;
@@ -278,19 +265,17 @@ internal class ResoureMap
             bones.Add(map.getRefNodeIdObjet(bonesTransform[i].gameObject));
         }
 
-        //rootBone
         if (skinnedMeshRenderer.rootBone)
         {
             compData.AddField("rootBone", map.getRefNodeIdObjet(skinnedMeshRenderer.rootBone.gameObject));
         }
-
-        components.Add(compData);
+        return compData;
     }
 
 
-    private JSONObject getMeshRenderComponmentData(GameObject gameObject)
+    public JSONObject GetMeshRenderComponmentData(MeshRenderer render, bool isOverride)
     {
-        MeshRenderer render = gameObject.GetComponent<MeshRenderer>();
+        GameObject gameObject = render.gameObject;
         Material[] materials = render.sharedMaterials;
         JSONObject sharedMaterials = new JSONObject(JSONObject.Type.ARRAY);
         for (var i = 0; i < materials.Length; i++)
@@ -302,23 +287,21 @@ internal class ResoureMap
             }
             else
             {
-                sharedMaterials.Add(getMaterialData(mat));
+                sharedMaterials.Add(this.GetMaterialData(mat));
             }
         }
 
-        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
-        compData.AddField("_$type", "MeshRenderer");
+        JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "MeshRenderer", isOverride);
+        compData.AddField("enabled", render.enabled);
         compData.AddField("sharedMaterials", sharedMaterials);
         return compData;
     }
 
 
-    private JSONObject getLodGroup(GameObject gameObject, NodeMap map)
+    public JSONObject GetLodGroup(LODGroup lodGroup, NodeMap map, bool isOverride)
     {
-        LODGroup lodGroup = gameObject.GetComponent<LODGroup>();
-
-        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
-        compData.AddField("_$type", "LODGroup");
+        JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "LODGroup", isOverride);
+        compData.AddField("enabled", lodGroup.enabled);
         JSONObject lodDatas = new JSONObject(JSONObject.Type.ARRAY);
         LOD[] lods = lodGroup.GetLODs();
         for (var i = 0; i < lods.Length; i++)
@@ -341,15 +324,14 @@ internal class ResoureMap
         compData.AddField("lods", lodDatas);
         return compData;
     }
-    private JSONObject getReflectionProbe(GameObject gameObject)
+    public JSONObject GetReflectionProbe(ReflectionProbe probe, bool isOverride)
     {
-        ReflectionProbe probe = gameObject.GetComponent<ReflectionProbe>();
+        GameObject gameObject = probe.gameObject;
         Matrix4x4 matirx = gameObject.transform.worldToLocalMatrix;
 
         Vector4 helpVec = new Vector4(0, 0, 0, 1);
 
-        JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
-        compData.AddField("_$type", "ReflectionProbe");
+        JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ReflectionProbe", isOverride);
         Vector3 min = probe.bounds.min;
         helpVec.Set(min.x, min.y, min.z, 1);
         helpVec = matirx * helpVec;
@@ -369,11 +351,12 @@ internal class ResoureMap
         compData.AddField("clearFlag", probe.clearFlags == ReflectionProbeClearFlags.Skybox ? 1 : 0);
         compData.AddField("resolution", probe.resolution);
         compData.AddField("_reflectionsIblSamples", 128);
+        compData.AddField("enabled", probe.enabled);
         return compData;
     }
-    private JSONObject getAnimatorComponentData(GameObject gameObject)
+    public JSONObject GetAnimatorComponentData(Animator animator, bool isOverride)
     {
-        Animator animator = gameObject.GetComponent<Animator>();
+        GameObject gameObject = animator.gameObject;
         AnimatorController animatorController = (AnimatorController)animator.runtimeAnimatorController;
 
         if (animatorController == null)
@@ -381,15 +364,13 @@ internal class ResoureMap
             Debug.LogWarning("LayaAir3D Warning(Code:1002) : " + gameObject.name + "'s Animator Compoment must have a Controller!");
             return null;
         }
-        string path = AssetDatabase.GetAssetPath(animatorController.GetInstanceID());
-        string animatorControllerPath = GameObjectUitls.cleanIllegalChar(path.Split('.')[0], false) + ".controller";
+        string animatorControllerPath = AssetsUtil.GetAnimatorControllerPath(animatorController);
         JsonFile controlFile;
-        if (!exportFiles.ContainsKey(animatorControllerPath))
+        if (!this.HaveFileData(animatorControllerPath))
         {
             controlFile = new JsonFile(animatorControllerPath, new JSONObject(JSONObject.Type.OBJECT));
-            exportFiles.Add(controlFile.filePath, controlFile);
             JSONObject controllData = controlFile.jsonData;
-            controllData.AddField("_$type", "Animator");
+            JsonUtils.SetComponentsType(controllData, "Animator", isOverride);
             controllData.AddField("enabled", true);
             controllData.AddField("controller", "null");
             controllData.AddField("cullingMode", 0);
@@ -398,19 +379,21 @@ internal class ResoureMap
             int layerLength = layers.Length;
             for (var i = 0; i < layerLength; i++)
             {
-                controllerLayers.Add(getAnimaterLayerData(layers[i], gameObject, i == 0));
+                controllerLayers.Add(GetAnimaterLayerData(layers[i], gameObject, i == 0));
             }
             controllData.AddField("controllerLayers", controllerLayers);
+            this.AddExportFile(controlFile);
         }
         else
         {
-            controlFile = exportFiles[animatorControllerPath] as JsonFile;
+            controlFile = this.GetFileData(animatorControllerPath) as JsonFile;
         }
 
         JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
         compData.AddField("_$type", "Animator");
         JSONObject controller = new JSONObject(JSONObject.Type.OBJECT);
         compData.AddField("controller", controller);
+        compData.AddField("enabled", animator.enabled);
         controller.AddField("_$type", "AnimationController");
         controller.AddField("_$uuid", controlFile.uuid);
 
@@ -418,7 +401,7 @@ internal class ResoureMap
     }
 
 
-    private JSONObject getAnimaterLayerData(AnimatorControllerLayer layer, GameObject gameObject, bool isbaseLayer)
+    private JSONObject GetAnimaterLayerData(AnimatorControllerLayer layer, GameObject gameObject, bool isbaseLayer)
     {
         JSONObject layarNode = new JSONObject(JSONObject.Type.OBJECT);
         layarNode.AddField("_$type", "AnimatorControllerLayer");
@@ -470,11 +453,19 @@ internal class ResoureMap
             statueNode.AddField("x", postion.x);
             statueNode.AddField("y", postion.y);
 
-            AnimationClipFile laniFile = GetAnimationClipFile(state.motion as AnimationClip, gameObject);
-            JSONObject clipData = new JSONObject(JSONObject.Type.OBJECT);
-            clipData.AddField("_$type", "AnimationClip");
-            clipData.AddField("_$uuid", laniFile.uuid);
-            statueNode.AddField("clip", clipData);
+            AnimationClip clip = state.motion as AnimationClip;
+            if (clip != null)
+            {
+                JSONObject clipData = new JSONObject(JSONObject.Type.OBJECT);
+                clipData.AddField("_$type", "AnimationClip");
+                AnimationClipFile laniFile = GetAnimationClipFile(clip, gameObject);
+                clipData.AddField("_$uuid", laniFile.uuid);
+                statueNode.AddField("clip", clipData);
+            }
+            else
+            {
+                Debug.LogError(gameObject.name + " have empty or not  AnimationClip " + state.name);
+            }
             statueNode.AddField("id", stateMap[state.name].ToString());
 
             AnimatorStateTransition[] transitions = state.transitions;
@@ -527,9 +518,13 @@ internal class ResoureMap
         }
         else
         {
-            JSONObject soloTransition = new JSONObject(JSONObject.Type.OBJECT);
-            soloTransition.AddField("id", stateMap[stateMachine.defaultState.name].ToString());
-            soloTransitions.Add(soloTransition);
+            if (stateMachine.defaultState != null)
+            {
+                JSONObject soloTransition = new JSONObject(JSONObject.Type.OBJECT);
+                soloTransition.AddField("id", stateMap[stateMachine.defaultState.name].ToString());
+                soloTransitions.Add(soloTransition);
+            }
+         
         }
         enterNode.AddField("soloTransitions", soloTransitions);
 
@@ -565,7 +560,7 @@ internal class ResoureMap
     }
 
     
-    public void getSHOrigin(JSONObject shObj)
+    public void GetSHOrigin(JSONObject shObj)
     {
         SphericalHarmonicsL2 sh = RenderSettings.ambientProbe;
         for (var i = 0; i < 3; i++)
@@ -576,16 +571,15 @@ internal class ResoureMap
         }
     }
 
-    public JSONObject getMaterialData(Material material)
+    public JSONObject GetMaterialData(Material material)
     {
-        MaterialFile jsonFile = this.GetMaterialFile(material);
-        if(jsonFile == null)
-        {
-            Debug.Log(material);
-        }
         JSONObject materFiledata = new JSONObject(JSONObject.Type.OBJECT);
-        materFiledata.AddField("_$uuid", jsonFile.uuid);
         materFiledata.AddField("_$type", "Material");
+        if (material != null)
+        {
+            MaterialFile jsonFile = this.GetMaterialFile(material);
+            materFiledata.AddField("_$uuid", jsonFile.uuid);
+        }
         return materFiledata;
     }
 }
