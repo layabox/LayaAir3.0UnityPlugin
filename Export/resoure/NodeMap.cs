@@ -130,7 +130,7 @@ internal class NodeMap
         }
     }
 
-    private List<string> getRefectIndex(GameObject gameObject)
+    private List<string> getRefectIndex(GameObject gameObject,bool contentRoot = false)
     {
         GameObject root = PerfabFile.getPrefabInstanceRoot(gameObject);
         List<OriderIndex> nodeList = new List<OriderIndex>();
@@ -141,6 +141,10 @@ internal class NodeMap
             foundObject = foundObject.transform.parent.gameObject;
         }
         List<string> outIndex = new List<string>();
+        if (contentRoot)
+        {
+            outIndex.Add(this.getGameObjectId(root));
+        }
         if (this.refMap.ContainsKey(root))
         {
             OriderIndex oriderIndex = new OriderIndex();
@@ -202,7 +206,20 @@ internal class NodeMap
     public  JSONObject getRefNodeIdObjet(GameObject gameObject)
     {
         JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
-        data.AddField("_$ref",this.getGameObjectId(gameObject));
+        if (this.nodeIdMaps.ContainsKey(gameObject)){
+            data.AddField("_$ref", this.getGameObjectId(gameObject));
+        }
+        else
+        {
+            List<string> outIndex = this.getRefectIndex(gameObject,true);
+            JSONObject overrideIndex = new JSONObject(JSONObject.Type.ARRAY);
+            foreach (var index in outIndex)
+            {
+                overrideIndex.Add(index);
+            }
+            data.AddField("_$ref", overrideIndex);
+        }
+        
         return data;
     }
 
@@ -254,11 +271,11 @@ internal class NodeMap
     private JSONObject getOverrideObject(GameObject gameObject,GameObject root)
     {
         JSONObject childdata;
-        if (!this.overrideMaps.TryGetValue(gameObject, out childdata))
+        if (gameObject != root)
         {
-            childdata = new JSONObject(JSONObject.Type.OBJECT);
-            if(gameObject != root)
+            if (!this.overrideMaps.TryGetValue(gameObject, out childdata))
             {
+                childdata = new JSONObject(JSONObject.Type.OBJECT);
                 List<string> outIndex = this.getRefectIndex(gameObject);
                 JSONObject overrideIndex = new JSONObject(JSONObject.Type.ARRAY);
                 foreach (var index in outIndex)
@@ -270,6 +287,11 @@ internal class NodeMap
                 this.addChildToPartner(childdata, this.getJsonObject(root));
             }
         }
+        else
+        {
+            childdata = this.getJsonObject(gameObject);
+        }
+            
 
         return childdata;
     }
@@ -289,7 +311,12 @@ internal class NodeMap
     {
         foreach (var node in this.nodeMaps)
         {
-            this._resoureMap.getComponentsData(node.Key, node.Value, this);
+            GameObject gameObject = node.Key;
+            if(gameObject != PerfabFile.getPerfabObject(gameObject))
+            {
+                this._resoureMap.getComponentsData(node.Key, node.Value, this);
+            }
+           
         }
 
         foreach (var remap in this.refMap)

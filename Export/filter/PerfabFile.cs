@@ -7,14 +7,11 @@ internal class PerfabFile :FileData
 {
     private static bool isPerfabAsset(GameObject gameObject)
     {
-        var isprefab = PrefabUtility.GetPrefabType(gameObject);//物体的PrefabType
-        if (isprefab != PrefabType.PrefabInstance)//不是Prefab实例
-            return false;
+        PrefabAssetType type = PrefabUtility.GetPrefabAssetType(gameObject);//物体的PrefabType
+        if (type == PrefabAssetType.Regular|| type == PrefabAssetType.Variant)//不是Prefab实例
+            return true;
 
-        var prefab = PrefabUtility.GetCorrespondingObjectFromSource(gameObject);
-        if (prefab == null)
-            return false;
-        return true;
+        return false;
     }
     /**
      *获得对象所在perfab资源的路径  
