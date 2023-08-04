@@ -30,11 +30,15 @@ internal class HierarchyFile
                 }
                 continue;
             }
-            perfabList.Add(rt, perfabRoot);//增加到列表中=
+            perfabList.Add(rt, perfabRoot);//增加到列表中
         }
         this.resouremap = new ResoureMap(perfabList);
         this.nodeMap = this.resouremap.AddNodeMap(2);
-
+        foreach (var map in perfabList)
+        {
+            GameObject gameObject = map.Value;
+            this.nodeMap.addNodeMap(gameObject, JsonUtils.GetGameObject(gameObject), true);
+        }
         GameObject[] gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
 
         for (int i = 0; i < gameObjects.Length; i++)
@@ -48,14 +52,14 @@ internal class HierarchyFile
 
     private void getGameObjectData(GameObject gameObject)
     {
+        if(!gameObject.activeInHierarchy&& ExportConfig.IgnoreNotActiveGameObject)
+        {
+            return;
+        }
         if (this.notPerfabNodes.Contains(gameObject))
         {
             JSONObject nodeData = JsonUtils.GetGameObject(gameObject);
-            if(!gameObject.activeInHierarchy&& ExportConfig.IgnoreNotActiveGameObject)
-            {
-                return;
-            }
-            this.nodeMap.addNodeMap(gameObject, nodeData, gameObject == PerfabFile.getPerfabObject(gameObject));
+            this.nodeMap.addNodeMap(gameObject, nodeData, false);
         }
         if (gameObject.transform.childCount > 0)
         {
@@ -78,7 +82,8 @@ internal class HierarchyFile
             for (int i = 0; i < gameObjects.Length; i++)
             {
                 GameObject gameObject = gameObjects[i];
-                this.resouremap.AddExportFile(new JsonFile(gameObject.name +".lh", this.nodeMap.getJsonObject(gameObject)));
+                
+                this.resouremap.AddExportFile(new JsonFile(gameObject.name +".lh", this.nodeMap.getPerfabJson(gameObject)));
             }
         }
         

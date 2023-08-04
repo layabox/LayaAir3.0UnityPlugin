@@ -268,6 +268,18 @@ internal class NodeMap
         }
     }
 
+     public JSONObject getPerfabJson(GameObject gameObject)
+    {
+        JSONObject nodeData = new JSONObject(JSONObject.Type.OBJECT);
+        nodeData.AddField("_$ver", 1);
+        JSONObject jsonData = this.getJsonObject(gameObject);
+        foreach(var key in jsonData.keys)
+        {
+            nodeData.AddField(key, jsonData.GetField(key));
+        }
+        return nodeData;
+    }
+
     private JSONObject getOverrideObject(GameObject gameObject,GameObject root)
     {
         JSONObject childdata;
