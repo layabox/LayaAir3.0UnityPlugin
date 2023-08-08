@@ -276,6 +276,7 @@ internal class ResoureMap
     public JSONObject GetMeshRenderComponmentData(MeshRenderer render, bool isOverride)
     {
         GameObject gameObject = render.gameObject;
+
         Material[] materials = render.sharedMaterials;
         JSONObject sharedMaterials = new JSONObject(JSONObject.Type.ARRAY);
         for (var i = 0; i < materials.Length; i++)

@@ -15,6 +15,8 @@ internal class HierarchyFile
         Dictionary<string, GameObject> perfabList = new Dictionary<string, GameObject>();//用于避免重复的列表
         foreach (var gameObject in prefabs)//遍历
         {
+            if(!gameObject.activeInHierarchy)
+                continue;
             var rt = PerfabFile.getPerfabFilePath(gameObject);//物体的Prefab根节点
             if (rt == null)
             {
@@ -40,12 +42,18 @@ internal class HierarchyFile
             this.nodeMap.addNodeMap(gameObject, JsonUtils.GetGameObject(gameObject), true);
         }
         GameObject[] gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
-
-        for (int i = 0; i < gameObjects.Length; i++)
+        List<GameObject> trueGameObjects = new List<GameObject>();
+        foreach (var obj in gameObjects)
         {
-            getGameObjectData(gameObjects[i]);
+            if(obj.activeInHierarchy)
+                trueGameObjects.Add(obj);
         }
-        this.nodeMap.setRoots(gameObjects);
+
+        foreach (var item in trueGameObjects)
+        {
+            getGameObjectData(item);
+        }
+        this.nodeMap.setRoots(trueGameObjects.ToArray());
         this.resouremap.createNodeTree();
       
     }
@@ -82,7 +90,7 @@ internal class HierarchyFile
             for (int i = 0; i < gameObjects.Length; i++)
             {
                 GameObject gameObject = gameObjects[i];
-                
+                if(!gameObject.activeInHierarchy) continue;
                 this.resouremap.AddExportFile(new JsonFile(gameObject.name +".lh", this.nodeMap.getPerfabJson(gameObject)));
             }
         }

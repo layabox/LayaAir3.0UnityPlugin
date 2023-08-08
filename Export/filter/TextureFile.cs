@@ -347,15 +347,19 @@ internal class TextureFile : FileData
                 }
                 this.exportHDRFile(this.outPath, pixels, this._texture.height, this._texture.width);
             }
+            else if (this._format == 0)
+            {
+                byte[] bytes = this._texture.EncodeToJPG();
+                File.WriteAllBytes(this.outPath, bytes);
+            }
             else if (this._format == 1)
             {
                 byte[] bytes = this._texture.EncodeToPNG();
                 File.WriteAllBytes(this.outPath, bytes);
             }
-            else if (this._format == 0)
+            else
             {
-                byte[] bytes = this._texture.EncodeToJPG();
-                File.WriteAllBytes(this.outPath, bytes);
+                Debug.LogError("Texture format UnSupport export!!!");
             }
         }
     }
