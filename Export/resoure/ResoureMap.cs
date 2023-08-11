@@ -156,6 +156,10 @@ internal class ResoureMap
 
     public void writeComponentData(JSONObject compents,Component comp, NodeMap map, bool isOverride)
     {
+        if(comp == null)
+        {
+            return;
+        }
         GameObject gameObject = comp.gameObject;
         if(comp is MeshRenderer)
         {
