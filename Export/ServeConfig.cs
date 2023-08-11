@@ -37,20 +37,18 @@ public class ServeConfig
         UnityWebRequest request = UnityWebRequest.Get(url);
         yield return request.SendWebRequest();
 
-        if (request.result == UnityWebRequest.Result.Success)
+        if (request.error!=null)
+        {
+            Debug.Log("Error: " + request.error);
+        }
+        else
         {
             string json = request.downloadHandler.text;
             this._getConfig = JsonUtility.FromJson<ConfigInfo>(json);
-            /*  _layaAskURL = this._getConfig.LayaAsk;
-              _studyURL = this._getConfig.Study;*/
             if (ac != null)
             {
                 ac();
             }
-        }
-        else
-        {
-            Debug.Log("Error: " + request.error);
         }
     }
     public void openurl(URLType type)

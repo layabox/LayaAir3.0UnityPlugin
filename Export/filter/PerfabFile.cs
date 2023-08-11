@@ -22,7 +22,17 @@ internal class PerfabFile :FileData
         {
             return null;
         }
-        return PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);//物体的Prefab根节点
+        string path =  PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);//物体的Prefab根节点
+
+        string fileExtension = Path.GetExtension(path).ToLower();
+        if(fileExtension == ".fbx")
+        {
+            return null;
+        }
+        else
+        {
+            return path;
+        }
     }
     /**
     *获得对象所在perfab的最近根节点

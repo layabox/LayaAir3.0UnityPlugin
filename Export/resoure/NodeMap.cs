@@ -186,11 +186,15 @@ internal class NodeMap
         }
     }
     public void addNodeMap(GameObject gameObject, JSONObject nodeData,bool isRef)
-    {        
-		this.nodeMaps.TryAdd(gameObject, nodeData);
+    {
+        if(this.nodeIdMaps.ContainsKey(gameObject))
+        {
+            return;
+        }
+		this.nodeMaps.Add(gameObject, nodeData);
         int nodeId = this.nodeMaps.Count + this.idOff;
         string nodeStringId = "#" + nodeId;
-        this.nodeIdMaps.TryAdd(gameObject, nodeStringId);
+        this.nodeIdMaps.Add(gameObject, nodeStringId);
         nodeData.AddField("_$id", nodeStringId);
         nodeData.AddField("_$type", "Sprite3D");
         if (isRef)

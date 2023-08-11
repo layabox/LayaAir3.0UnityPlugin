@@ -11,7 +11,7 @@ internal class HierarchyFile
     public HierarchyFile()
     {
         this.notPerfabNodes = new List<GameObject>();
-        var prefabs = Object.FindObjectsOfType<GameObject>(true);//场景中所有GameObject
+        var prefabs = Object.FindObjectsOfType<GameObject>();//场景中所有GameObject
         Dictionary<string, GameObject> perfabList = new Dictionary<string, GameObject>();//用于避免重复的列表
         foreach (var gameObject in prefabs)//遍历
         {

@@ -45,7 +45,6 @@ internal class TextureFile : FileData
     private int _format;
     private bool _rgbmEncoding;
     private bool _isNormal;
-    private bool _isSRGB;
     private bool _isCopy;
     public TextureFile(string originPath, Texture2D texture, bool isNormal) : base(null)
     {
@@ -75,7 +74,6 @@ internal class TextureFile : FileData
             AssetDatabase.ImportAsset(path);
         }
         JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
-        this._isSRGB = false;
         if (this._isNormal || import.textureType == TextureImporterType.NormalMap)
         {
             importData.AddField("sRGB", false);
@@ -83,7 +81,6 @@ internal class TextureFile : FileData
         else if (import.sRGBTexture)
         {
             importData.AddField("sRGB", true);
-            this._isSRGB = true;
         }
         if (this._format == 3)
         {
@@ -188,20 +185,21 @@ internal class TextureFile : FileData
     {
         this._format = this.getFormat();
         string ext = Path.GetExtension(origpath).ToLower();
-        this._isCopy = ConvertOriginalTextureTypeList.IndexOf(ext) != -1;
+        int convertIndex = ConvertOriginalTextureTypeList.IndexOf(ext);
+        this._isCopy = convertIndex != -1;
         string savePath = origpath.Substring(0, origpath.LastIndexOf("."));
         this._rgbmEncoding = ext == ".hdr" || ext == ".exr";
         if (this._rgbmEncoding)
         {
-            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".hdr" : ext;
+            savePath += convertIndex == -1 ? ".hdr" : ext;
         }
         else if (this._format == 0)
         {
-            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".jpg" : ext;
+            savePath += convertIndex == -1 ? ".jpg" : ext;
         }
         else
         {
-            savePath += ConvertOriginalTextureTypeList.IndexOf(ext) == -1 ? ".png" : ext;
+            savePath += convertIndex == -1 ? ".png" : ext;
         }
         return savePath;
     }
@@ -359,7 +357,7 @@ internal class TextureFile : FileData
             }
             else if (this._format == 3)
             {
-                string path = AssetDatabase.GetAssetPath(this._texture.GetInstanceID());
+                string path = this.filePath;
                 TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
                 if (import == null)
                 {
