@@ -8,10 +8,11 @@ internal class PerfabFile :FileData
     private static bool isPerfabAsset(GameObject gameObject)
     {
         PrefabAssetType type = PrefabUtility.GetPrefabAssetType(gameObject);//物体的PrefabType
-        if (type == PrefabAssetType.Regular|| type == PrefabAssetType.Variant)//不是Prefab实例
-            return true;
+        if (type == PrefabAssetType.NotAPrefab)//不是Prefab实例
+            return false;
+        string path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);//物体的Prefab根节点
 
-        return false;
+        return Path.GetExtension(path).ToLower() == ".prefab";
     }
     /**
      *获得对象所在perfab资源的路径  
@@ -23,16 +24,7 @@ internal class PerfabFile :FileData
             return null;
         }
         string path =  PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);//物体的Prefab根节点
-
-        string fileExtension = Path.GetExtension(path).ToLower();
-        if(fileExtension == ".fbx")
-        {
-            return null;
-        }
-        else
-        {
-            return path;
-        }
+        return path;
     }
     /**
     *获得对象所在perfab的最近根节点
