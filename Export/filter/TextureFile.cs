@@ -193,7 +193,7 @@ internal class TextureFile : FileData
         {
             savePath += convertIndex == -1 ? ".hdr" : ext;
         }
-        else if (this._format == 0)
+        else if (this._format == 0||this._format == 3)
         {
             savePath += convertIndex == -1 ? ".jpg" : ext;
         }
@@ -356,6 +356,30 @@ internal class TextureFile : FileData
                 File.WriteAllBytes(this.outPath, bytes);
             }
             else if (this._format == 3)
+            {
+                string path = this.filePath;
+                TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (import == null)
+                {
+                    Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
+                    return;
+                }
+                else
+                {
+                    import.textureType = TextureImporterType.Default;
+                    import.isReadable = true;
+                    import.textureCompression = TextureImporterCompression.Uncompressed;
+                    TextureImporterPlatformSettings pc = import.GetPlatformTextureSettings("Standalone");
+                    pc.overridden = true;
+                    pc.format = TextureImporterFormat.RGBA32;
+                    import.SetPlatformTextureSettings(pc);
+                    AssetDatabase.ImportAsset(path);
+
+                    byte[] bytes = this._texture.EncodeToJPG();
+                    File.WriteAllBytes(this.outPath, bytes);
+                }
+            }
+            else if (this._format == 5)
             {
                 string path = this.filePath;
                 TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
