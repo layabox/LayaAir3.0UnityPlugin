@@ -246,7 +246,8 @@ internal class ResoureMap
         compData.AddField("_$type", "SkinnedMeshRenderer");
         compData.AddField("sharedMaterials", sharedMaterials);
         compData.AddField("enabled", skinnedMeshRenderer.enabled);
-
+        compData.AddField("receiveShadows", skinnedMeshRenderer.receiveShadows);
+        compData.AddField("castShadow", skinnedMeshRenderer.shadowCastingMode == ShadowCastingMode.On);
 
         Bounds bounds = skinnedMeshRenderer.localBounds;
         Vector3 oriCenter = bounds.center;
@@ -299,6 +300,8 @@ internal class ResoureMap
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "MeshRenderer", isOverride);
         compData.AddField("enabled", render.enabled);
         compData.AddField("sharedMaterials", sharedMaterials);
+        compData.AddField("receiveShadows", render.receiveShadows);
+        compData.AddField("castShadow", render.shadowCastingMode == ShadowCastingMode.On);
         return compData;
     }
 
