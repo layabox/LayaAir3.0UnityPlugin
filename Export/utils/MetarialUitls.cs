@@ -392,7 +392,7 @@ public class PropDatasConfig
         {
             return 0;
         }
-        else if (result == "Cutout")
+        else if (result == "Cutout" || result == "TransparentCutout")
         {
             return 1;
         }
