@@ -99,16 +99,16 @@ internal class JsonUtils
         switch (light.lightmapBakeType)
         {
             case LightmapBakeType.Realtime:
-                lightData.AddField("lightmapBakedType", 0);
+                lightData.AddField("lightmapBakedType", 1);
                 break;
             case LightmapBakeType.Mixed:
-                lightData.AddField("lightmapBakedType", 1);
+                lightData.AddField("lightmapBakedType", 0);
                 break;
             case LightmapBakeType.Baked:
                 lightData.AddField("lightmapBakedType", 2);
                 break;
             default:
-                lightData.AddField("lightmapBakedType", 0);
+                lightData.AddField("lightmapBakedType", 1);
                 break;
         }
         lightData.AddField("color", GetColorObject(light.color));
