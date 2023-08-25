@@ -170,13 +170,12 @@ internal class NodeMap
                 root = root.transform.GetChild(nodeList[0].perfabIndex).gameObject;
             }
         }
-        if (!this.nodeMaps.ContainsKey(root))
+        if (this.refMap.ContainsKey(root))
         {
             root = root.transform.parent.gameObject;
-            OriderIndex oriderIndex = new OriderIndex();
+            OriderIndex oriderIndex = nodeList[0];
             oriderIndex.childIndex = 0;
             oriderIndex.perfabIndex = 0;
-            nodeList.Insert(0, oriderIndex);
         }
         outIndex.Add(this.getGameObjectId(root));
 
