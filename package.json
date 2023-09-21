@@ -1,0 +1,22 @@
+{
+  "name": "com.layaair.export-tool",
+  "displayName": "LayaAir 3.0 Export Tool ",
+  "version": "1.0.6",
+  "unity": "2019.4",
+  "description": "For exporting Untiy art assets to the LayaAir engine.",
+  "dependencies": {
+  },
+  "changelogUrl": "https://layaair.layabox.com/#/engineDownload",
+  "licensesUrl": "https://layaair.layabox.com/#/layafamily/contactInformation",
+  "documentationUrl": "https://layaair.com/3.x/doc/3D/advanced/Unity/readme.html",
+  "author": {
+    "name": "LayaBox",
+    "url": "https://layaair.layabox.com/#/"
+  },
+  "repository": {
+    "url": "https://github.com/mapmapbear/exportTest.git",
+    "type": "git",
+    "revision": "45f93922132561ff9ab01f7368764d981248c9c1"
+  }
+}
+
