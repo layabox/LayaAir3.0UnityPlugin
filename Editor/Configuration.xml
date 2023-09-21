@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LayaExportSetting>
+  <FirstlevelMenu>0</FirstlevelMenu>
+  <IgnoreNotActiveGameObject>False</IgnoreNotActiveGameObject>
+  <BatchMade>False</BatchMade>
+  <IgnoreVerticesUV>False</IgnoreVerticesUV>
+  <IgnoreVerticesNormal>False</IgnoreVerticesNormal>
+  <IgnoreVerticesTangent>False</IgnoreVerticesTangent>
+  <IgnoreVerticesColor>False</IgnoreVerticesColor>
+  <AutoVerticesUV1>False</AutoVerticesUV1>
+  <CustomizeDirectory>False</CustomizeDirectory>
+  <CustomizeDirectoryName>
+  </CustomizeDirectoryName>
+  <SavePath>Choose Your Path !!!</SavePath>
+</LayaExportSetting>
