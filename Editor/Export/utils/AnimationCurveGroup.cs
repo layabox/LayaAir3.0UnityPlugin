@@ -277,7 +277,7 @@ public class AnimationCurveGroup
         this._conpomentType = conpomentType;
         this._propnames = new List<string>();
         this._type = type;
-        this._propertyName = propertyName;
+        this._propertyName = propertyName.Split(".")[0];
         this._timeLists = new Dictionary<uint, float>();
         this.datas = new Dictionary<float, FrameData>();
     }
@@ -307,10 +307,12 @@ public class AnimationCurveGroup
 
     public bool pushCurve(AnimationClipCurveData curveData)
     {
-        if (this._path != AnimationCurveGroup.getCurvePath(curveData))
+        if (this._path != curveData.path)
         {
             return false;
         }
+        string[] propertyNames = curveData.propertyName.Split('.');
+        if (propertyNames[0] != this._propertyName) return false;
         string endKey = null;
         if (this._keyType == KeyFrameValueType.Float)
         {
@@ -318,7 +320,6 @@ public class AnimationCurveGroup
         }
         else
         {
-            string[] propertyNames = curveData.propertyName.Split('.');
             endKey = propertyNames[propertyNames.Length - 1];
         }
 
@@ -431,7 +432,7 @@ public class AnimationCurveGroup
         }
         aniNodeData.type = (Byte)this._keyType;
         List<UInt16> pathIndex = new List<UInt16>();
-        String nodePath = this._path.Split('.')[0];
+        String nodePath = this._path;
         string[] strArr = nodePath.Split('/');
         for (int m = 0; m < strArr.Length; m++)
         {

@@ -69,7 +69,8 @@ class GameObjectUitls
         if (gameObject.GetComponent<Camera>() != null)
         {
             return true;
-        }else if (gameObject.GetComponent<Light>() != null)
+        }
+        else if (gameObject.GetComponent<Light>() != null)
         {
             return true;
         }
@@ -78,7 +79,7 @@ class GameObjectUitls
             return false;
         }
     }
-   
+
 
     private const byte k_MaxByteForOverexposedColor = 191;
     public static void DecomposeHdrColor(Color linearColorHdr, out Color baseLinearColor, out float exposure)
@@ -120,27 +121,27 @@ class GameObjectUitls
         }
         return str;
     }
-
-    private static AnimationCurveGroup readTransfromAnimation(EditorCurveBinding binding, GameObject gameObject, object targetObject, string path)
+    private static AnimationCurveGroup readTransfromAnimation(EditorCurveBinding binding, GameObject gameObject, object targetObject, string path, string propertyName)
     {
         KeyFrameValueType keyType;
-        string propNames = binding.propertyName.Split('.')[0];
-        if (propNames == "m_LocalPosition")
+        string propNames = "";
+        string property = propertyName.Split(".")[0];
+        if (property == "m_LocalPosition")
         {
             propNames = "localPosition";
             keyType = KeyFrameValueType.Position;
         }
-        else if (propNames == "m_LocalRotation")
+        else if (property == "m_LocalRotation")
         {
             propNames = "localRotation";
             keyType = KeyFrameValueType.Rotation;
         }
-        else if (propNames == "m_LocalScale")
+        else if (property == "m_LocalScale")
         {
             propNames = "localScale";
             keyType = KeyFrameValueType.Scale;
         }
-        else if (propNames == "localEulerAnglesRaw")
+        else if (property == "localEulerAnglesRaw")
         {
             propNames = "localRotationEuler";
             keyType = KeyFrameValueType.RotationEuler;
@@ -150,13 +151,11 @@ class GameObjectUitls
             return null;
         }
         string conpomentType = searchCompoment[binding.type.ToString()];
-        string propertyName = binding.propertyName;
-        propertyName = propertyName.Substring(0, propertyName.LastIndexOf("."));
         AnimationCurveGroup curveGroup = new AnimationCurveGroup(path, gameObject, binding.type, conpomentType, propertyName, keyType);
         curveGroup.propnames.Add(propNames);
         return curveGroup;
     }
-    private static AnimationCurveGroup readMaterAnimation(EditorCurveBinding binding, GameObject gameObject, object targetObject, string path)
+    private static AnimationCurveGroup readMaterAnimation(EditorCurveBinding binding, GameObject gameObject, object targetObject, string path, string propertyName)
     {
         PropertyInfo info = targetObject.GetType().GetProperty("material");
         Material material = (Material)info.GetValue(targetObject);
@@ -166,7 +165,7 @@ class GameObjectUitls
         {
             return null;
         }
-        string propNames = binding.propertyName.Split('.')[1];
+        string propNames = binding.propertyName;
         KeyFrameValueType keyType;
         if (propsData.floatLists.ContainsKey(propNames))
         {
@@ -188,15 +187,12 @@ class GameObjectUitls
             return null;
         }
         string conpomentType = searchCompoment[binding.type.ToString()];
-        string propertyName = binding.propertyName;
-        propertyName = propertyName.Substring(0, propertyName.LastIndexOf("."));
         AnimationCurveGroup curveGroup = new AnimationCurveGroup(path, gameObject, binding.type, conpomentType, propertyName, keyType);
         curveGroup.propnames.Add("sharedMaterials");
         curveGroup.propnames.Add("0");
         curveGroup.propnames.Add(propNames);
         return curveGroup;
     }
-
     public static void writeClip(AnimationClip aniclip, FileStream fs, GameObject gameObject, string clipName)
     {
 
@@ -259,15 +255,15 @@ class GameObjectUitls
                 EditorCurveBinding binding = editorCurveBindings[j];
                 if (binding.type == typeof(Transform))
                 {
-                    curveGroup = readTransfromAnimation(binding, child, targetObject, path);
+                    curveGroup = readTransfromAnimation(binding, child, targetObject, curveData.path, curveData.propertyName);
                 }
                 else if (binding.type == typeof(RectTransform))
                 {
-                    curveGroup = readTransfromAnimation(binding, child, targetObject, path);
+                    curveGroup = readTransfromAnimation(binding, child, targetObject, curveData.path, curveData.propertyName);
                 }
                 else if (typeof(Renderer).IsAssignableFrom(binding.type))
                 {
-                    curveGroup = readMaterAnimation(binding, child, targetObject, path);
+                    curveGroup = readMaterAnimation(binding, child, targetObject, curveData.path, curveData.propertyName);
                 }
                 if (curveGroup != null)
                 {
@@ -361,13 +357,13 @@ class GameObjectUitls
         for (int j = 0; j < startTimeList.Count; j++)
         {
             Util.FileUtil.WriteData(fs, (float)startTimeList[j]);
-        } 
+        }
 
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(clipName));//动画名字符索引
 
         float aniTotalTime = startTimeList.Count == 0 ? 0.0f : (float)startTimeList[startTimeList.Count - 1];
         Util.FileUtil.WriteData(fs, aniTotalTime);///动画总时长
-        if(aniclip.wrapMode == WrapMode.Loop)
+        if (aniclip.wrapMode == WrapMode.Loop)
         {
             Util.FileUtil.WriteData(fs, true);
         }
@@ -375,7 +371,7 @@ class GameObjectUitls
         {
             Util.FileUtil.WriteData(fs, aniclip.isLooping);//动画是否循环
         }
-       
+
 
         Util.FileUtil.WriteData(fs, (UInt16)clipFrameRate);//frameRate
 
