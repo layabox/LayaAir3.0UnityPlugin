@@ -277,7 +277,7 @@ public class AnimationCurveGroup
         this._conpomentType = conpomentType;
         this._propnames = new List<string>();
         this._type = type;
-        this._propertyName = propertyName.Split(".")[0];
+        this._propertyName = propertyName.Split('.')[0];
         this._timeLists = new Dictionary<uint, float>();
         this.datas = new Dictionary<float, FrameData>();
     }

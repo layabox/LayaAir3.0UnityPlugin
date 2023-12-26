@@ -125,7 +125,7 @@ class GameObjectUitls
     {
         KeyFrameValueType keyType;
         string propNames = "";
-        string property = propertyName.Split(".")[0];
+        string property = propertyName.Split('.')[0];
         if (property == "m_LocalPosition")
         {
             propNames = "localPosition";
