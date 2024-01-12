@@ -104,6 +104,10 @@ internal class PerfabFile :FileData
         StreamWriter writer = new StreamWriter(fs);
         writer.Write(data.Print(true));
         writer.Close();
+    }
+
+     public void destory()
+    {
         GameObject.DestroyImmediate(this.gameObject);
     }
 }

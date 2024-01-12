@@ -27,7 +27,7 @@ internal class MeshFile : FileData
         base.saveMeta();
         FileStream fs = Util.FileUtil.saveFile(this.outPath);
         string meshName = GameObjectUitls.cleanIllegalChar(this.m_mesh.name, true);
-        if (this.render is SkinnedMeshRenderer)
+        if (this.render!=null&&this.render is SkinnedMeshRenderer)
         {
             MeshUitls.writeSkinnerMesh(this.render as SkinnedMeshRenderer, meshName, fs);
         }

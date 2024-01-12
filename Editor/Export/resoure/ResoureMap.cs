@@ -128,6 +128,14 @@ internal class ResoureMap
         {
             file.Value.SaveFile(exportFiles);
         }
+
+        foreach (var file in exportFiles)
+        {
+            if(file.Value is PerfabFile){
+                PerfabFile val = file.Value as PerfabFile;
+                val.destory();
+            }
+        }
     }
 
     public void getComponentsData(GameObject gameObject, JSONObject node,NodeMap map)
