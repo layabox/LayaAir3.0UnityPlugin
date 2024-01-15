@@ -115,7 +115,7 @@ internal class TextureFile : FileData
         {
             importData.AddField("alphaChannel", true);
         }
-        this.m_metaData.AddField("importer", importData);
+        this.m_metaData.SetField("importer", importData);
         this._constructParams.Add(texture.width);
         this._constructParams.Add(texture.height);
 
