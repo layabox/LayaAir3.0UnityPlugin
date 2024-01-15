@@ -810,9 +810,9 @@ internal class JSONObject {
 #if(PRETTY)
 							if(pretty)
 								for(int j = 0; j < depth; j++)
-									builder.Append("\t"); //for a bit more readability
+									builder.Append("  "); //for a bit more readability
 #endif
-							builder.AppendFormat("\"{0}\":", key);
+							builder.AppendFormat("\"{0}\": ", key);
 							foreach(IEnumerable e in obj.StringifyAsync(depth, builder, pretty))
 								yield return e;
 							builder.Append(",");
@@ -833,7 +833,7 @@ internal class JSONObject {
 				if(pretty && list.Count > 0) {
 					builder.Append("\n");
 					for(int j = 0; j < depth - 1; j++)
-						builder.Append("\t"); //for a bit more readability
+						builder.Append("  "); //for a bit more readability
 				}
 #endif
 				builder.Append("}");
@@ -850,7 +850,7 @@ internal class JSONObject {
 #if(PRETTY)
 							if(pretty)
 								for(int j = 0; j < depth; j++)
-									builder.Append("\t"); //for a bit more readability
+									builder.Append("  "); //for a bit more readability
 #endif
 							foreach(IEnumerable e in list[i].StringifyAsync(depth, builder, pretty))
 								yield return e;
@@ -872,7 +872,7 @@ internal class JSONObject {
 				if(pretty && list.Count > 0) {
 					builder.Append("\n");
 					for(int j = 0; j < depth - 1; j++)
-						builder.Append("\t"); //for a bit more readability
+						builder.Append("  "); //for a bit more readability
 				}
 #endif
 				builder.Append("]");
@@ -951,9 +951,9 @@ internal class JSONObject {
 #if(PRETTY)
 							if(pretty)
 								for(int j = 0; j < depth; j++)
-									builder.Append("\t"); //for a bit more readability
+									builder.Append("  "); //for a bit more readability
 #endif
-							builder.AppendFormat("\"{0}\":", key);
+							builder.AppendFormat("\"{0}\": ", key);
 							obj.Stringify(depth, builder, pretty);
 							builder.Append(",");
 #if(PRETTY)
@@ -973,7 +973,7 @@ internal class JSONObject {
 				if(pretty && list.Count > 0) {
 					builder.Append("\n");
 					for(int j = 0; j < depth - 1; j++)
-						builder.Append("\t"); //for a bit more readability
+						builder.Append("  "); //for a bit more readability
 				}
 #endif
 				builder.Append("}");
@@ -990,7 +990,7 @@ internal class JSONObject {
 #if(PRETTY)
 							if(pretty)
 								for(int j = 0; j < depth; j++)
-									builder.Append("\t"); //for a bit more readability
+									builder.Append("  "); //for a bit more readability
 #endif
 							list[i].Stringify(depth, builder, pretty);
 							builder.Append(",");
@@ -1011,7 +1011,7 @@ internal class JSONObject {
 				if(pretty && list.Count > 0) {
 					builder.Append("\n");
 					for(int j = 0; j < depth - 1; j++)
-						builder.Append("\t"); //for a bit more readability
+						builder.Append("  "); //for a bit more readability
 				}
 #endif
 				builder.Append("]");
