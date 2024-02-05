@@ -8,14 +8,19 @@ internal class ResoureMap
 {
     private Dictionary<string, FileData> exportFiles;
     private List<NodeMap> nodemaps;
-    public ResoureMap(Dictionary<string, GameObject> maps)
+    public ResoureMap()
     {
         this.exportFiles = new Dictionary<string, FileData>();
         this.nodemaps = new List<NodeMap>();
-        foreach (var map in maps)
+    }
+
+    public PerfabFile getPerfabFile(string path)
+    {
+        if (!this.exportFiles.ContainsKey(path))
         {
-            this.AddExportFile(new PerfabFile(this.AddNodeMap(), map.Key));
+            this.AddExportFile(new PerfabFile(this.AddNodeMap(), path));
         }
+        return this.exportFiles[path] as PerfabFile;
     }
 
     public NodeMap AddNodeMap(int idOff = 0)
@@ -27,6 +32,13 @@ internal class ResoureMap
 
     public void createNodeTree()
     {
+        foreach(var  file in this.exportFiles)
+        {
+            if(file.Value is PerfabFile){
+                PerfabFile val = file.Value as PerfabFile;
+                val.crateNodeData();
+            }
+        }
         //创建未引用节点数结构
         foreach(NodeMap nodemap in this.nodemaps)
         {
@@ -35,7 +47,7 @@ internal class ResoureMap
         //创建引用节点,同时生成节点信息
         foreach (NodeMap nodemap in this.nodemaps)
         {
-            nodemap.createRefNodeTree();
+            //nodemap.createRefNodeTree();
             nodemap.writeCompoent();
         }
     }
