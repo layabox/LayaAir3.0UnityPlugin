@@ -11,11 +11,11 @@ internal class AssetsUtil
 
     public static string GetAnimationClipPath(AnimationClip clip)
     {
-        return AssetsUtil.GetFilePath(AssetDatabase.GetAssetPath(clip.GetInstanceID()), ".lani", clip.name);
+        return AssetsUtil.GetFilePath(AssetDatabase.GetAssetPath(clip.GetInstanceID()), ".lani");
     }
     public static string GetAnimatorControllerPath(AnimatorController animatorController)
     {
-        return AssetsUtil.GetFilePath(AssetDatabase.GetAssetPath(animatorController.GetInstanceID()), ".controller", animatorController.name);
+        return AssetsUtil.GetFilePath(AssetDatabase.GetAssetPath(animatorController.GetInstanceID()), ".controller");
     }
     public static string GetMaterialPath(Material material)
     {
