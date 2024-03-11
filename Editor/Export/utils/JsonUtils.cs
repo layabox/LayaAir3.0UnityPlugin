@@ -49,13 +49,13 @@ internal class JsonUtils
         return transfrom;
     }
 
-    public static JSONObject GetGameObject(GameObject gObject,bool isperfab =false, JSONObject nodeData = null)
+    public static JSONObject GetGameObject(GameObject gObject,bool isperfabRoot = false, JSONObject nodeData = null)
     {
         if(nodeData == null)
         {
             nodeData = new JSONObject(JSONObject.Type.OBJECT);
         }
-        if (isperfab)
+        if (isperfabRoot)
         {
             nodeData.AddField("_$ver", 1);
         }

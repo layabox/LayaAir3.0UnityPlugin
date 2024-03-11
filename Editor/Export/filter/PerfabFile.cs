@@ -29,7 +29,7 @@ internal class PerfabFile :FileData
     /**
     *获得对象所在perfab的最近根节点
     */
-    public static GameObject getPerfabObject(GameObject gameObject)
+    public static GameObject GetNearestPrefabInstanceRoot(GameObject gameObject)
     {
         if (!isPerfabAsset(gameObject))
         {
@@ -38,6 +38,7 @@ internal class PerfabFile :FileData
 
         return PrefabUtility.GetNearestPrefabInstanceRoot(gameObject);//物体的Prefab根节点
     }
+
     /**
     *获得对象所在perfab的所有根节点
     */
@@ -52,14 +53,18 @@ internal class PerfabFile :FileData
 
     private GameObject gameObject;
     private NodeMap _nodeMap;
+    private string _perfabPath;
     public PerfabFile(NodeMap nodeMap,string perfabPath) : base(perfabPath)
     {
-        this.gameObject = PrefabUtility.LoadPrefabContents(perfabPath) as GameObject;
+        this._perfabPath = perfabPath;
         this._nodeMap = nodeMap;
-        this.getGameObjectData(this.gameObject,true);
-        GameObject[] list = new GameObject[1];
-        list[0] = this.gameObject;
-        this._nodeMap.setRoots(list);
+       
+    }
+
+    public void crateNodeData()
+    {
+        this.gameObject = PrefabUtility.LoadPrefabContents(this._perfabPath) as GameObject;
+        this.getGameObjectData(this.gameObject, true, true);
     }
 
     public NodeMap nodeMap
@@ -75,26 +80,17 @@ internal class PerfabFile :FileData
         return path.Replace(".prefab", ".lh");
     }
 
-    private JSONObject getGameObjectData(GameObject gameObject, bool isperfab = false)
+    private void getGameObjectData(GameObject gameObject, bool isFirstNode = false, bool isperfabRoot = false)
     {
-        JSONObject nodeData = JsonUtils.GetGameObject(gameObject,isperfab);
-        bool isperfabObject = false;
-        if (gameObject != this.gameObject)
+        this._nodeMap.setNode(gameObject, isFirstNode, isperfabRoot);
+
+        if (gameObject.transform.childCount > 0)
         {
-            isperfabObject = PerfabFile.getPerfabObject(gameObject) == gameObject;
-        }
-        if (!isperfabObject)
-        {
-            if (gameObject.transform.childCount > 0)
+            for (int i = 0; i < gameObject.transform.childCount; i++)
             {
-                for (int i = 0; i < gameObject.transform.childCount; i++)
-                {
-                    getGameObjectData(gameObject.transform.GetChild(i).gameObject);
-                }
+                getGameObjectData(gameObject.transform.GetChild(i).gameObject,false,false);
             }
         }
-        this._nodeMap.addNodeMap(gameObject, nodeData, isperfabObject);
-        return nodeData;
     }
     public override void SaveFile(Dictionary<string, FileData> exportFiles)
     {

@@ -152,19 +152,23 @@ internal class TextureFile : FileData
         {
             this._propertyParams.AddField("wrapModeU", 0);
             this._propertyParams.AddField("wrapModeV", 0);
+            importData.AddField("wrapMode", 0);
         }
         else if (texture.wrapMode == TextureWrapMode.Clamp)
         {
             this._propertyParams.AddField("wrapModeU", 1);
             this._propertyParams.AddField("wrapModeV", 1);
+            importData.AddField("wrapMode", 1);
         }
         else
         {
             this._propertyParams.AddField("wrapModeU", 0);
             this._propertyParams.AddField("wrapModeV", 0);
+            importData.AddField("wrapMode", 2);
         }
 
         this._propertyParams.AddField("anisoLevel", anisoLevel);
+        this.m_metaData.AddField("importer", importData);
     }
 
     private int getFormat()

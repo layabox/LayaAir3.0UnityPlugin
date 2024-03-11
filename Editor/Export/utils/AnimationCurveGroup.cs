@@ -541,8 +541,17 @@ public class AnimationCurveGroup
     public static string getCurvePath(AnimationClipCurveData curveData)
     {
         string propertyName = curveData.propertyName;
-        string _propertyName = propertyName.Substring(0, propertyName.LastIndexOf('.'));
-        return curveData.path + "." + _propertyName;
+        int idx = propertyName.LastIndexOf('.');
+        if (idx == -1)
+        {
+            return curveData.path + "." + propertyName;
+        }
+        else
+        {
+            string _propertyName = propertyName.Substring(0, idx);
+            return curveData.path + "." + _propertyName;
+        }
+
     }
     public static float getCurveTime(float time)
     {
