@@ -81,27 +81,28 @@ class GameObjectUitls
     }
 
 
-    private const byte k_MaxByteForOverexposedColor = 191;
+    private const float k_MaxByteForOverexposedColor = 0.7490196078431373f;
     public static void DecomposeHdrColor(Color linearColorHdr, out Color baseLinearColor, out float exposure)
     {
         baseLinearColor = linearColorHdr;
         var maxColorComponent = linearColorHdr.maxColorComponent;
-        // replicate Photoshops's decomposition behaviour
         if (maxColorComponent == 0f || maxColorComponent <= 1f && maxColorComponent >= 1 / 255f)
         {
-            exposure = 1f;
-
-            baseLinearColor.r = linearColorHdr.r;
-            baseLinearColor.g = linearColorHdr.g;
-            baseLinearColor.b = linearColorHdr.b;
+            exposure = 0f;
+            baseLinearColor.r = (byte)Mathf.RoundToInt(linearColorHdr.r * 255f);
+            baseLinearColor.g = (byte)Mathf.RoundToInt(linearColorHdr.g * 255f);
+            baseLinearColor.b = (byte)Mathf.RoundToInt(linearColorHdr.b * 255f);
         }
         else
         {
-            exposure = maxColorComponent;
-            baseLinearColor.r = Mathf.GammaToLinearSpace(linearColorHdr.r / maxColorComponent);
-            baseLinearColor.g = Mathf.GammaToLinearSpace(linearColorHdr.g / maxColorComponent);
-            baseLinearColor.b = Mathf.GammaToLinearSpace(linearColorHdr.b / maxColorComponent);
+            var scaleFactor = k_MaxByteForOverexposedColor / maxColorComponent;
+            exposure = 1.0f / scaleFactor;
+
+            baseLinearColor.r = Mathf.LinearToGammaSpace(Math.Min(k_MaxByteForOverexposedColor,scaleFactor * linearColorHdr.r)) ;
+            baseLinearColor.g = Mathf.LinearToGammaSpace(Math.Min(k_MaxByteForOverexposedColor, scaleFactor * linearColorHdr.g));
+            baseLinearColor.b = Mathf.LinearToGammaSpace(Math.Min(k_MaxByteForOverexposedColor, scaleFactor * linearColorHdr.b));
         }
+      
     }
 
 
