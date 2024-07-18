@@ -245,7 +245,7 @@ internal class ResoureMap
             MeshFile meshFile = this.GetMeshFile(mesh, render);
             JSONObject meshFiledata = new JSONObject(JSONObject.Type.OBJECT);
             meshFiledata.AddField("_$uuid", meshFile.uuid);
-            meshFiledata.AddField("_$type", "mesh");
+            meshFiledata.AddField("_$type", "Mesh");
             compData.AddField("sharedMesh", meshFiledata);
         }
 
