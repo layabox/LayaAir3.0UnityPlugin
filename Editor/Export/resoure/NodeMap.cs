@@ -82,7 +82,7 @@ internal class NodeMap
         string nodeStringId = "#" + nodeId;
         this.nodeIdMaps.Add(gameObject, nodeStringId);
         nodeData.AddField("_$id", nodeStringId);
-        nodeData.AddField("_$type", "Sprite3D");
+        
 
         RefObject refObject = new RefObject();
         refObject.gameObject = gameObject;
@@ -108,6 +108,10 @@ internal class NodeMap
         if (refObject.isRefObject() && refObject.isRefRoot())
         {
             nodeData.AddField("_$prefab", refObject.getBasePerfab().uuid);
+        }
+        else
+        {
+            nodeData.AddField("_$type", "Sprite3D");
         }
 
         this.refMap.Add(gameObject, refObject);
