@@ -96,4 +96,10 @@ internal class FileData
 
     }
 
+
+    public virtual JSONObject jsonObject(string name)
+    {
+        return null;
+    }
+
 }

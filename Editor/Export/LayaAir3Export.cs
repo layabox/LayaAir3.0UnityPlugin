@@ -10,6 +10,7 @@ public class LayaAir3Export
 
         TextureFile.init();
         AnimationCurveGroup.init();
+        JsonUtils.init();
         HierarchyFile hierachy = new HierarchyFile();
         hierachy.saveAllFile(ExportConfig.FirstlevelMenu == 0);
     }

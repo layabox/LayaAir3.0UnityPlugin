@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Util;
 
 
@@ -11,6 +12,17 @@ public enum DefindsFrom
     keyWorld = 1,
     HasProps = 2,
     TextureValue = 3
+}
+
+public enum RenderMode
+{
+    Opaque,
+    Cutout,
+    Fade,   // Old school alpha-blending mode, fresnel does not affect amount of transparency
+    Transparent, // Physically plausible transparency mode, implemented as alpha pre-multiply
+    Additive,
+    Subtractive,
+    Modulate
 }
 
 //Defind 配置
@@ -71,6 +83,35 @@ public class TextureConfig
     }
 }
 
+public enum BlendFactor
+{
+    /** (0, 0, 0, 0)*/
+    Zero,
+    /** (1, 1, 1, 1)*/
+    One,
+    /** (Rs, Gs, Bs, As) */
+    SourceColor,
+    /** (1 - Rs, 1 - Gs, 1 - Bs, 1 - As)*/
+    OneMinusSourceColor,
+    /** (Rd, Gd, Bd, Ad)*/
+    DestinationColor,
+    /** (1 - Rd, 1 - Gd, 1 - Bd, 1 - Ad)*/
+    OneMinusDestinationColor,
+    /** (As, As, As, As)*/
+    SourceAlpha,
+    /** (1 - As, 1 - As, 1 - As, 1 - As)*/
+    OneMinusSourceAlpha,
+    /** (Ad, Ad, Ad, Ad)*/
+    DestinationAlpha,
+    /** (1 - Ad, 1 - Ad, 1 - Ad, 1 - Ad)*/
+    OneMinusDestinationAlpha,
+    /** (min(As, 1 - Ad), min(As, 1 - Ad), min(As, 1 - Ad), 10)*/
+    SourceAlphaSaturate,
+    /** (Rc, Gc, Bc, Ac)*/
+    BlendColor,
+    /** (1 - Rc, 1 - Gc, 1 - Bc, 1 - Ac)*/
+    OneMinusBlendColor
+}
 public class ConditionConfig
 {
     public object data; //判断参数
@@ -90,6 +131,12 @@ public class PropDatasConfig
     private Dictionary<string, string> _tillOffsetLists;
     private Dictionary<string, DefindsValue> _defindsLists;
     private string _materName;
+    public string blendSrc;
+    public string blendDst;
+    public string cull;
+    public string cutoff;
+    public string zTest;
+    public string zWrite;
     public PropDatasConfig(string lmaterName)
     {
         this._materName = lmaterName;
@@ -100,6 +147,12 @@ public class PropDatasConfig
         this._colorHdrLists = new Dictionary<string, string>();
         this._tillOffsetLists = new Dictionary<string, string>();
         this._defindsLists = new Dictionary<string, DefindsValue>();
+        this.blendSrc = "_SrcBlend";
+        this.blendDst = "_DstBlend";
+        this.cull = "_Cull";
+        this.cutoff = "_Cutoff";
+        this.zTest = "_ZTest";
+        this.zWrite = "_ZWrite";
     }
 
     public void addTextureProps(string uprops, string lprops, string definde = null, bool isnormal = false)
@@ -204,11 +257,11 @@ public class PropDatasConfig
         }
     }
 
-    public static int GetCull(Material material)
+    public int GetCull(Material material)
     {
-        if (material.HasProperty("_Cull"))
+        if (material.HasProperty(this.cull))
         {
-            return material.GetInt("_Cull");
+            return material.GetInt(this.cull);
         }
         else
         {
@@ -218,166 +271,99 @@ public class PropDatasConfig
 
     public static int GetBlend(Material material)
     {
-        if (material.IsKeywordEnabled("_ALPHABLEND_ON"))
+        return material.renderQueue >= 3000?1:0;
+    }
+
+    public static BlendFactor GetBlendValue(Material material,string prop)
+    {
+        if (material.HasProperty(prop))
+        {
+            switch (material.GetInt(prop))
+            {
+                case (int)BlendMode.Zero:
+                    return BlendFactor.Zero;
+                case (int)BlendMode.One:
+                    return BlendFactor.One;
+                case (int)BlendMode.DstColor:
+                    return BlendFactor.DestinationColor;
+                case (int)BlendMode.SrcColor:
+                    return BlendFactor.SourceColor;
+                case (int)BlendMode.OneMinusDstColor:
+                    return BlendFactor.OneMinusDestinationColor;
+                case (int)BlendMode.SrcAlpha:
+                    return BlendFactor.SourceAlpha;
+                case (int)BlendMode.OneMinusSrcColor:
+                    return BlendFactor.OneMinusSourceColor;
+                case (int)BlendMode.DstAlpha:
+                    return BlendFactor.DestinationAlpha;
+                case (int)BlendMode.OneMinusDstAlpha:
+                    return BlendFactor.OneMinusDestinationAlpha;
+                case (int)BlendMode.SrcAlphaSaturate:
+                    return BlendFactor.SourceAlphaSaturate;
+                case (int)BlendMode.OneMinusSrcAlpha:
+                    return BlendFactor.OneMinusSourceAlpha;
+                default:
+                    return BlendFactor.Zero;
+            }
+        }
+        else
+        {
+            return BlendFactor.Zero;
+        }
+    }
+
+    public bool GetZWrite(Material material, bool defaultValue = true)
+    {
+        if (material.HasProperty(this.zTest))
+        {
+            return material.GetInt(this.zTest) == 1;
+        }
+        else
+        {
+            return defaultValue;
+        }
+    }
+
+    public int GetZTest(Material material)
+    {
+        if (material.HasProperty(this.zTest))
+        {
+            switch (material.GetInt(this.zTest))
+            {
+                case 0:
+                    return 0;
+                case 1:
+                    return 0;
+                case 2:
+                    return 1;
+                case 3:
+                    return 2;
+                case 4:
+                    return 3;
+                case 5:
+                    return 4;
+                case 6:
+                    return 5;
+                case 7:
+                    return 6;
+                case 8:
+                    return 7;
+                default:
+                    return 0;
+            }
+        }
+        else
         {
             return 1;
         }
-        else
-        {
-            return 0;
-        }
     }
 
-    public static int GetSrcBlend(Material material)
-    {
-        if (material.HasProperty("_SrcBlend"))
-        {
-            switch (material.GetInt("_SrcBlend"))
-            {
-                case 0:
-                    return 0;
-                case 1:
-                    return 1;
-                case 2:
-                    return 4;
-                case 3:
-                    return 2;
-                case 4:
-                    return 5;
-                case 5:
-                    return 6;
-                case 6:
-                    return 3;
-                case 7:
-                    return 8;
-                case 8:
-                    return 9;
-                case 9:
-                    return 4;
-                case 10:
-                    return 7;
-                default:
-                    return 1;
-            }
-        }
-        else
-        {
-            return 1;
-        }
-    }
-    public static int GetDstBlend(Material material)
-    {
-        if (material.HasProperty("_DstBlend"))
-        {
-            switch (material.GetInt("_DstBlend"))
-            {
-                case 0:
-                    return 0;
-                case 1:
-                    return 1;
-                case 2:
-                    return 4;
-                case 3:
-                    return 2;
-                case 4:
-                    return 5;
-                case 5:
-                    return 6;
-                case 6:
-                    return 3;
-                case 7:
-                    return 8;
-                case 8:
-                    return 9;
-                case 9:
-                    return 4;
-                case 10:
-                    return 7;
-                default:
-                    return 0;
-            }
-        }
-        else
-        {
-            return 0;
-        }
-    }
 
-    public static bool GetZWrite(Material material)
+    public float GetAlphaTestValue(Material material)
     {
-        if (material.HasProperty("_ZWrite"))
+        if (material.HasProperty(this.cutoff))
         {
-            if (material.GetInt("_ZWrite") == 1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    public static int GetZTest(Material material)
-    {
-        if (material.HasProperty("_ZTest"))
-        {
-            switch (material.GetInt("_ZTest"))
-            {
-                case 0:
-                    return 0;
-                case 1:
-                    return 0;
-                case 2:
-                    return 1;
-                case 3:
-                    return 2;
-                case 4:
-                    return 3;
-                case 5:
-                    return 4;
-                case 6:
-                    return 5;
-                case 7:
-                    return 6;
-                case 8:
-                    return 7;
-                default:
-                    return 0;
-            }
-        }
-        else
-        {
-            return 3;
-        }
-    }
-
-    public static bool GetVerterColor(Material material)
-    {
-        return material.GetInt("_IsVertexColor") == 0 ? false : true;
-    }
-
-    public static bool GetAlphaTest(Material material)
-    {
-        if (material.IsKeywordEnabled("_ALPHATEST_ON"))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public static float GetAlphaTestValue(Material material)
-    {
-        if (material.HasProperty("_Cutoff"))
-        {
-            return material.GetFloat("_Cutoff");
+            return material.GetFloat(this.cutoff);
         }
         else
         {
@@ -385,35 +371,11 @@ public class PropDatasConfig
         }
     }
 
-    public static int GetRenderModule(Material material)
-    {
-        string result = material.GetTag("RenderType", true);
-        if (result == "Opaque")
-        {
-            return 0;
-        }
-        else if (result == "Cutout" || result == "TransparentCutout")
-        {
-            return 1;
-        }
-        else if (result == "Transparent")
-        {
-            return 2;
-        }
-        else if (result == "Fade")
-        {
-            return 5;
-        }
-        else
-        {
-            return 0;
-        }
-    }
 }
 internal class MetarialUitls 
 {
     public static Dictionary<string, PropDatasConfig> MaterialPropsConfigs;
-
+    public static string MeterialVersion = "LAYAMATERIAL:04";
     public static void init()
     {
         JSONObject metaDatas = JSONObject.Create(File.ReadAllText(Util.FileUtil.getPluginResUrl("MetarialPropData.json")));
@@ -546,6 +508,34 @@ internal class MetarialUitls
                     propdata.rules.Add(rule.GetField("name").str, ruleConfig);
                 }
             }
+            if (mJdata["cull"])
+            {
+                propdata.cull = mJdata["cull"].str;
+            }
+
+            if (mJdata["cutoff"])
+            {
+                propdata.cutoff = mJdata["cutoff"].str;
+            }
+            if (mJdata["zWrite"])
+            {
+                propdata.zWrite = mJdata["zWrite"].str;
+            }
+
+            if (mJdata["zTest"])
+            {
+                propdata.zTest = mJdata["zTest"].str;
+            }
+
+            if (mJdata["blendSrc"])
+            {
+                propdata.blendSrc = mJdata["blendSrc"].str;
+            }
+
+            if (mJdata["blendDst"])
+            {
+                propdata.blendDst = mJdata["blendDst"].str;
+            }
         }
 
 
@@ -576,6 +566,48 @@ internal class MetarialUitls
             return false;
         }
     }
+
+    private static void WiteBlend(Material material, PropDatasConfig configData, ref JSONObject props,ref JSONObject definds)
+    {
+        int renderQueue = material.renderQueue;
+        props.AddField("renderQueue", renderQueue);
+        RenderMode blendMode = RenderMode.Opaque;
+        if(renderQueue < 2450)
+        {
+            props.AddField("materialRenderMode", 0);
+            props.AddField("s_DepthWrite", configData.GetZWrite(material));
+        }
+        else if(renderQueue < 3000)
+        {
+            props.AddField("materialRenderMode", 1);
+            props.AddField("alphaTest", true);
+            props.AddField("alphaTestValue", configData.GetAlphaTestValue(material));
+            props.AddField("s_DepthWrite", configData.GetZWrite(material));
+        }
+        else
+        {
+            //props.AddField("s_Blend", PropDatasConfig.GetBlend(material));
+            BlendFactor blendsrc = PropDatasConfig.GetBlendValue(material, configData.blendSrc);
+            BlendFactor blenddst = PropDatasConfig.GetBlendValue(material, configData.blendDst);
+            if(blendsrc == BlendFactor.SourceAlpha && blenddst == BlendFactor.OneMinusSourceAlpha)
+            {
+                props.AddField("materialRenderMode", 2);
+            }else if (blendsrc == BlendFactor.SourceAlpha && blenddst == BlendFactor.One)
+            {
+                props.AddField("materialRenderMode", 3);
+            }
+            else
+            {
+                props.AddField("materialRenderMode", 5);
+                props.AddField("s_BlendSrc", (int)blendsrc);
+                props.AddField("s_BlendDst", (int)blenddst);
+            }
+            props.AddField("s_DepthWrite", configData.GetZWrite(material,false));
+        }
+        props.AddField("s_Cull", configData.GetCull(material));
+       
+        props.AddField("s_DepthTest", configData.GetZTest(material));
+    }
     public static void WriteMetarial(Material material, JSONObject jsonData, ResoureMap resoureMap)
     {
         string shaderName = material.shader.name;
@@ -585,26 +617,19 @@ internal class MetarialUitls
             Debug.LogError("LayaAir3D Warning : not get the shader config " + shaderName);
             return;
         }
-        jsonData.AddField("version", "LAYAMATERIAL:04");
+        PropDatasConfig configData = MaterialPropsConfigs[shaderName];
+        jsonData.AddField("version", MetarialUitls.MeterialVersion);
         JSONObject props = new JSONObject(JSONObject.Type.OBJECT);
-        PropDatasConfig propsData = MaterialPropsConfigs[shaderName];
-        jsonData.AddField("props", props);
-        props.AddField("type", propsData.materalName);
-        props.AddField("s_Cull", PropDatasConfig.GetCull(material));
-        props.AddField("s_Blend", PropDatasConfig.GetBlend(material));
-        props.AddField("s_BlendSrc", PropDatasConfig.GetSrcBlend(material));
-        props.AddField("s_BlendDst", PropDatasConfig.GetDstBlend(material));
-        props.AddField("alphaTest", PropDatasConfig.GetAlphaTest(material));
-        props.AddField("alphaTestValue", PropDatasConfig.GetAlphaTestValue(material));
-        props.AddField("renderQueue", material.renderQueue);
+        JSONObject definds = new JSONObject(JSONObject.Type.ARRAY);
+       
         JSONObject texture = new JSONObject(JSONObject.Type.ARRAY);
-        foreach (var plist in propsData.pictureList)
+        foreach (var plist in configData.pictureList)
         {
             Texture text1 = material.GetTexture(plist.Key);
             if (text1 != null)
             {
                 TextureConfig tConfig = plist.Value;
-                TextureFile textureFile = resoureMap.GetTextureFile(text1, tConfig.isNormal);
+                FileData textureFile = resoureMap.GetTextureFile(text1, tConfig.isNormal);
                 if(textureFile == null)
                 {
                     Debug.LogError("资源错误");
@@ -613,9 +638,13 @@ internal class MetarialUitls
             }
         }
         props.AddField("textures", texture);
-        props.AddField("materialRenderMode", PropDatasConfig.GetRenderModule(material));
 
-        foreach (var cList in propsData.colorLists)
+       
+        jsonData.AddField("props", props);
+        props.AddField("type", configData.materalName);
+        WiteBlend(material, configData, ref props, ref definds);
+
+        foreach (var cList in configData.colorLists)
         {
             if (!material.HasProperty(cList.Key))
             {
@@ -623,7 +652,7 @@ internal class MetarialUitls
             }
             JSONObject colorValue = new JSONObject(JSONObject.Type.ARRAY);
             Color color = material.GetColor(cList.Key);
-            if (propsData.colorHdrLists.ContainsKey(cList.Key))
+            if (configData.colorHdrLists.ContainsKey(cList.Key))
             {
                 Color colorf;
                 float exp;
@@ -632,7 +661,7 @@ internal class MetarialUitls
                 colorValue.Add(colorf.g);
                 colorValue.Add(colorf.b);
                 colorValue.Add(colorf.a);
-                props.AddField(propsData.colorHdrLists[cList.Key], exp);
+                props.AddField(configData.colorHdrLists[cList.Key], exp);
             }
             else
             {
@@ -644,7 +673,7 @@ internal class MetarialUitls
             props.AddField(cList.Value, colorValue);
         }
 
-        foreach (var tList in propsData.tillOffsetLists)
+        foreach (var tList in configData.tillOffsetLists)
         {
             JSONObject tillOffData = new JSONObject(JSONObject.Type.ARRAY);
             Vector4 tiling = material.GetVector(tList.Key);
@@ -655,14 +684,14 @@ internal class MetarialUitls
             props.AddField(tList.Value, tillOffData);
         }
 
-        foreach (var flist in propsData.floatLists)
+        foreach (var flist in configData.floatLists)
         {
             string uName = flist.Key;
             string layaName = flist.Value.keyName;
             if (flist.Value.rule != null)
             {
                 ConditionConfig ruleConfig;
-                if (propsData.rules.TryGetValue(flist.Value.rule, out ruleConfig))
+                if (configData.rules.TryGetValue(flist.Value.rule, out ruleConfig))
                 {
                     if (getMatarialRole(material, ruleConfig))
                     {
@@ -686,9 +715,9 @@ internal class MetarialUitls
             props.AddField(layaName, data);
         }
 
-        JSONObject definds = new JSONObject(JSONObject.Type.ARRAY);
+        
         List<string> defindLists = new List<string>();
-        foreach (var dlist in propsData.defindsLists)
+        foreach (var dlist in configData.defindsLists)
         {
             if (dlist.Value.from == DefindsFrom.floatValue)
             {
@@ -727,6 +756,7 @@ internal class MetarialUitls
         string materialPath = AssetsUtil.GetMaterialPath(material);
         string cubeMapPath = materialPath.Split('.')[0] + ".cubemap";
         JsonFile cubeMapData = new JsonFile(cubeMapPath, new JSONObject(JSONObject.Type.OBJECT));
+        JSONObject definds = new JSONObject(JSONObject.Type.ARRAY);
         resoureMap.AddExportFile(cubeMapData);
         string shaderName = material.shader.name;
         if (!MaterialPropsConfigs.ContainsKey(shaderName))
@@ -741,7 +771,7 @@ internal class MetarialUitls
             if (material.GetTexture(plist.Key) != null)
             {
                 TextureConfig tConfig = plist.Value;
-                TextureFile textureFile = resoureMap.GetTextureFile(material.GetTexture(plist.Key), tConfig.isNormal);
+                FileData textureFile = resoureMap.GetTextureFile(material.GetTexture(plist.Key), tConfig.isNormal);
                 cubeMapData.jsonData.AddField(tConfig.keyName, "res://" + textureFile.filePath);
                 cubeMapData.AddRegistList(textureFile.filePath);
             }
@@ -753,8 +783,7 @@ internal class MetarialUitls
         cubeMapData.jsonData.AddField("generateMipmap", true);
         cubeMapData.jsonData.AddField("sRGB", true);
 
-
-        jsonData.AddField("version", "LAYAMATERIAL:04");
+        jsonData.AddField("version", MetarialUitls.MeterialVersion);
 
         JSONObject textures = new JSONObject(JSONObject.Type.ARRAY);
         JSONObject constructParams = new JSONObject(JSONObject.Type.ARRAY);
@@ -780,14 +809,7 @@ internal class MetarialUitls
         JSONObject props = new JSONObject(JSONObject.Type.OBJECT);
         props.AddField("textures", textures);
         props.AddField("type", propsData.materalName);
-        props.AddField("s_Cull", PropDatasConfig.GetCull(material));
-        props.AddField("s_Blend", PropDatasConfig.GetBlend(material));
-        props.AddField("s_BlendSrc", PropDatasConfig.GetSrcBlend(material));
-        props.AddField("s_BlendDst", PropDatasConfig.GetDstBlend(material));
-        props.AddField("alphaTest", PropDatasConfig.GetAlphaTest(material));
-        props.AddField("alphaTestValue", PropDatasConfig.GetAlphaTestValue(material));
-        props.AddField("renderQueue", material.renderQueue);
-        props.AddField("materialRenderMode", 0);
+        WiteBlend(material, propsData,ref props, ref definds);
         foreach (var cList in propsData.colorLists)
         {
             if (!material.HasProperty(cList.Key))

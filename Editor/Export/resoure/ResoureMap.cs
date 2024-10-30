@@ -8,19 +8,14 @@ internal class ResoureMap
 {
     private Dictionary<string, FileData> exportFiles;
     private List<NodeMap> nodemaps;
-    public ResoureMap()
+    public ResoureMap(Dictionary<string, GameObject> maps)
     {
         this.exportFiles = new Dictionary<string, FileData>();
         this.nodemaps = new List<NodeMap>();
-    }
-
-    public PerfabFile getPerfabFile(string path)
-    {
-        if (!this.exportFiles.ContainsKey(path))
+        foreach (var map in maps)
         {
-            this.AddExportFile(new PerfabFile(this.AddNodeMap(), path));
+            this.AddExportFile(new PerfabFile(this.AddNodeMap(), map.Key));
         }
-        return this.exportFiles[path] as PerfabFile;
     }
 
     public NodeMap AddNodeMap(int idOff = 0)
@@ -32,13 +27,6 @@ internal class ResoureMap
 
     public void createNodeTree()
     {
-        foreach(var  file in this.exportFiles)
-        {
-            if(file.Value is PerfabFile){
-                PerfabFile val = file.Value as PerfabFile;
-                val.crateNodeData();
-            }
-        }
         //创建未引用节点数结构
         foreach(NodeMap nodemap in this.nodemaps)
         {
@@ -47,7 +35,7 @@ internal class ResoureMap
         //创建引用节点,同时生成节点信息
         foreach (NodeMap nodemap in this.nodemaps)
         {
-            //nodemap.createRefNodeTree();
+            nodemap.createRefNodeTree();
             nodemap.writeCompoent();
         }
     }
@@ -86,16 +74,27 @@ internal class ResoureMap
         return this.GetFileData(path) as MaterialFile;
     }
 
-    public TextureFile GetTextureFile(Texture texture, bool isNormal)
+    public FileData GetTextureFile(Texture texture, bool isNormal)
     {
         string picturePath = AssetsUtil.GetTextureFile(texture);
         
         if (!this.HaveFileData(picturePath))
         {
-            this.AddExportFile(new TextureFile(picturePath,texture as Texture2D, isNormal));
+            this.AddExportFile(new TextureFile(picturePath, texture as Texture2D, isNormal));
+        }
+        return this.GetFileData(picturePath);
+    }
+
+    public FileData GetTexture2DFile(Texture2D texture, string picturePath)
+    {
+
+        if (!this.HaveFileData(picturePath))
+        {
+            this.AddExportFile(new TextureFile(picturePath, texture, false));
         }
         return this.GetFileData(picturePath) as TextureFile;
     }
+
 
     public AnimationClipFile GetAnimationClipFile(AnimationClip aniclip, GameObject gameObject)
     {
@@ -139,14 +138,6 @@ internal class ResoureMap
         foreach (var file in exportFiles)
         {
             file.Value.SaveFile(exportFiles);
-        }
-
-        foreach (var file in exportFiles)
-        {
-            if(file.Value is PerfabFile){
-                PerfabFile val = file.Value as PerfabFile;
-                val.destory();
-            }
         }
     }
 
@@ -206,6 +197,12 @@ internal class ResoureMap
         }else if(comp is LODGroup)
         {
             compents.Add(this.GetLodGroup(comp as LODGroup, map, isOverride));
+        }else if(comp is ParticleSystem)
+        {
+            compents.Add(ParticleSystemData.GetParticleSystem(comp as ParticleSystem, isOverride,map,this));
+        }else if(comp is ParticleSystemRenderer)
+        {
+            compents.Add(ParticleSystemData.GetParticleSystemRneder(comp as ParticleSystemRenderer, isOverride,this));
         }
     }
 
@@ -242,11 +239,7 @@ internal class ResoureMap
        
         if (mesh != null)
         {
-            MeshFile meshFile = this.GetMeshFile(mesh, render);
-            JSONObject meshFiledata = new JSONObject(JSONObject.Type.OBJECT);
-            meshFiledata.AddField("_$uuid", meshFile.uuid);
-            meshFiledata.AddField("_$type", "Mesh");
-            compData.AddField("sharedMesh", meshFiledata);
+            compData.AddField("sharedMesh", this.GetMeshData(mesh, render));
         }
 
         return compData;
@@ -266,7 +259,7 @@ internal class ResoureMap
         compData.AddField("_$type", "SkinnedMeshRenderer");
         compData.AddField("sharedMaterials", sharedMaterials);
         compData.AddField("enabled", skinnedMeshRenderer.enabled);
-        compData.AddField("receiveShadow", skinnedMeshRenderer.receiveShadows);
+        compData.AddField("receiveShadows", skinnedMeshRenderer.receiveShadows);
         compData.AddField("castShadow", skinnedMeshRenderer.shadowCastingMode == ShadowCastingMode.On);
 
         Bounds bounds = skinnedMeshRenderer.localBounds;
@@ -320,7 +313,7 @@ internal class ResoureMap
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "MeshRenderer", isOverride);
         compData.AddField("enabled", render.enabled);
         compData.AddField("sharedMaterials", sharedMaterials);
-        compData.AddField("receiveShadow", render.receiveShadows);
+        compData.AddField("receiveShadows", render.receiveShadows);
         compData.AddField("castShadow", render.shadowCastingMode == ShadowCastingMode.On);
         return compData;
     }
@@ -352,6 +345,7 @@ internal class ResoureMap
         compData.AddField("lods", lodDatas);
         return compData;
     }
+
     public JSONObject GetReflectionProbe(ReflectionProbe probe, bool isOverride)
     {
         GameObject gameObject = probe.gameObject;
@@ -609,5 +603,14 @@ internal class ResoureMap
             materFiledata.AddField("_$uuid", jsonFile.uuid);
         }
         return materFiledata;
+    }
+
+    public JSONObject GetMeshData(Mesh mesh,Renderer render)
+    {
+        MeshFile meshFile = this.GetMeshFile(mesh, render);
+        JSONObject meshFiledata = new JSONObject(JSONObject.Type.OBJECT);
+        meshFiledata.AddField("_$uuid", meshFile.uuid);
+        meshFiledata.AddField("_$type", "Mesh");
+        return meshFiledata;
     }
 }

@@ -113,6 +113,290 @@
             }
         ]
     },
+
+    "GAPH Custom Shader/Shader_IntegradedEffect": {
+        "targeName": "Shader_IntegradedEffect",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            },
+             {
+                "uName": "_FixedMaskTex",
+                "layaName": "u_FixedMaskTex"
+            },
+            {
+                "uName": "_MaskTex",
+                "layaName": "u_MaskTex"
+            },
+            {
+                "uName": "_NormalTex",
+                "layaName": "u_NormalTex",
+                "isNormal": true
+            },
+            {
+                "uName": "_NoiseNormal",
+                "layaName": "u_NoiseNormal"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            },
+            {
+                "uName": "_FixedMaskTex_ST",
+                "layaName": "u_FixedMaskTex_ST"
+            },
+            {
+                "uName": "_MaskTex_ST",
+                "layaName": "u_MaskTex_ST"
+            },
+            {
+                "uName": "_NormalTex_ST",
+                "layaName": "u_NormalTex_ST"
+            },
+            {
+                "uName": "_NoiseNormal_ST",
+                "layaName": "u_NoiseNormal_ST"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_TintColor",
+                "hdrName": "u_TintColorIntensity"
+            },
+            {
+                "uName": "_TintColor2",
+                "layaName": "u_TintColor2",
+                "hdrName": "u_TintColor2Intensity"
+            }
+        ],
+        "floats": [
+            {
+                "uName": "_MaskOffsetFactor",
+                "layaName": "u_MaskOffsetFactor"
+            },
+            {
+                "uName": "_ColorFactor",
+                "layaName": "u_ColorFactor"
+            },
+            {
+                "uName": "_MaskCutOut",
+                "layaName": "u_MaskCutOut"
+            },
+            {
+                "uName": "_xTexcoordMove",
+                "layaName": "u_xTexcoordMove"
+            },
+            {
+                "uName": "_yTexcoordMove",
+                "layaName": "u_yTexcoordMove"
+            },
+            {
+                "uName": "_TexcoordMoveStrength",
+                "layaName": "u_TexcoordMoveStrength"
+            },
+            {
+                "uName": "_NormalDistortionFactor",
+                "layaName": "u_NormalDistortionFactor"
+            },
+            {
+                "uName": "_NormalAnimateSpeed",
+                "layaName": "u_NormalAnimateSpeed"
+            },
+            {
+                "uName": "_NoiseNormalFactor",
+                "layaName": "u_NoiseNormalFactor"
+            }
+        ],
+        "cull": "_Culling",
+        "zWrite": "_ZWrite",
+        "blendSrc": "_BlendSrc",
+        "blendDst": "_BlendDst",
+        "defineds": [
+            {
+                "uName": "_SecondColor",
+                "layaName": "IS_USE_SECOND_COLOR",
+                "from": 0,
+                "deflat": 1.0
+            },
+            {
+                "uName": "_MaskFade",
+                "layaName": "IS_MASK_FADE",
+                "from": 0,
+                "deflat": 1.0
+            },
+            {
+                "uName": "_UseTexAnimation",
+                "layaName": "IS_USE_TEXANIMATION",
+                "from": 0,
+                "deflat": 1.0
+            },
+            {
+                "uName": "_TexcoordMove",
+                "layaName": "IS_TEXCOORD_MOVE",
+                "from": 0,
+                "deflat": 1.0
+            },
+            {
+                "uName": "_NormalDistortion",
+                "layaName": "IS_NORMAL_DISTORTION",
+                "from": 0,
+                "deflat": 1.0
+            },
+            {
+                "uName": "_NormalAnimate",
+                "layaName": "IS_NORMAL_ANIMATE",
+                "from": 0,
+                "deflat": 1.0
+            },
+            {
+                "uName": "_TextureNoise",
+                "layaName": "IS_TEXTURE_NOISE",
+                "from": 0,
+                "deflat": 1.0
+            }
+        ]
+    },
+    "Skybox/Cubemap": {
+        "targeName": "SkyBox",
+        "textures": [
+            {
+                "uName": "_Tex",
+                "layaName": "u_CubeTexture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_Tint",
+                "layaName": "u_TintColor",
+                "hdrName": "u_TintIntensity"
+            }
+        ],
+        "floats": [
+            {
+                "uName": "_Rotation",
+                "layaName": "u_Rotation"
+            },
+            {
+                "uName": "_Exposure",
+                "layaName": "u_Exposure"
+            }
+        ]
+    },
+    "Particles/Standard Surface": {
+        "targeName": "Particle",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            },
+            {
+                "uName": "_EmissionMap",
+                "layaName": "u_EmissionTexture",
+                "defind": "EMISSIONTEXTURE"
+            },
+            {
+                "uName": "_MetallicGlossMap",
+                "layaName": "u_MetallicGlossMap",
+                "defind": "METALLICGLOSSMAP"
+            },
+            {
+                "uName": "_BumpMap",
+                "layaName": "u_NormalMap",
+                "defind": "DETAILNORMAL"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_AlbedoColor",
+                "hdrName": "u_AlbedoColorIntensity"
+            },
+            {
+                "uName": "_EmissionColor",
+                "layaName": "u_EmissionColor",
+                "hdrName": "u_EmissionColorIntensity"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "floats": [
+            {
+                "uName": "_Metallic",
+                "layaName": "u_Metallic"
+            },
+            {
+                "uName": "_Glossiness",
+                "layaName": "u_Smoothness"
+            },
+            {
+                "uName": "_BumpScale",
+                "layaName": "u_NormalScale"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_EMISSION",
+                "layaName": "EMISSION",
+                "from": 1
+            }
+        ]
+    },
+    "Particles/Standard Unlit": {
+        "targeName": "Particle",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            },
+            {
+                "uName": "_EmissionMap",
+                "layaName": "u_EmissionTexture",
+                "defind": "EMISSIONTEXTURE"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_AlbedoColor",
+                "hdrName": "u_AlbedoColorIntensity"
+            },
+            {
+                "uName": "_EmissionColor",
+                "layaName": "u_EmissionColor",
+                "hdrName": "u_EmissionColorIntensity"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "floats": [
+            {
+                "uName": "_BumpScale",
+                "layaName": "u_NormalScale"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_EMISSION",
+                "layaName": "EMISSION",
+                "from": 1
+            }
+        ]
+    },
     "Universal Render Pipeline/Lit": {
         "targeName": "PBR",
         "textures": [
@@ -373,7 +657,7 @@
             }
         ]
     },
-    "SkyBox/Cubemap" : {
+    "SkyBox/Cubemap": {
         "targeName": "SkyBox"
     },
     "Legacy Shaders/Diffuse Fast": {

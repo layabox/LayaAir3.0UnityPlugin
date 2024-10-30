@@ -5,6 +5,11 @@ public class SpaceUtils
     private static readonly Quaternion HelpRotation = new Quaternion(0, 1, 0, 0);
     private static Quaternion HelpRotation1 = new Quaternion();
     private static Vector3 HelpVec3 = new Vector3();
+
+    public static Vector3 getDirection()
+    {
+        return new Vector3(-1, 1, 1);
+    }
     public static void changePostion(ref Vector3 postion)
     {
         postion.x *= -1;
@@ -63,6 +68,25 @@ public class SpaceUtils
             eulr[0] = HelpVec3.x;
             eulr[1] = -HelpVec3.y;
             eulr[2] = -HelpVec3.z;
+        }
+    }
+
+    public static void changeRotateEuler(ref Vector3 eulr, bool ischange)
+    {
+        if (ischange)
+        {
+
+            HelpRotation1.eulerAngles = HelpVec3;
+            HelpRotation1 *= HelpRotation;
+            Vector3 angles = HelpRotation1.eulerAngles;
+            eulr.x = angles.x;
+            eulr.y = -angles.y;
+            eulr.z = -angles.z;
+        }
+        else
+        {
+            eulr.y *= -1;
+            eulr.z *= -1;
         }
     }
     public static void changeRotateEulerTangent(ref float[] eulr, bool ischange)

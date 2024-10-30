@@ -3,22 +3,49 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
-
 internal class HierarchyFile 
 {
+    private List<GameObject> notPerfabNodes;
     private ResoureMap resouremap;
     private NodeMap nodeMap;
     public HierarchyFile()
     {
+        this.notPerfabNodes = new List<GameObject>();
         GameObject[] gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
         var allNodes = getSceneAllNode(gameObjects);//场景中所有GameObject
-        this.resouremap = new ResoureMap();
-        this.nodeMap = this.resouremap.AddNodeMap(2);
-       
+        Dictionary<string, GameObject> perfabList = new Dictionary<string, GameObject>();//用于避免重复的列表
         foreach (var gameObject in allNodes)//遍历
         {
-            this.nodeMap.setNode(gameObject,true,false);
+            var rt = PerfabFile.getPerfabFilePath(gameObject);//物体的Prefab根节点
+            if (rt == null)
+            {
+                this.notPerfabNodes.Add(gameObject);
+                continue;
+            }
+            GameObject perfabRoot = PerfabFile.getPrefabInstanceRoot(gameObject);
+            if (perfabList.ContainsKey(rt))
+            {
+                if (!this.notPerfabNodes.Contains(perfabRoot))
+                {
+                    this.notPerfabNodes.Add(perfabRoot);
+                }
+                continue;
+            }
+            perfabList.Add(rt, perfabRoot);//增加到列表中
         }
+        this.resouremap = new ResoureMap(perfabList);
+        this.nodeMap = this.resouremap.AddNodeMap(2);
+        foreach (var map in perfabList)
+        {
+            GameObject gameObject = map.Value;
+            this.nodeMap.addNodeMap(gameObject, JsonUtils.GetGameObject(gameObject), true);
+        }
+        foreach (var obj in allNodes)
+        {
+            getGameObjectData(obj);
+        }
+
+        this.nodeMap.setRoots(gameObjects);
         this.resouremap.createNodeTree();
       
     }
@@ -46,6 +73,15 @@ internal class HierarchyFile
             {
                 AddtoList(gameObject.transform.GetChild(i).gameObject,list);
             }
+        }
+    }
+
+    private void getGameObjectData(GameObject gameObject)
+    {
+        if (this.notPerfabNodes.Contains(gameObject))
+        {
+            JSONObject nodeData = JsonUtils.GetGameObject(gameObject);
+            this.nodeMap.addNodeMap(gameObject, nodeData, false);
         }
     }
 

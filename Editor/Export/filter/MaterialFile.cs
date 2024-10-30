@@ -12,14 +12,14 @@ internal class MaterialFile : JsonFile
         this.resoureMap = map;
         this.updatePath(AssetsUtil.GetMaterialPath(material));
         this.m_material = material;
-        if(material.shader.name == "Skybox/6 Sided")
+      /*  if(material.shader.name == "Skybox/6 Sided")
         {
             MetarialUitls.WriteSkyMetarial(material, this.jsonData, map);
         }
          else
-        {
+        {*/
             MetarialUitls.WriteMetarial(material, this.jsonData, map);
-        }
+        //}
       
     }
 

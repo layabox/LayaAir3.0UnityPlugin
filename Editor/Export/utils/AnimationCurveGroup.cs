@@ -277,7 +277,7 @@ public class AnimationCurveGroup
         this._conpomentType = conpomentType;
         this._propnames = new List<string>();
         this._type = type;
-        this._propertyName = propertyName.Split('.')[0];
+        this._propertyName = propertyName;
         this._timeLists = new Dictionary<uint, float>();
         this.datas = new Dictionary<float, FrameData>();
     }
@@ -307,12 +307,10 @@ public class AnimationCurveGroup
 
     public bool pushCurve(AnimationClipCurveData curveData)
     {
-        if (this._path != curveData.path)
+        if (this._path != AnimationCurveGroup.getCurvePath(curveData))
         {
             return false;
         }
-        string[] propertyNames = curveData.propertyName.Split('.');
-        if (propertyNames[0] != this._propertyName) return false;
         string endKey = null;
         if (this._keyType == KeyFrameValueType.Float)
         {
@@ -320,6 +318,7 @@ public class AnimationCurveGroup
         }
         else
         {
+            string[] propertyNames = curveData.propertyName.Split('.');
             endKey = propertyNames[propertyNames.Length - 1];
         }
 
@@ -432,7 +431,7 @@ public class AnimationCurveGroup
         }
         aniNodeData.type = (Byte)this._keyType;
         List<UInt16> pathIndex = new List<UInt16>();
-        String nodePath = this._path;
+        String nodePath = this._path.Split('.')[0];
         string[] strArr = nodePath.Split('/');
         for (int m = 0; m < strArr.Length; m++)
         {
@@ -541,16 +540,8 @@ public class AnimationCurveGroup
     public static string getCurvePath(AnimationClipCurveData curveData)
     {
         string propertyName = curveData.propertyName;
-        int lastIndex = propertyName.LastIndexOf('.');
-        if (lastIndex > 0)
-        {
-            return curveData.path + "." + propertyName.Substring(0, lastIndex);
-        }
-        else
-        {
-            return curveData.path + "." + propertyName;
-        }
-       
+        string _propertyName = propertyName.Substring(0, propertyName.LastIndexOf('.'));
+        return curveData.path + "." + _propertyName;
     }
     public static float getCurveTime(float time)
     {

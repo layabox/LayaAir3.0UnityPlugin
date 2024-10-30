@@ -6,7 +6,7 @@ internal class AssetsUtil
 {
     public static string GetTextureFile(Texture texture)
     {
-        return AssetDatabase.GetAssetPath(texture.GetInstanceID());
+        return AssetDatabase.GetAssetPath(texture.GetInstanceID()); 
     }
 
     public static string GetAnimationClipPath(AnimationClip clip)
