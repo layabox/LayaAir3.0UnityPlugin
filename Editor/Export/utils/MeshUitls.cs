@@ -67,6 +67,7 @@ public class MeshUitls
         Vector3[] normals = mesh.normals;
         Color[] colors = mesh.colors;
         Vector2[] uv = mesh.uv;
+        Vector2[] uv1 = mesh.uv2;
         Vector4[] tangents = mesh.tangents;
         if (vertices != null && vertices.Length != 0)
         {
@@ -96,6 +97,12 @@ public class MeshUitls
             everyVBSize += 8;
         }
 
+        if (uv1 != null && uv1.Length != 0)
+        {
+            VertexStructure[4] = 1;
+            vbDeclaration += ",UV1";
+            everyVBSize += 8;
+        }
 
 
         if (tangents != null && tangents.Length != 0 && !ExportConfig.IgnoreVerticesTangent)
@@ -261,6 +268,7 @@ public class MeshUitls
         Vector3 normal;
         Color color;
         Vector2 uvs;
+        Vector2 uv2s;
         Vector4 tangent;
         VBContentDatasAreaPosition_Start = fs.Position;
 
@@ -286,6 +294,14 @@ public class MeshUitls
                 uvs = uv[j];
                 Util.FileUtil.WriteData(fs, uvs.x, uvs.y * -1.0f + 1.0f);
             }
+
+            //uv1
+            if (VertexStructure[4] == 1)
+            {
+                uv2s = uv1[j];
+                Util.FileUtil.WriteData(fs, uv2s.x, uv2s.y * -1.0f + 1.0f);
+            }
+
 
             //切线
             if (VertexStructure[6] == 1)
