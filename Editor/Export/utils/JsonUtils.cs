@@ -64,6 +64,9 @@ internal class JsonUtils
         StaticEditorFlags staticEditorFlags = GameObjectUtility.GetStaticEditorFlags(gObject);
         nodeData.AddField("isStatic", ((int)staticEditorFlags & (int)StaticEditorFlags.BatchingStatic) > 0);
         nodeData.AddField("layer", gObject.layer);
+        if (!gObject.tag.Equals("Untagged")) {
+            nodeData.AddField("tag", gObject.tag);
+        }
         nodeData.AddField("transform", JsonUtils.GetTransfrom(gObject));
         return nodeData;
     }
