@@ -128,8 +128,8 @@ internal class JsonUtils
                 break;
         }
         lightData.AddField("shadowStrength", light.shadowStrength);
-        lightData.AddField("shadowDepthBias", light.shadowBias);
-        lightData.AddField("shadowNormalBias", light.shadowNormalBias);
+        lightData.AddField("shadowDepthBias", light.shadowBias + 1);
+        lightData.AddField("shadowNormalBias", light.shadowNormalBias + 0.6f);
         lightData.AddField("shadowNearPlane", light.shadowNearPlane);
     }
 
