@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEditor.SceneManagement;
+using System.IO;
 using UnityEngine.SceneManagement;
 
 
@@ -8,9 +10,11 @@ internal class HierarchyFile
 {
     private ResoureMap resouremap;
     private NodeMap nodeMap;
-    public HierarchyFile()
+    private Scene scene;
+    public HierarchyFile(Scene scene)
     {
-        GameObject[] gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+        this.scene = scene;
+        GameObject[] gameObjects = scene.GetRootGameObjects();
         var allNodes = getSceneAllNode(gameObjects);//场景中所有GameObject
         this.resouremap = new ResoureMap();
         this.nodeMap = this.resouremap.AddNodeMap(2);
@@ -57,7 +61,7 @@ internal class HierarchyFile
         }
         else
         {
-            GameObject[] gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+            GameObject[] gameObjects = scene.GetRootGameObjects();
             for (int i = 0; i < gameObjects.Length; i++)
             {
                 GameObject gameObject = gameObjects[i];
@@ -76,10 +80,9 @@ internal class HierarchyFile
         this.resouremap.SaveAllFile();
     }
 
-    private void getSceneNode()
-    {
+    private void getSceneNode() {
         JSONObject node = new JSONObject(JSONObject.Type.OBJECT);
-        var sceneName = SceneManager.GetActiveScene().name + ".ls";
+        var sceneName = scene.path.Replace(Path.GetExtension(scene.path), ".ls");
         node.AddField("_$ver", 0);
         node.AddField("_$id", "#0");
         node.AddField("_$type", "Scene");
@@ -136,7 +139,7 @@ internal class HierarchyFile
 
         scene3dNode.AddField("fogColor", JsonUtils.GetColorObject(RenderSettings.fogColor));
 
-        GameObject[] gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+        GameObject[] gameObjects = scene.GetRootGameObjects();
 
         if (gameObjects.Length > 0)
         {
