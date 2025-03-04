@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class LayaAir3Export
@@ -9,8 +10,6 @@ public class LayaAir3Export
     {
         GameObjectUitls.init();
         MetarialUitls.init();
-
-        TextureFile.init();
         AnimationCurveGroup.init();
 
         var active = EditorSceneManager.GetActiveScene();
@@ -25,5 +24,8 @@ public class LayaAir3Export
         if (sceneCount > 1) {
             EditorSceneManager.OpenScene(active.path, OpenSceneMode.Additive);
         }
+
+        SceneView.lastActiveSceneView.ShowNotification(new GUIContent(LanguageConfig.str_Exported));
+        Debug.Log(LanguageConfig.str_Exported);
     }
 }
