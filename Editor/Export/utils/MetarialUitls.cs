@@ -387,6 +387,10 @@ public class PropDatasConfig
 
     public static int GetRenderModule(Material material)
     {
+        if (material.shader.name.StartsWith("Laya/") && material.HasProperty("_Mode")) {
+            return material.GetInt("_Mode");
+        }
+        
         string result = material.GetTag("RenderType", true);
         if (result == "Opaque")
         {

@@ -1,22 +1,64 @@
-//#if UNITY_EDITOR 
-using System;
 using UnityEngine;
 using UnityEditor;
 
-class LayaUnlitGUI : LayaShaderGUI {
+class LayaBlinnPhongShaderGUI : LayaShaderGUI {
     public override void AssignNewShaderToMaterial(Material material, Shader oldShader, Shader newShader) {
         material.shader = newShader;
+        material.EnableKeyword("EnableLighting");
         onChangeRender(material, (RenderMode)material.GetFloat("_Mode"));
     }
 
+    public enum LightingMode {
+        ON = 0,
+        OFF = 1,
+    }
+
+    MaterialProperty lighting = null;
+    MaterialProperty specularTexture = null;
+    MaterialProperty specularColor = null;
+    MaterialProperty specularShininess = null;
+    MaterialProperty normalTexture = null;
+
+    MaterialProperty enableSubsurfaceScattering = null;
+    MaterialProperty thinknessTexture = null;
+
+
     protected override void FindProperties(MaterialProperty[] props) {
         base.FindProperties(props);
-        albedoIntensity = null;
+        lighting = FindProperty("_Lighting", props);
+        specularTexture = FindProperty("_SpecGlossMap", props);
+        specularColor = FindProperty("_SpecColor", props);
+        specularShininess = FindProperty("_Shininess", props);
+        normalTexture = FindProperty("_BumpMap", props);
+        alphaCutoff = FindProperty("_Cutoff", props, false);
+        enableSubsurfaceScattering = FindProperty("_enableSubsurfaceScattering", props);
+        thinknessTexture = FindProperty("thinknessTexture", props);
+    }
+
+    protected override void MaterialPropertiesGUI(Material material) {
+        base.MaterialPropertiesGUI(material);
+        m_MaterialEditor.TextureProperty(specularTexture, specularTexture.displayName, false);
+        m_MaterialEditor.ShaderProperty(specularColor, specularColor.displayName);
+        m_MaterialEditor.ShaderProperty(specularShininess, specularShininess.displayName, MaterialEditor.kMiniTextureFieldLabelIndentLevel);
+        m_MaterialEditor.TextureProperty(normalTexture, normalTexture.displayName, false);
     }
 
     protected override void OnMaterialChanged(Material material) {
         base.OnMaterialChanged(material);
-        onChangeRender(material, (RenderMode)material.GetFloat("_Mode"));
+        m_MaterialEditor.RegisterPropertyChangeUndo("Rendering Mode");
+        LightingMode light = (LightingMode)lighting.floatValue;
+
+        RenderMode mode = (RenderMode)renderMode.floatValue;
+
+        CheckKeyword(material, "EnableLighting", light == LightingMode.ON);
+        CheckKeyword(material, "NormalTexture", normalTexture.textureValue != null);
+        CheckKeyword(material, "SpecularTexture", specularTexture.textureValue != null);
+        CheckKeyword(material, "ENABLETRANSMISSION", enableSubsurfaceScattering.floatValue == 1.0);
+        CheckKeyword(material, "THICKNESSMAP", thinknessTexture.textureValue != null);
+        CheckKeyword(material, "EnableAlphaCutoff", mode == RenderMode.Cutout);
+        CheckKeyword(material, "_ALPHATEST_ON", mode == RenderMode.Cutout);
+
+        onChangeRender(material, mode);
     }
 
     public void onChangeRender(Material material, RenderMode mode) {
@@ -31,7 +73,6 @@ class LayaUnlitGUI : LayaShaderGUI {
                 material.SetInt("_ZTest", 4);
                 material.DisableKeyword("_ALPHATEST_ON");
                 material.DisableKeyword("_ALPHABLEND_ON");
-                material.DisableKeyword("ADDTIVEFOG");
                 material.DisableKeyword("EnableAlphaCutoff");
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Geometry;
                 break;
@@ -45,7 +86,6 @@ class LayaUnlitGUI : LayaShaderGUI {
                 material.SetInt("_ZTest", 4);
                 material.EnableKeyword("_ALPHATEST_ON");
                 material.DisableKeyword("_ALPHABLEND_ON");
-                material.DisableKeyword("ADDTIVEFOG");
                 material.EnableKeyword("EnableAlphaCutoff");
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
                 break;
@@ -59,7 +99,6 @@ class LayaUnlitGUI : LayaShaderGUI {
                 material.SetInt("_ZTest", 4);
                 material.DisableKeyword("_ALPHATEST_ON");
                 material.EnableKeyword("_ALPHABLEND_ON");
-                material.DisableKeyword("ADDTIVEFOG");
                 material.DisableKeyword("EnableAlphaCutoff");
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
                 break;
@@ -73,11 +112,13 @@ class LayaUnlitGUI : LayaShaderGUI {
                 material.SetInt("_ZTest", 4);
                 material.DisableKeyword("_ALPHATEST_ON");
                 material.DisableKeyword("_ALPHABLEND_ON");
-                material.DisableKeyword("ADDTIVEFOG");
                 material.DisableKeyword("EnableAlphaCutoff");
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Geometry;
                 break;
         }
+        if (lighting != null) {
+            var light = (LightingMode)lighting.floatValue;
+            CheckKeyword(material, "EnableLighting", light == LightingMode.ON);
+        }
     }
 }
-//#endif

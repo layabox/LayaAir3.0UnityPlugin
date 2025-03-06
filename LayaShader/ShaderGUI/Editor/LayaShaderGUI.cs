@@ -11,7 +11,7 @@ class LayaShaderGUI : ShaderGUI
     public enum RenderMode {
         Opaque = 0,
         Cutout = 1,
-        Transparent = 2
+        Transparent = 2,
     }
 
     public enum CullMode {
@@ -27,6 +27,7 @@ class LayaShaderGUI : ShaderGUI
     protected MaterialProperty renderMode = null;
     protected MaterialProperty cullMode = null;
     protected MaterialProperty alphaCutoff = null;
+    protected MaterialProperty albedoIntensity = null;
 
     protected MaterialEditor m_MaterialEditor;
 
@@ -37,6 +38,7 @@ class LayaShaderGUI : ShaderGUI
         isVertexColor = FindProperty("_IsVertexColor", props);
         albedoTexture = FindProperty("_MainTex", props);
         albedoColor = FindProperty("_Color", props);
+        albedoIntensity = FindProperty("_AlbedoIntensity", props);
         alphaCutoff = FindProperty("_Cutoff", props, false);
         renderMode = FindProperty("_Mode", props);
         cullMode = FindProperty("_Cull", props);
@@ -52,27 +54,30 @@ class LayaShaderGUI : ShaderGUI
     public void ShaderPropertiesGUI(Material material) {
         EditorGUI.BeginChangeCheck();
         MaterialPropertiesGUI(material);
+        if (renderMode != null) RenderModeGUI(material);
         if (EditorGUI.EndChangeCheck()) {
             OnMaterialChanged(material);
         }
     }
 
     protected virtual void MaterialPropertiesGUI(Material material) {
-        if (isVertexColor != null) m_MaterialEditor.ShaderProperty(isVertexColor, "Vertex Color");
-        if (albedoTexture != null) m_MaterialEditor.TextureProperty(albedoTexture, "Albedo Texture");
         if (albedoColor != null) m_MaterialEditor.ColorProperty(albedoColor, "Albedo Color");
+        if (albedoTexture != null) m_MaterialEditor.TextureProperty(albedoTexture, "Albedo Texture");
+        if (albedoIntensity != null) m_MaterialEditor.ShaderProperty(albedoIntensity, "Albedo Intensity");
+        if (isVertexColor != null) m_MaterialEditor.ShaderProperty(isVertexColor, "Vertex Color");
         if (alphaCutoff != null) m_MaterialEditor.ShaderProperty(alphaCutoff, "Alpha Test Value");
-        if (renderMode != null) RenderModeGUI(material);
+    }
+
+    protected void CheckKeyword(Material material, string keyword, bool state) {
+        if (state) {
+            material.EnableKeyword(keyword);
+        } else {
+            material.DisableKeyword(keyword);
+        }
     }
 
     protected virtual void OnMaterialChanged(Material material) {
-        if (isVertexColor != null) {
-            if (isVertexColor.floatValue == 1.0) {
-                material.EnableKeyword("ENABLEVERTEXCOLOR");
-            } else {
-                material.DisableKeyword("ENABLEVERTEXCOLOR");
-            }
-        }
+        CheckKeyword(material, "ENABLEVERTEXCOLOR", isVertexColor != null);
     }
 
     protected void RenderModeGUI(Material material) {

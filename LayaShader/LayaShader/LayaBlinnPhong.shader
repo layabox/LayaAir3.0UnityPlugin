@@ -95,6 +95,6 @@ Shader "Laya/BlinnPhong" {
 			ENDCG
 		}
 	} 
-	CustomEditor "LayaShaderGUI"
+	CustomEditor "LayaBlinnPhongShaderGUI"
 	FallBack "Standard"
 }
