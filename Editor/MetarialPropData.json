@@ -592,10 +592,25 @@
                 "layaName": "u_TilingOffset"
             }
         ],
+        "defineds": [
+            {
+                "uName": "ENABLEVERTEXCOLOR",
+                "layaName": "ENABLEVERTEXCOLOR",
+                "from": 1
+            }
+        ],
         "floats": [
             {
                 "uName": "_Mode",
                 "layaName": "materialRenderMode"
+            },
+            {
+                "uName": "_Cutoff",
+                "layaName": "u_AlphaTestValue"
+            },
+            {
+                "uName": "_RenderQueue",
+                "layaName": "renderQueue"
             }
         ]
     }
