@@ -570,5 +570,33 @@
                 "layaName": "u_AlbedoColor"
             }
         ]
+    },
+    "Laya/Unlit": {
+        "targeName": "Unlit",
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_AlbedoColor"
+            }
+        ],
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "floats": [
+            {
+                "uName": "_Mode",
+                "layaName": "materialRenderMode"
+            }
+        ]
     }
 }
