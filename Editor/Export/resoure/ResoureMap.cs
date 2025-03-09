@@ -307,12 +307,9 @@ internal class ResoureMap
         for (var i = 0; i < materials.Length; i++)
         {
             Material mat = materials[i];
-            if (mat == null)
-            {
-                Debug.LogWarning("LayaAir3D Warning(Code:1002) : " + gameObject.name + "'s MeshRender Component materials data can't be null!");
-            }
-            else
-            {
+            if (mat == null) {
+                Debug.LogWarningFormat(gameObject, "LayaAir3D Warning(Code:1002) : " + gameObject.name + "'s MeshRender Component materials data can't be null!");
+            } else {
                 sharedMaterials.Add(this.GetMaterialData(mat));
             }
         }
@@ -389,7 +386,7 @@ internal class ResoureMap
 
         if (animatorController == null)
         {
-            Debug.LogWarning("LayaAir3D Warning(Code:1002) : " + gameObject.name + "'s Animator Compoment must have a Controller!");
+            Debug.LogWarningFormat(animator, "LayaAir3D Warning(Code:1002) : " + gameObject.name + "'s Animator Compoment must have a Controller!");
             return null;
         }
         string animatorControllerPath = AssetsUtil.GetAnimatorControllerPath(animatorController);
@@ -489,10 +486,8 @@ internal class ResoureMap
                 AnimationClipFile laniFile = GetAnimationClipFile(clip, gameObject);
                 clipData.AddField("_$uuid", laniFile.uuid);
                 statueNode.AddField("clip", clipData);
-            }
-            else
-            {
-                Debug.LogError(gameObject.name + " have empty or not  AnimationClip " + state.name);
+            } else {
+                Debug.LogErrorFormat(gameObject, gameObject.name + " have empty or not  AnimationClip " + state.name);
             }
             statueNode.AddField("id", stateMap[state.name].ToString());
 
