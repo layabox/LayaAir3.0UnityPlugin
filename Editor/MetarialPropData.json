@@ -571,6 +571,148 @@
             }
         ]
     },
+    "Mobile/Diffuse":{
+        "targeName": "BLINNPHONG",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ]
+    },
+    "Mobile/Bumped Diffuse": {
+        "targeName": "BLINNPHONG",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            },
+            {
+                "uName": "_BumpMap",
+                "layaName": "u_NormalTexture",
+                "defind": "NORMALMAP",
+                "isNormal": true
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ]
+    },
+    "Mobile/Bumped Specular": {
+        "targeName": "BLINNPHONG",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            },
+            {
+                "uName": "_BumpMap",
+                "layaName": "u_NormalTexture",
+                "defind": "NORMALMAP",
+                "isNormal": true
+            }
+        ],
+        "floats": [
+            {
+                "uName": "_Shininess",
+                "layaName": "u_Shininess"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ]
+    },
+    "Mobile/Bumped Specular (1 Directional Realtime Light)": {
+        "targeName": "BLINNPHONG",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            },
+            {
+                "uName": "_BumpMap",
+                "layaName": "u_NormalTexture",
+                "defind": "NORMALMAP",
+                "isNormal": true
+            }
+        ],
+        "floats": [
+            {
+                "uName": "_Shininess",
+                "layaName": "u_Shininess"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ]
+    },
+    "Mobile/VertexLit": {
+        "targeName": "BLINNPHONG",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ]
+    },
+    "Mobile/VertexLit (Only Directional Lights)": {
+        "targeName": "BLINNPHONG",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_DiffuseTexture",
+                "defind": "DIFFUSEMAP"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ]
+    },
+    "Mobile/Unlit (Supports Lightmap)": {
+        "targeName": "Unlit",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ]
+    },
     "Laya/Unlit": {
         "targeName": "Unlit",
         "colors": [
