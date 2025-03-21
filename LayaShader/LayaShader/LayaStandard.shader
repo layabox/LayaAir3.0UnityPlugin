@@ -1,4 +1,4 @@
-Shader "Laya/PBR"
+Shader "Laya/Legacy/PBR"
 {
 	Properties
 	{
@@ -55,9 +55,9 @@ Shader "Laya/PBR"
 
             #pragma multi_compile_fog
 			#define LayaStandardPBR  1
-			
+
 			#include "../CGIncludes/LayaStandardcore.cginc"
-   
+
             ENDCG
         }
 		Pass
@@ -82,7 +82,7 @@ Shader "Laya/PBR"
 
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
-			
+
 			#pragma vertex vertForwardAdd
 			#pragma fragment fragForwardAddInternal
 			#define LayaStandardPBR  1
@@ -92,7 +92,7 @@ Shader "Laya/PBR"
 			#include "../CGIncludes/LayaStandardcore.cginc"
 
 			ENDCG
-			
+
 		}
 
 			// ------------------------------------------------------------------

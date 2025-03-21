@@ -1,8 +1,8 @@
-Shader "Laya/Trail" {
+Shader "Laya/Legacy/Trail" {
 	Properties {
 		_MainTex("Trail Texture", 2D) = "white" {}
 		_TintColor("Tint Color", Color) = (0.5,0.5,0.5,0.5)
-		
+
 		[HideInInspector] _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.01
 		[HideInInspector] _Cull ("__cull", Float) = 0.0
 		[HideInInspector] _Mode ("__mode", Float) = 1.0
@@ -12,11 +12,11 @@ Shader "Laya/Trail" {
 		[HideInInspector] _ZTest("__zt", Float) = 4.0
 		[HideInInspector] _RenderQueue("__rq", Float) = 3000.0
 	}
-	SubShader {		
+	SubShader {
 		Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
-		Pass { 
+		Pass {
 			Tags { "LightMode"="ForwardBase" }
-		
+
 			Blend [_SrcBlend] [_DstBlend]
 			ColorMask RGB
 			Cull Off Lighting On ZWrite Off
@@ -37,7 +37,7 @@ Shader "Laya/Trail" {
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 			float4 _TintColor;
-			
+
 			struct appdata_t {
 				float4 vertex : POSITION;
 				float4 color : COLOR;
@@ -50,7 +50,7 @@ Shader "Laya/Trail" {
 				float2 uv : TEXCOORD0;
 				UNITY_FOG_COORDS(1)
 			};
-			
+
 			v2f vert (appdata_t v)
 			{
 				v2f o;
@@ -74,6 +74,6 @@ Shader "Laya/Trail" {
 			}
 			ENDCG
 		}
-	} 
+	}
 	CustomEditor "LayaEffectGUI"
 }

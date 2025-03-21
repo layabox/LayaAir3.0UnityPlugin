@@ -1,6 +1,6 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "Laya/Sky Procedural" {
+Shader "Laya/Legacy/Sky Procedural" {
 Properties {
     [KeywordEnum(None, Simple, High Quality)] sunDisk ("Sun", Int) = 2
     sunSize ("Sun Size", Range(0,1)) = 0.04

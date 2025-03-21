@@ -1,10 +1,10 @@
-Shader "Laya/PBR(Specular)"
+Shader "Laya/Legacy/PBR(Specular)"
 {
 	Properties
 	{
 		//主颜色
 		_Color("Color", Color) = (1,1,1,1)
-		
+
 		albedoTexture("Albedo", 2D) = "white" {}
 		//alpha裁剪
 		_Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
@@ -83,7 +83,7 @@ Shader "Laya/PBR(Specular)"
 			//#pragma fragment fragBase
             #pragma vertex vertForwardBase
             #pragma fragment fragForwardBaseInternal
-			
+
             #include "../CGIncludes/LayaStandardcore.cginc"
 
             ENDCG
