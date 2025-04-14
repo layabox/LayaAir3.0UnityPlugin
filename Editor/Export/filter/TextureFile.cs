@@ -4,8 +4,37 @@ using System.IO;
 using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using FileUtil = Util.FileUtil;
 
+
+internal enum LayaTextureImportFormat {
+    /**纹理格式_R8G8B8A8。*/
+    R8G8B8A8 = 0,
+    /**纹理格式_R8G8B8。*/
+    R8G8B8 = 1,
+    /** 压缩纹理格式 */
+    COMPRESSED = 10
+}
+
+enum LayaTextureFormat {
+    /**纹理格式_R8G8B8。*/
+    R8G8B8 = 0,
+    /**纹理格式_R8G8B8A8。*/
+    R8G8B8A8 = 1,
+    /** 压缩纹理 */
+    COMPRESSED = 4, // DXT5 
+}
+
+internal enum WrapMode
+{
+    /** 循环平铺。*/
+    Repeat = 0,
+    /** 超过UV边界后采用最后一个像素。*/
+    Clamp = 1,
+    /** 镜像采样 */
+    Mirrored = 2
+}
 
 // [DllImport("OpenEXRPlugin")]
 // private static extern void EncodeHDR(Texture2D texture, string fileName);
@@ -16,194 +45,182 @@ internal class TextureFile : FileData
     public static extern double frexp(double val, out int eptr);
 
     public static int JPGQuality = 75;
-    public static List<string> ConvertOriginalTextureTypeList;
+    public static string LOGHEAD = "LayaAir3D: ";
+    private Texture2D texture;
+    private JSONObject constructParams;
+    private JSONObject propertyParams;
+    private bool rgbmEncoding;
+    private bool isNormal;
+    private LayaTextureImportFormat importFormat;
+    private bool hasAlphaChannel;
 
-    public static void init()
-    {
-
-        ConvertOriginalTextureTypeList = new List<string>();
-
-        ConvertOriginalTextureTypeList.Add(".jpeg");
-        ConvertOriginalTextureTypeList.Add(".JPEG");
-
-        ConvertOriginalTextureTypeList.Add(".bmp");
-        ConvertOriginalTextureTypeList.Add(".BMP");
-
-        ConvertOriginalTextureTypeList.Add(".png");
-        ConvertOriginalTextureTypeList.Add(".PNG");
-
-        ConvertOriginalTextureTypeList.Add(".jpg");
-        ConvertOriginalTextureTypeList.Add(".JPG");
-
-        ConvertOriginalTextureTypeList.Add(".hdr");
-        ConvertOriginalTextureTypeList.Add(".HDR");
-    }
-    public static string LOGHEAD = "LayaAir3D UnityPlugin: ";
-    private Texture2D _texture;
-    private JSONObject _constructParams;
-    private JSONObject _propertyParams;
-    private int _format;
-    private bool _rgbmEncoding;
-    private bool _isNormal;
-    private bool _isCopy;
-    public TextureFile(string originPath, Texture2D texture, bool isNormal) : base(null)
-    {
-        this._texture = texture;
-        this._isNormal = isNormal;
+    public TextureFile(string originPath, Texture2D texture, bool isNormal) : base(null) {
+        this.texture = texture;
+        this.isNormal = isNormal;
         this.updatePath(originPath);
         this.getTextureInfo();
     }
 
-    private void getTextureInfo()
-    {
-        Texture2D texture = this._texture;
-        this._constructParams = new JSONObject(JSONObject.Type.ARRAY);
-        this._propertyParams = new JSONObject(JSONObject.Type.ARRAY);
+    private void getTextureInfo() {
+        this.constructParams = new JSONObject(JSONObject.Type.ARRAY);
+        this.propertyParams = new JSONObject(JSONObject.Type.ARRAY);
 
         string path = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
-        if (import == null)
-        {
+        if (import == null) {
             FileUtil.setStatuse(false);
             Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
-        }
-        else
-        {
+        } else {
             import.textureType = TextureImporterType.Default;
             import.isReadable = true;
             AssetDatabase.ImportAsset(path);
         }
-        JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
-        if (this._isNormal || import.textureType == TextureImporterType.NormalMap)
-        {
-            importData.AddField("sRGB", false);
-        }
-        else if (import.sRGBTexture)
-        {
-            importData.AddField("sRGB", true);
-        }
-        if (this._format == 3)
-        {
-            importData.AddField("npot", 1);
-            JSONObject platformPC = new JSONObject(JSONObject.Type.OBJECT);
-            platformPC.AddField("format", "BC1");
-            platformPC.AddField("quality", 2);
-            importData.AddField("platformPC", platformPC);
-        }
-        else
-        {
-            importData.AddField("npot", 1);
-            JSONObject platformPC = new JSONObject(JSONObject.Type.OBJECT);
-            platformPC.AddField("format", "BC3");
-            platformPC.AddField("quality", 2);
-            importData.AddField("platformPC", platformPC);
-        }
-        /* if (import.generateMipsInLinearSpace)
-         {*/
-        importData.AddField("generateMipmap", true);
-        importData.AddField("mipmapFilter", 1);
-
-        int anisoLevel = 1;
-        if (import != null)
-        {
-            anisoLevel = texture.anisoLevel;
-        }
-        anisoLevel = Math.Min(anisoLevel * 4, 32);
-        importData.AddField("anisoLevel", anisoLevel);
-        /*}*/
-        if (import.alphaSource == TextureImporterAlphaSource.FromInput)
-        {
-            importData.AddField("alphaChannel", true);
-        }
-     
-        this._constructParams.Add(texture.width);
-        this._constructParams.Add(texture.height);
-
-        this._constructParams.Add(this._format);
-        this._constructParams.Add(import.mipmapEnabled);
-        if (import.textureType == TextureImporterType.NormalMap || import.isReadable == false || import.textureCompression != TextureImporterCompression.Uncompressed)
-        {
-            this._constructParams.Add(false);
-        }
-        else
-        {
-            this._constructParams.Add(true);
+        
+        var sRGB = true;
+        if (this.isNormal || import.textureType == TextureImporterType.NormalMap){
+            sRGB = false;
         }
 
-        if (texture.filterMode == FilterMode.Point)
-        {
-            this._propertyParams.AddField("filterMode", 0);
-        }
-        else if (texture.filterMode == FilterMode.Bilinear)
-        {
-            this._propertyParams.AddField("filterMode", 1);
-        }
-        else if (texture.filterMode == FilterMode.Trilinear)
-        {
-            this._propertyParams.AddField("filterMode", 2);
-        }
-        else
-        {
-            this._propertyParams.AddField("filterMode", 1);
+        var mipmapFilter = 0;
+        if (import.mipmapEnabled) {
+            switch (import.mipmapFilter) {
+                case TextureImporterMipFilter.KaiserFilter:
+                    mipmapFilter = 2;
+                    break;
+                case TextureImporterMipFilter.BoxFilter:
+                    mipmapFilter = 0;
+                    break;
+                default:
+                    mipmapFilter = 1;
+                    break;
+            }
         }
 
-        //wrapMode
-        if (texture.wrapMode == TextureWrapMode.Repeat)
-        {
-            this._propertyParams.AddField("wrapModeU", 0);
-            this._propertyParams.AddField("wrapModeV", 0);
-            importData.AddField("wrapMode", 0);
+        int anisoLevel = import.anisoLevel;
+
+        GraphicsFormat format = texture.graphicsFormat;
+        this.hasAlphaChannel = GraphicsFormatUtility.HasAlphaChannel(format);
+        if (import.alphaSource == TextureImporterAlphaSource.None) {
+            this.hasAlphaChannel = false;
         }
-        else if (texture.wrapMode == TextureWrapMode.Clamp)
-        {
-            this._propertyParams.AddField("wrapModeU", 1);
-            this._propertyParams.AddField("wrapModeV", 1);
-            importData.AddField("wrapMode", 1);
-        }
-        else
-        {
-            this._propertyParams.AddField("wrapModeU", 0);
-            this._propertyParams.AddField("wrapModeV", 0);
-            importData.AddField("wrapMode", 2);
+        
+        this.importFormat = LayaTextureImportFormat.R8G8B8A8;
+        if (GraphicsFormatUtility.IsCompressedFormat(format)) {
+            this.importFormat = LayaTextureImportFormat.COMPRESSED;
+        } else if (!this.hasAlphaChannel) {
+            this.importFormat = LayaTextureImportFormat.R8G8B8;
         }
 
-        this._propertyParams.AddField("anisoLevel", anisoLevel);
-        this.m_metaData.AddField("importer", importData);
-    }
-
-    private int getFormat()
-    {
-        switch (this._texture.format)
-        {
-            case TextureFormat.DXT1:
-                return 3;
-            case TextureFormat.DXT5:
-                return 5;
-            case TextureFormat.RGB24:
-                return 0;
+        WrapMode wrapMode = WrapMode.Clamp;
+        switch (texture.wrapMode) {
+            case TextureWrapMode.Repeat:
+                wrapMode = WrapMode.Repeat;
+                break;
+            case TextureWrapMode.Mirror:
+                wrapMode = WrapMode.Mirrored;
+                break;
+            case TextureWrapMode.Clamp:
             default:
-                return 1;
+                wrapMode = WrapMode.Clamp;
+                break;
+        }
+
+        if (true) { // import
+            JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
+            importData.AddField("sRGB", sRGB);
+            importData.AddField("wrapMode", (int)wrapMode);
+            importData.AddField("generateMipmap", import.mipmapEnabled);
+            if (import.mipmapEnabled) {
+                importData.AddField("mipmapFilter", mipmapFilter);
+            }
+            importData.AddField("anisoLevel", anisoLevel);
+            importData.AddField("alphaChannel", hasAlphaChannel);
+            
+            if (true) { // platformDefault
+                JSONObject platformDefault = new JSONObject(JSONObject.Type.OBJECT);
+                // format
+                platformDefault.AddField("format", (int)this.importFormat);
+                // quality
+                int quality = -1;
+                switch (import.textureCompression) {
+                    case TextureImporterCompression.CompressedLQ:
+                        quality = 0;
+                        break;
+                    case TextureImporterCompression.Compressed:
+                        quality = 1;
+                        break;
+                    case TextureImporterCompression.CompressedHQ:
+                        quality = 2;
+                        break;
+                }
+                if (quality != -1) {
+                    platformDefault.AddField("quality", quality);
+                }
+                importData.AddField("platformDefault", platformDefault);
+            }
+            this.m_metaData.AddField("importer", importData);
+        }
+
+        if (true) { // constructParams
+            this.constructParams.Add(texture.width); // width
+            this.constructParams.Add(texture.height); // height
+            // format
+            LayaTextureFormat fmt = LayaTextureFormat.R8G8B8A8;
+            if (importFormat == LayaTextureImportFormat.COMPRESSED) {
+                fmt = LayaTextureFormat.COMPRESSED; // DX5
+            } else if (!hasAlphaChannel) {
+                fmt = LayaTextureFormat.R8G8B8; // RGB
+            }
+            this.constructParams.Add((int)fmt);
+            // mipmap
+            this.constructParams.Add(import.mipmapEnabled);
+
+            // canRead
+            if (import.textureType == TextureImporterType.NormalMap || import.isReadable == false || import.textureCompression != TextureImporterCompression.Uncompressed) {
+                this.constructParams.Add(false);
+            } else {
+                this.constructParams.Add(true);
+            }
+
+            // sRGB
+            this.constructParams.Add(sRGB);
+        }
+
+        if (true) { // propertyParams
+            // filterMode
+            var filterMode = 1;
+            switch (texture.filterMode) {
+                case FilterMode.Point:
+                    filterMode = 0;
+                    break;
+                case FilterMode.Trilinear:
+                    filterMode = 2;
+                    break;
+                case FilterMode.Bilinear:
+                default:
+                    filterMode = 1;
+                    break;
+            }
+            this.propertyParams.AddField("filterMode", filterMode);
+            // wrapModeU
+            this.propertyParams.AddField("wrapModeU", (int)wrapMode);
+            // wrapModeV
+            this.propertyParams.AddField("wrapModeV", (int)wrapMode);
+            // anisoLevel
+            this.propertyParams.AddField("anisoLevel", anisoLevel);
         }
     }
-    override protected string getOutFilePath(string origpath)
-    {
-        this._format = this.getFormat();
+
+    override protected string getOutFilePath(string origpath) {
         string ext = Path.GetExtension(origpath).ToLower();
-        int convertIndex = ConvertOriginalTextureTypeList.IndexOf(ext);
-        this._isCopy = convertIndex != -1;
         string savePath = origpath.Substring(0, origpath.LastIndexOf("."));
-        this._rgbmEncoding = ext == ".hdr" || ext == ".exr";
-        if (this._rgbmEncoding)
-        {
-            savePath += convertIndex == -1 ? ".hdr" : ext;
-        }
-        else if (this._format == 0||this._format == 3)
-        {
-            savePath += convertIndex == -1 ? ".jpg" : ext;
-        }
-        else
-        {
-            savePath += convertIndex == -1 ? ".png" : ext;
+        this.rgbmEncoding = ext == ".hdr" || ext == ".exr";
+        if (this.rgbmEncoding) {
+            savePath += ".hdr";
+        } else if (this.hasAlphaChannel) {
+            savePath += ".png";
+        } else {
+            savePath += ".jpg";
         }
         return savePath;
     }
@@ -212,13 +229,13 @@ internal class TextureFile : FileData
     {
         JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
         data.AddField("name", name);
-        data.AddField("constructParams", this._constructParams);
-        data.AddField("propertyParams", this._propertyParams);
+        data.AddField("constructParams", this.constructParams);
+        data.AddField("propertyParams", this.propertyParams);
         data.AddField("path", "res://" + this.uuid);
         return data;
     }
 
-    public byte[] float2rgbe(float r, float g, float b)
+    private byte[] float2rgbe(float r, float g, float b)
     {
         byte[] res = new byte[4] { 0, 0, 0, 0 };
         int e = 0;
@@ -234,56 +251,7 @@ internal class TextureFile : FileData
         return res;
     }
 
-    public void writeRGBE_rle(BinaryWriter bw, byte[] data, int numbytes)
-    {
-        const int MINRUNLENGTH = 4;
-        int cur, beg_run, run_count, old_run_count, nonrun_count;
-        byte[] buf = new byte[2] { 0, 0 };
-        cur = 0;
-        while (cur < numbytes)
-        {
-            beg_run = cur;
-            run_count = old_run_count = 0;
-            while ((run_count < MINRUNLENGTH) && (beg_run < numbytes))
-            {
-                beg_run += run_count;
-                old_run_count = run_count;
-                run_count = 1;
-                while ((beg_run + run_count < numbytes) && (run_count < 127) && (data[beg_run] == data[beg_run + run_count]))
-                    run_count++;
-            }
-            if ((old_run_count > 1) && (old_run_count == beg_run - cur))
-            {
-                buf[0] = (byte)(old_run_count + 128);   /*write short run*/
-                buf[1] = data[cur];
-
-                // byte.writeArrayBuffer(buf);
-                bw.Write(buf);
-                cur = beg_run;
-            }
-            while (cur < beg_run)
-            {
-                nonrun_count = beg_run - cur;
-                if (nonrun_count > 128)
-                    nonrun_count = 128;
-                buf[0] = (byte)nonrun_count;
-                bw.Write(buf[0]);
-                byte[] node = new byte[nonrun_count];
-                Buffer.BlockCopy(data, cur, node, 0, nonrun_count);
-                bw.Write(node);
-                cur += nonrun_count;
-            }
-            if (run_count >= MINRUNLENGTH)
-            {
-                buf[0] = (byte)(128 + run_count);
-                buf[1] = data[beg_run];
-                bw.Write(buf);
-                cur += run_count;
-            }
-        }
-    }
-
-    public void exportHDRFile(string filePath, Color[] colors, int height, int width)
+    private void exportHDRFile(string filePath, Color[] colors, int height, int width)
     {
         // export HDR Color to .hdr file
         using (BinaryWriter writer = new BinaryWriter(File.Open(filePath, FileMode.Create)))
@@ -321,96 +289,36 @@ internal class TextureFile : FileData
         }
     }
 
-    public void gammaColorsToLinear(Color[] gColor)
-    {
-        for (var i = 0; i < gColor.Length; ++i)
-        {
+    private void gammaColorsToLinear(Color[] gColor) {
+        for (var i = 0; i < gColor.Length; ++i) {
             gColor[i].r = Mathf.GammaToLinearSpace(gColor[i].r);
             gColor[i].g = Mathf.GammaToLinearSpace(gColor[i].g);
             gColor[i].b = Mathf.GammaToLinearSpace(gColor[i].b);
         }
     }
-    public override void SaveFile(Dictionary<string, FileData> exportFiles)
-    {
+
+    public override void SaveFile(Dictionary<string, FileData> exportFiles) {
         base.saveMeta();
         string filePath = this.filePath;
-        if (this._isCopy)
-        {
-            File.Copy(filePath, this.outPath, true);
-        }
-        else{
-            if (this._rgbmEncoding)
-            {
-                Color[] pixels = this._texture.GetPixels(0);
-                if (QualitySettings.activeColorSpace == ColorSpace.Gamma)
-                {
-                    Debug.Log("Current color space is gamma.. Your Img will change to Linear Space");
-                    gammaColorsToLinear(pixels);
-                }
-                this.exportHDRFile(this.outPath, pixels, this._texture.height, this._texture.width);
+        if (this.rgbmEncoding) {
+            Color[] pixels = this.texture.GetPixels(0);
+            if (QualitySettings.activeColorSpace == ColorSpace.Gamma) {
+                Debug.Log("Current color space is gamma.. Your Img will change to Linear Space");
+                gammaColorsToLinear(pixels);
             }
-            else if (this._format == 0)
-            {
-                byte[] bytes = this._texture.EncodeToJPG();
-                File.WriteAllBytes(this.outPath, bytes);
-            }
-            else if (this._format == 1)
-            {
-                byte[] bytes = this._texture.EncodeToPNG();
-                File.WriteAllBytes(this.outPath, bytes);
-            }
-            else if (this._format == 3)
-            {
-                string path = this.filePath;
-                TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
-                if (import == null)
-                {
-                    Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
-                    return;
-                }
-                else
-                {
-                    import.textureType = TextureImporterType.Default;
-                    import.isReadable = true;
-                    import.textureCompression = TextureImporterCompression.Uncompressed;
-                    TextureImporterPlatformSettings pc = import.GetPlatformTextureSettings("Standalone");
-                    pc.overridden = true;
-                    pc.format = TextureImporterFormat.RGBA32;
-                    import.SetPlatformTextureSettings(pc);
-                    AssetDatabase.ImportAsset(path);
-
-                    byte[] bytes = this._texture.EncodeToJPG();
-                    File.WriteAllBytes(this.outPath, bytes);
-                }
-            }
-            else if (this._format == 5)
-            {
-                string path = this.filePath;
-                TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
-                if (import == null)
-                {
-                    Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
-                    return;
-                }
-                else
-                {
-                    import.textureType = TextureImporterType.Default;
-                    import.isReadable = true;
-                    import.textureCompression = TextureImporterCompression.Uncompressed;
-                    TextureImporterPlatformSettings pc = import.GetPlatformTextureSettings("Standalone");
-                    pc.overridden = true;
-                    pc.format = TextureImporterFormat.RGBA32;
-                    import.SetPlatformTextureSettings(pc);
-                    AssetDatabase.ImportAsset(path);
-
-                    byte[] bytes = this._texture.EncodeToPNG();
-                    File.WriteAllBytes(this.outPath, bytes);
-                }
-            }
-            else
-            {
-                Debug.LogError("Texture format UnSupport export!!!");
-            }
+            this.exportHDRFile(this.outPath, pixels, this.texture.height, this.texture.width);
+        } else if (this.hasAlphaChannel) {
+            Texture2D uncompressedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+            uncompressedTexture.SetPixels(texture.GetPixels()); // 将压缩纹理的像素复制到未压缩纹理
+            uncompressedTexture.Apply();
+            byte[] bytes = uncompressedTexture.EncodeToPNG();
+            File.WriteAllBytes(this.outPath, bytes);
+        } else {
+            Texture2D uncompressedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
+            uncompressedTexture.SetPixels(texture.GetPixels()); // 将压缩纹理的像素复制到未压缩纹理
+            uncompressedTexture.Apply();
+            byte[] bytes = uncompressedTexture.EncodeToJPG();
+            File.WriteAllBytes(this.outPath, bytes);
         }
     }
 }

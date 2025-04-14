@@ -387,6 +387,10 @@ public class PropDatasConfig
 
     public static int GetRenderModule(Material material)
     {
+        if (material.shader.name.StartsWith("Laya/") && material.HasProperty("_Mode")) {
+            return material.GetInt("_Mode");
+        }
+        
         string result = material.GetTag("RenderType", true);
         if (result == "Opaque")
         {
@@ -579,10 +583,9 @@ internal class MetarialUitls
     public static void WriteMetarial(Material material, JSONObject jsonData, ResoureMap resoureMap)
     {
         string shaderName = material.shader.name;
-        if (!MaterialPropsConfigs.ContainsKey(shaderName))
-        {
+        if (!MaterialPropsConfigs.ContainsKey(shaderName)) {
             FileUtil.setStatuse(false);
-            Debug.LogError("LayaAir3D Warning : not get the shader config " + shaderName);
+            Debug.LogErrorFormat(material, "LayaAir3D Warning : not get the shader config " + shaderName);
             return;
         }
         jsonData.AddField("version", "LAYAMATERIAL:04");
@@ -615,10 +618,9 @@ internal class MetarialUitls
         props.AddField("textures", texture);
         props.AddField("materialRenderMode", PropDatasConfig.GetRenderModule(material));
 
-        foreach (var cList in propsData.colorLists)
-        {
-            if (!material.HasProperty(cList.Key))
-            {
+        var needSetBlinnPhongSpecular = propsData.materalName == "BLINNPHONG";
+        foreach (var cList in propsData.colorLists) {
+            if (!material.HasProperty(cList.Key)) {
                 continue;
             }
             JSONObject colorValue = new JSONObject(JSONObject.Type.ARRAY);
@@ -641,7 +643,18 @@ internal class MetarialUitls
                 colorValue.Add(color.b);
                 colorValue.Add(color.a);
             }
+            if (!needSetBlinnPhongSpecular && cList.Value != "u_MaterialSpecular") {
+                needSetBlinnPhongSpecular = false;
+            }
             props.AddField(cList.Value, colorValue);
+        }
+        if (needSetBlinnPhongSpecular) {
+            JSONObject colorValue = new JSONObject(JSONObject.Type.ARRAY);
+            colorValue.Add(0.2f);
+            colorValue.Add(0.2f);
+            colorValue.Add(0.2f);
+            colorValue.Add(1f);
+            props.AddField("u_MaterialSpecular", colorValue);
         }
 
         foreach (var tList in propsData.tillOffsetLists)

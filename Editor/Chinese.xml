@@ -23,5 +23,7 @@
   <LayaAirExport> 导 出 </LayaAirExport>
 
   <Exportaddresscannotbeempty> 导 出 地 址 不 能 为 空</Exportaddresscannotbeempty>
+  <Exported>导出成功</Exported>
+  <ExportFailed>导出时发生错误</ExportFailed>
  
 </ChineseLanguage>

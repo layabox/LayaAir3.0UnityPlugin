@@ -35,6 +35,8 @@ public class LanguageConfig
     public static string str_LayaBoxVersion;
     public static string str_AboutLayaAir;
     public static string str_Browse;
+    public static string str_Exported;
+    public static string str_ExportFailed;
 
     public static int language = -1;
 
@@ -108,7 +110,7 @@ public class LanguageConfig
         str_LayaAirExport = xn.SelectSingleNode("LayaAirExport").InnerText;
         str_Exportaddresscannotbeempty = xn.SelectSingleNode("Exportaddresscannotbeempty").InnerText;
         str_Browse = xn.SelectSingleNode("Browse").InnerText;
-
-
+        str_Exported = xn.SelectSingleNode("Exported").InnerText;
+        str_ExportFailed = xn.SelectSingleNode("ExportFailed").InnerText;
     }
 }

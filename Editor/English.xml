@@ -23,5 +23,6 @@
   <LayaAirExport>Export </LayaAirExport>
   
   <Exportaddresscannotbeempty>Export address cannot be empty</Exportaddresscannotbeempty>
- 
+  <Exported>Export success</Exported>
+  <ExportFailed>Export failed</ExportFailed>
 </EnglishLanguage>

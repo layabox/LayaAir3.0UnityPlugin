@@ -44,41 +44,29 @@ internal class FileData
         this.updatePath(path);
     }
 
-    protected void updatePath(string path)
-    {
-        if (path == null)
-        {
-            return;
-        }
+    protected void updatePath(string path) {
+        if (path == null) return;
         this.m_path = path;
         this.m_outPath = this.getOutFilePath(path);
-        if (File.Exists(metaPath))
-        {
+        if (File.Exists(metaPath)) {
             JSONObject customMap = this.m_metaData = JSONObject.Create(File.ReadAllText(metaPath));
             this.m_uuid = customMap.GetField("uuid").str;
-        }
-        else
-        {
+        } else {
             this.m_uuid = System.Guid.NewGuid().ToString();
             this.m_metaData = new JSONObject(JSONObject.Type.OBJECT);
             this.m_metaData.SetField("uuid", this.m_uuid);
         }
     }
-    virtual protected string  getOutFilePath(string path)
-    {
+    virtual protected string getOutFilePath(string path) {
         return path;
     }
-    public JSONObject metaData()
-    {
+
+    public JSONObject metaData() {
         return this.m_metaData;
     }
 
-    public void saveMeta()
-    {
-        if (this.m_metaData == null)
-        {
-            return;
-        }
+    public void saveMeta() {
+        if (this.m_metaData == null) return;
         string filePath = metaPath;
         string folder = Path.GetDirectoryName(filePath);
         if (!Directory.Exists(folder))

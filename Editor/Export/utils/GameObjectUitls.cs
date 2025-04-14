@@ -364,7 +364,7 @@ class GameObjectUitls
 
         float aniTotalTime = startTimeList.Count == 0 ? 0.0f : (float)startTimeList[startTimeList.Count - 1];
         Util.FileUtil.WriteData(fs, aniTotalTime);///动画总时长
-        if (aniclip.wrapMode == WrapMode.Loop)
+        if (aniclip.wrapMode == UnityEngine.WrapMode.Loop)
         {
             Util.FileUtil.WriteData(fs, true);
         }

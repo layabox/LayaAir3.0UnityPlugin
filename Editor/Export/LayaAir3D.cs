@@ -217,7 +217,12 @@ public class LayaAir3D : EditorWindow
         GUIContent c22 = new GUIContent(LanguageConfig.str_LayaAirExport, exporttu);
         if (GUILayout.Button(c22, GUILayout.Height(30), GUILayout.Width(position.width - 45)))
         {
-            LayaAir3Export.ExportScene();
+            try {
+                LayaAir3Export.ExportScene();
+            } catch(Exception) {
+                Debug.LogError(LanguageConfig.str_ExportFailed);
+                throw;
+            }
         }
         GUILayout.EndHorizontal();
 
