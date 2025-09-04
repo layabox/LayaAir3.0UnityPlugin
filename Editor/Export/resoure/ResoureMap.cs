@@ -200,10 +200,11 @@ internal class ResoureMap
         }else if(comp is ParticleSystem)
         {
             compents.Add(ParticleSystemData.GetParticleSystem(comp as ParticleSystem, isOverride,map,this));
-        }else if(comp is ParticleSystemRenderer)
-        {
-            compents.Add(ParticleSystemData.GetParticleSystemRneder(comp as ParticleSystemRenderer, isOverride,this));
         }
+        // else if(comp is ParticleSystemRenderer)
+        // {
+        //     compents.Add(ParticleSystemData.GetParticleSystemRenderer(comp as ParticleSystemRenderer, isOverride,this));
+        // }
     }
 
     public JSONObject GetLightComponentData(Light light,bool isOverride)
