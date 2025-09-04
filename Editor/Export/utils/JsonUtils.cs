@@ -8,7 +8,7 @@ internal class JsonUtils
     public static void init()
     {
         JsonUtils.registclassMap = new Dictionary<string, string>();
-        JsonUtils.registclassMap.Add("ParticleSystem", "4777a3a0-2c73-460c-b47a-7c5a04c18e05");
+        JsonUtils.registclassMap.Add("ParticleSystem", "92eb166a-5945-4936-b7d7-b276c49a7a5d");
         JsonUtils.registclassMap.Add("ParticleSystemRenderer", "75e22e26-8d5d-4d92-b088-231b22ce3c41");
         JsonUtils.registclassMap.Add("MinMaxCurve", "b87b8fac-9e9e-4208-b771-9af1d197faff");
         JsonUtils.registclassMap.Add("AnimationCurve", "98c3ef8f-a969-4a69-a9a2-aaa279c0af76");
