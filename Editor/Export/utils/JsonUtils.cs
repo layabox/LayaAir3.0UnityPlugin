@@ -14,25 +14,29 @@ internal class JsonUtils
         JsonUtils.registclassMap.Add("AnimationCurve", "98c3ef8f-a969-4a69-a9a2-aaa279c0af76");
         JsonUtils.registclassMap.Add("CurveKeyframe", "e841b213-e04b-4d71-91d8-1f3da4c4d90b");
         JsonUtils.registclassMap.Add("MinMaxGradient", "ea294660-23b9-4d09-957b-e522a1044d69");
-        JsonUtils.registclassMap.Add("PlusBurst", "e6508117-f0a4-457e-b139-8cdd03c2474d");
+        JsonUtils.registclassMap.Add("PlusBurst", "6d8f5863-a67e-4bf7-a234-4c72ccfdced6");
+        JsonUtils.registclassMap.Add("PlusShape", "2dc73014-8f75-44a1-a180-7328a15ef786");
         JsonUtils.registclassMap.Add("PlusSubmitterData", "6c5aa0f5-3e3c-42f8-8a31-76441f2a3b20");
         
 
         JsonUtils.registclassMap.Add("MainModule", "4e51be3f-6ce0-467d-badf-2c601f3c1940");
         JsonUtils.registclassMap.Add("PlusEmission", "4f5e56f1-f217-45be-a510-e6b7a9f9501e");
-        JsonUtils.registclassMap.Add("PlusVelocityOverLife", "e9fc6cd1-f96f-4f3b-8154-2ba770d12ea1");
-        JsonUtils.registclassMap.Add("PlusSizeOverLife", "c15dd946-91c9-4366-ad7c-f8a2904156c6");
-        JsonUtils.registclassMap.Add("PlusForceOverLife", "9c59631d-d033-4e29-a2b6-ebbe295e5ccb");
-        JsonUtils.registclassMap.Add("PlusRotationOverLife", "ecc0ebe5-b06d-4dce-87d3-ee5bcec36e93");
-        JsonUtils.registclassMap.Add("PlusLimtVelocityOverLife", "83a7beac-dc36-4463-98b9-077ba14a794a");
-        JsonUtils.registclassMap.Add("PlusColorOverLife", "363aacd5-3fae-4fc0-bb6f-cb2b9b2c04d8");
-        JsonUtils.registclassMap.Add("PlusColorBySpeed", "34fbc2c5-a2ba-40e7-b30a-e1432f217292");
-        JsonUtils.registclassMap.Add("PlusSizeBySpeed", "33542cd3-ec1c-4fac-b1f6-9aa26be540e1");
-        JsonUtils.registclassMap.Add("PlusRotationBySpeed", "9f229941-9847-4658-9355-e71f323d330e");
+        JsonUtils.registclassMap.Add("PlusVelocityOverLife", "7c667757-559d-4b21-b3c8-7adb4f4d6487");
+        JsonUtils.registclassMap.Add("PlusSizeOverLife", "02fec0b5-fcd0-42e3-b708-1c6ea2c8a254");
+        JsonUtils.registclassMap.Add("PlusForceOverLife", "8fc8f82c-cd7b-4218-b2e6-800f15d9d091");
+        JsonUtils.registclassMap.Add("PlusRotationOverLife", "e5d4f071-b7e2-4ef5-8381-ed372fa1a022");
+        JsonUtils.registclassMap.Add("PlusLimtVelocityOverLife", "d20fef97-69e8-4368-bf9c-1fc6a7d4aea4");
+        JsonUtils.registclassMap.Add("PlusColorOverLife", "ad3ae3e8-1dd4-49db-bbce-58b7ac9f4969");
+        JsonUtils.registclassMap.Add("PlusColorBySpeed", "71b74bb3-558b-4dca-97cc-d444781d3caf");
+        JsonUtils.registclassMap.Add("PlusSizeBySpeed", "cdd7f2a1-0ba0-415d-a9c5-22406b15e2c1");
+        JsonUtils.registclassMap.Add("PlusRotationBySpeed", "172e8ace-f8e2-4df1-b5c2-d50fe17f2740");
         JsonUtils.registclassMap.Add("PlusInheritVelocity", "f76eb54c-1957-4844-ae8d-0a0e66953036");
-        JsonUtils.registclassMap.Add("PlusNoise", "f62e3136-b763-4350-88da-0baf08004aba");
+        JsonUtils.registclassMap.Add("PlusNoise", "c79e0ae7-5cec-4e78-a41b-eafaacc52845");
         JsonUtils.registclassMap.Add("PlusTextureSheetAnimation", "c265efa5-23bc-4de9-a5cf-91e65b1dc31f");
         JsonUtils.registclassMap.Add("PlusSubEmitters", "4898b4d7-6f6b-45dc-82f6-1fb83d1a62da");
+        JsonUtils.registclassMap.Add("PlusLifetimeByEmitterSpeed", "ea138eaa-6321-49a1-bd7d-fd8575cc11ee");
+        JsonUtils.registclassMap.Add("PlusExternalForces", "52d807f4-d341-4a01-ad93-0133ae4e0be6");
+        
 
 
         JsonUtils.registclassMap.Add("PlusBoxShape", "cfdbb0bc-27ab-4d63-8b94-cdcc24a97d2f");

@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-internal class ResoureMap 
+internal class ResoureMap
 {
     private Dictionary<string, FileData> exportFiles;
     private List<NodeMap> nodemaps;
@@ -20,7 +21,7 @@ internal class ResoureMap
 
     public NodeMap AddNodeMap(int idOff = 0)
     {
-        NodeMap nodemap = new NodeMap(this,idOff);
+        NodeMap nodemap = new NodeMap(this, idOff);
         this.nodemaps.Add(nodemap);
         return nodemap;
     }
@@ -28,7 +29,7 @@ internal class ResoureMap
     public void createNodeTree()
     {
         //创建未引用节点数结构
-        foreach(NodeMap nodemap in this.nodemaps)
+        foreach (NodeMap nodemap in this.nodemaps)
         {
             nodemap.createNodeTree();
         }
@@ -54,7 +55,7 @@ internal class ResoureMap
         }
     }
 
-    public MeshFile GetMeshFile(Mesh mesh,Renderer renderer)
+    public MeshFile GetMeshFile(Mesh mesh, Renderer renderer)
     {
         string path = AssetsUtil.GetMeshPath(mesh);
         if (!this.HaveFileData(path))
@@ -69,7 +70,7 @@ internal class ResoureMap
         string path = AssetsUtil.GetMaterialPath(material);
         if (!this.HaveFileData(path))
         {
-            this.AddExportFile(new MaterialFile(this,material));
+            this.AddExportFile(new MaterialFile(this, material));
         }
         return this.GetFileData(path) as MaterialFile;
     }
@@ -77,7 +78,7 @@ internal class ResoureMap
     public FileData GetTextureFile(Texture texture, bool isNormal)
     {
         string picturePath = AssetsUtil.GetTextureFile(texture);
-        
+
         if (!this.HaveFileData(picturePath))
         {
             this.AddExportFile(new TextureFile(picturePath, texture as Texture2D, isNormal));
@@ -141,65 +142,78 @@ internal class ResoureMap
         }
     }
 
-    public void getComponentsData(GameObject gameObject, JSONObject node,NodeMap map)
+    public void getComponentsData(GameObject gameObject, JSONObject node, NodeMap map)
     {
         Camera camera = gameObject.GetComponent<Camera>();
+        JSONObject getType = node.GetField("_$type");
         if (camera != null)
         {
             JsonUtils.getCameraComponentData(gameObject, node);
-            node.AddField("_$type", "Camera");
+            if (null == getType)
+                node.AddField("_$type", "Camera");
+            else
+                node.SetField("_$type", "Camera");
         }
         else
         {
-            node.AddField("_$type", "Sprite3D");
+            if (null == getType)
+                node.AddField("_$type", "Sprite3D");
+            else
+                node.SetField("_$type", "Sprite3D");
         }
 
         JSONObject compents = new JSONObject(JSONObject.Type.ARRAY);
         node.AddField("_$comp", compents);
         List<Component> componentsList = new List<Component>();
         gameObject.GetComponents(componentsList);
-        foreach(Component comp in componentsList)
+        foreach (Component comp in componentsList)
         {
-            this.writeComponentData(compents, comp, map,false);
+            this.writeComponentData(compents, comp, map, false);
         }
 
     }
 
-    public void writeComponentData(JSONObject compents,Component comp, NodeMap map, bool isOverride)
+    public void writeComponentData(JSONObject compents, Component comp, NodeMap map, bool isOverride)
     {
-        if(comp == null)
+        if (comp == null)
         {
             return;
         }
         GameObject gameObject = comp.gameObject;
-        if(comp is MeshRenderer)
+        if (comp is MeshRenderer)
         {
             compents.Add(this.GetMeshRenderComponmentData(comp as MeshRenderer, isOverride));
-        }else if(comp is MeshFilter)
+        }
+        else if (comp is MeshFilter)
         {
             MeshFilter filter = comp as MeshFilter;
             compents.Add(this.GetMeshFilterComponentData(filter.sharedMesh, gameObject.GetComponent<MeshRenderer>(), isOverride));
-        }else if(comp is SkinnedMeshRenderer)
+        }
+        else if (comp is SkinnedMeshRenderer)
         {
             SkinnedMeshRenderer render = comp as SkinnedMeshRenderer;
             compents.Add(this.GetMeshFilterComponentData(render.sharedMesh, render, isOverride));
             compents.Add(this.GetSkinnerMeshRenderComponmentData(render, map, isOverride));
-        }else if(comp is Light)
+        }
+        else if (comp is Light)
         {
             compents.Add(this.GetLightComponentData(comp as Light, isOverride));
         }
-        else if(comp is Animator)
+        else if (comp is Animator)
         {
             compents.Add(this.GetAnimatorComponentData(comp as Animator, isOverride));
-        }else if (comp is ReflectionProbe)
+        }
+        else if (comp is ReflectionProbe)
         {
             compents.Add(this.GetReflectionProbe(comp as ReflectionProbe, isOverride));
-        }else if(comp is LODGroup)
+        }
+        else if (comp is LODGroup)
         {
             compents.Add(this.GetLodGroup(comp as LODGroup, map, isOverride));
-        }else if(comp is ParticleSystem)
+        }
+        else if (comp is ParticleSystem)
         {
-            compents.Add(ParticleSystemData.GetParticleSystem(comp as ParticleSystem, isOverride,map,this));
+            compents.Add(ParticleSystemData.GetParticleSystem(comp as ParticleSystem, isOverride, map, this));
         }
         // else if(comp is ParticleSystemRenderer)
         // {
@@ -207,7 +221,7 @@ internal class ResoureMap
         // }
     }
 
-    public JSONObject GetLightComponentData(Light light,bool isOverride)
+    public JSONObject GetLightComponentData(Light light, bool isOverride)
     {
         if (light.type == LightType.Directional)
         {
@@ -226,7 +240,7 @@ internal class ResoureMap
             return null;
         }
     }
-    public JSONObject GetMeshFilterComponentData(Mesh mesh, Renderer render,bool isOverride)
+    public JSONObject GetMeshFilterComponentData(Mesh mesh, Renderer render, bool isOverride)
     {
         JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
         if (isOverride)
@@ -237,7 +251,7 @@ internal class ResoureMap
         {
             compData.AddField("_$type", "MeshFilter");
         }
-       
+
         if (mesh != null)
         {
             compData.AddField("sharedMesh", this.GetMeshData(mesh, render));
@@ -246,7 +260,7 @@ internal class ResoureMap
         return compData;
 
     }
-    public JSONObject GetSkinnerMeshRenderComponmentData(SkinnedMeshRenderer skinnedMeshRenderer, NodeMap map,bool isOverride)
+    public JSONObject GetSkinnerMeshRenderComponmentData(SkinnedMeshRenderer skinnedMeshRenderer, NodeMap map, bool isOverride)
     {
         Material[] materials = skinnedMeshRenderer.sharedMaterials;
         JSONObject sharedMaterials = new JSONObject(JSONObject.Type.ARRAY);
@@ -547,7 +561,7 @@ internal class ResoureMap
                 soloTransition.AddField("id", stateMap[stateMachine.defaultState.name].ToString());
                 soloTransitions.Add(soloTransition);
             }
-         
+
         }
         enterNode.AddField("soloTransitions", soloTransitions);
 
@@ -582,7 +596,7 @@ internal class ResoureMap
         return layarNode;
     }
 
-    
+
     public void GetSHOrigin(JSONObject shObj)
     {
         SphericalHarmonicsL2 sh = RenderSettings.ambientProbe;
@@ -606,7 +620,7 @@ internal class ResoureMap
         return materFiledata;
     }
 
-    public JSONObject GetMeshData(Mesh mesh,Renderer render)
+    public JSONObject GetMeshData(Mesh mesh, Renderer render)
     {
         MeshFile meshFile = this.GetMeshFile(mesh, render);
         JSONObject meshFiledata = new JSONObject(JSONObject.Type.OBJECT);

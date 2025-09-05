@@ -15,65 +15,79 @@ internal class ParticleSystemData
         return dataObject;
     }
 
-    private static void writeBaseNode(ParticleSystem particleSystem, JSONObject sysData)
+    private static JSONObject writeBaseNode(ParticleSystem particleSystem, JSONObject sysData)
     {
         JSONObject mainObject = new JSONObject(JSONObject.Type.OBJECT);
         JSONObject particleSystemData = new JSONObject(JSONObject.Type.OBJECT);
         //JsonUtils.SetComponentsType(mainObject, "MainModule");
         MainModule main = particleSystem.main;
-
-        
-        
-        
-
-        // mainObject.AddField("duration", main.duration);
-        // mainObject.AddField("looping", main.loop);
+        mainObject.AddField("duration", main.duration);
+        mainObject.AddField("loop", main.loop);
         // mainObject.AddField("prewarm", main.prewarm);
         // //startDelay
-        mainObject.AddField("startDelay", writeMinMaxCurveData(main.startDelay,1,0,1));
-        // mainObject.AddField("startLifetime", writeMinMaxCurveData(main.startLifetime, 1, 0, 1));
-        // mainObject.AddField("startSpeed", writeMinMaxCurveData(main.startSpeed));
+        mainObject.AddField("startDelay", writeMinMaxCurveData(main.startDelay, 1, 0, 1));
+        mainObject.AddField("startLifetime", writeMinMaxCurveData(main.startLifetime, 1, 0, 1));
+        mainObject.AddField("startSpeed", writeMinMaxCurveData(main.startSpeed));
         // //threeDStartSize
-        // mainObject.AddField("startSize3D", main.startSize3D);
-        // mainObject.AddField("startSize", writeMinMaxCurveData(main.startSize));
-        // mainObject.AddField("startSizeX", writeMinMaxCurveData(main.startSizeX));
-        // mainObject.AddField("startSizeY", writeMinMaxCurveData(main.startSizeY));
-        // mainObject.AddField("startSizeZ", writeMinMaxCurveData(main.startSizeZ));
+        mainObject.AddField("startSize3D", main.startSize3D);
+        if (main.startSize3D)
+        {
+            mainObject.AddField("startSizeX", writeMinMaxCurveData(main.startSizeX));
+            mainObject.AddField("startSizeY", writeMinMaxCurveData(main.startSizeY));
+            mainObject.AddField("startSizeZ", writeMinMaxCurveData(main.startSizeZ));
+        }
+        else
+        {
+            mainObject.AddField("startSize", writeMinMaxCurveData(main.startSize));
+        }
 
         // //threeDStartRotation
-        // mainObject.AddField("startRotation3D", main.startRotation3D);
-        // mainObject.AddField("startRotation", writeMinMaxCurveData(main.startRotation,Mathf.Rad2Deg));
-        // mainObject.AddField("startRotationX", writeMinMaxCurveData(main.startRotationX, Mathf.Rad2Deg));
-        // mainObject.AddField("startRotationY", writeMinMaxCurveData(main.startRotationY, -Mathf.Rad2Deg));
-        // mainObject.AddField("startRotationZ", writeMinMaxCurveData(main.startRotationZ, -Mathf.Rad2Deg));
+        mainObject.AddField("startRotation3D", main.startRotation3D);
+        if (main.startRotation3D)
+        {
+            mainObject.AddField("startRotationX", writeMinMaxCurveData(main.startRotationX, Mathf.Rad2Deg));
+            mainObject.AddField("startRotationY", writeMinMaxCurveData(main.startRotationY, -Mathf.Rad2Deg));
+            mainObject.AddField("startRotationZ", writeMinMaxCurveData(main.startRotationZ, -Mathf.Rad2Deg));
+        }
+        else
+        {
+            mainObject.AddField("startRotation", writeMinMaxCurveData(main.startRotation, Mathf.Rad2Deg));
+
+        }
+
+
 
         // //randomizeRotationDirection (?)
-        // mainObject.AddField("randomizeRotationDirection", main.flipRotation);
+        mainObject.AddField("flipRotation", main.flipRotation);
 
         // mainObject.AddField("startColor", writeMinMaxGradientData(main.startColor));
 
-        // mainObject.AddField("gravityModifier", writeMinMaxCurveData(main.gravityModifier));
+        mainObject.AddField("gravityModifier", writeMinMaxCurveData(main.gravityModifier));
 
-        // mainObject.AddField("simulationSpace", (int)(object)main.simulationSpace);
-        // mainObject.AddField("simulationSpeed", particleSystem.main.simulationSpeed);
-        // mainObject.AddField("scaleMode", (int)(object)main.scalingMode);
+        mainObject.AddField("simulationSpace", (int)(object)main.simulationSpace);
+        mainObject.AddField("simulationSpeed", particleSystem.main.simulationSpeed);
+        mainObject.AddField("useUnscaledTime", particleSystem.main.useUnscaledTime);
+        mainObject.AddField("scalingMode", (int)(object)main.scalingMode);
 
 
         // //playOnAwake
-        // mainObject.AddField("playOnAwake", particleSystem.main.playOnAwake);
+        mainObject.AddField("playOnAwake", particleSystem.main.playOnAwake);
 
 
-        // //Auto Random Seed Enable
-        // mainObject.AddField("autoRandomSeed", particleSystem.useAutoRandomSeed);
 
-        // //Random Seed
+        mainObject.AddField("maxParticles", particleSystem.main.maxParticles);
+        mainObject.AddField("stopAction", (int)(object)particleSystem.main.stopAction);
+        mainObject.AddField("cullingMode", (int)(object)particleSystem.main.cullingMode);
+        mainObject.AddField("ringBufferMode", (int)(object)particleSystem.main.ringBufferMode);
 
-        // mainObject.AddField("randomSeed", particleSystem.randomSeed);
 
-        // mainObject.AddField("maxParticles", particleSystem.main.maxParticles);
+        particleSystemData.AddField("useAutoRandomSeed", particleSystem.useAutoRandomSeed);
+        if (!particleSystem.useAutoRandomSeed)
+            particleSystemData.AddField("randomSeed", particleSystem.randomSeed);
+
         particleSystemData.AddField("main", mainObject);
-        sysData.AddField("particleSystem",particleSystemData);
-        //sysData.AddField("main", mainObject);
+        sysData.AddField("particleSystem", particleSystemData);
+        return particleSystemData;
     }
 
     private static void writeRotationOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
@@ -83,12 +97,12 @@ internal class ParticleSystemData
         JsonUtils.SetComponentsType(dataObject, "PlusRotationOverLife");
         dataObject.AddField("enable", rotationOverLifetime.enabled);
         dataObject.AddField("separateAxes", rotationOverLifetime.separateAxes);
-       
-        dataObject.AddField("x", writeMinMaxCurveData(rotationOverLifetime.x, Mathf.Rad2Deg ));
-        dataObject.AddField("y", writeMinMaxCurveData(rotationOverLifetime.y, -Mathf.Rad2Deg ));
+
+        dataObject.AddField("x", writeMinMaxCurveData(rotationOverLifetime.x, Mathf.Rad2Deg));
+        dataObject.AddField("y", writeMinMaxCurveData(rotationOverLifetime.y, -Mathf.Rad2Deg));
         dataObject.AddField("z", writeMinMaxCurveData(rotationOverLifetime.z, -Mathf.Rad2Deg));
         sysData.AddField("rotationOverLifetime", dataObject);
-      //  return dataObject;
+        //  return dataObject;
     }
     private static void writeForceOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
@@ -101,6 +115,7 @@ internal class ParticleSystemData
         dataObject.AddField("x", writeMinMaxCurveData(forceOverLifetime.x, spaceChage.x));
         dataObject.AddField("y", writeMinMaxCurveData(forceOverLifetime.y, spaceChage.y));
         dataObject.AddField("z", writeMinMaxCurveData(forceOverLifetime.z, spaceChage.z));
+        dataObject.AddField("randomized", forceOverLifetime.randomized);
         sysData.AddField("forceOverLifetime", dataObject);
     }
 
@@ -115,10 +130,14 @@ internal class ParticleSystemData
         dataObject.AddField("x", writeMinMaxCurveData(velocityOverLifetime.x, spaceChage.x));
         dataObject.AddField("y", writeMinMaxCurveData(velocityOverLifetime.y, spaceChage.y));
         dataObject.AddField("z", writeMinMaxCurveData(velocityOverLifetime.z, spaceChage.z));
-        dataObject.AddField("space",(int)(object)velocityOverLifetime.space);
+        dataObject.AddField("space", (int)(object)velocityOverLifetime.space);
         dataObject.AddField("orbitalX", writeMinMaxCurveData(velocityOverLifetime.orbitalX));
         dataObject.AddField("orbitalY", writeMinMaxCurveData(velocityOverLifetime.orbitalY));
         dataObject.AddField("orbitalZ", writeMinMaxCurveData(velocityOverLifetime.orbitalZ));
+        dataObject.AddField("orbitalOffsetX", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetX));
+        dataObject.AddField("orbitalOffsetY", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetY));
+        dataObject.AddField("orbitalOffsetZ", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetZ));
+
         dataObject.AddField("radial", writeMinMaxCurveData(velocityOverLifetime.radial));
         sysData.AddField("velocityOverLifetime", dataObject);
     }
@@ -140,131 +159,145 @@ internal class ParticleSystemData
     {
         EmissionModule emission = particleSystem.emission;
         JSONObject emissionObject = new JSONObject(JSONObject.Type.OBJECT);
-        JsonUtils.SetComponentsType(emissionObject, "PlusEmission");
+        //JsonUtils.SetComponentsType(emissionObject, "PlusEmission");
         emissionObject.AddField("enable", emission.enabled);
         emissionObject.AddField("rateOverTime", writeMinMaxCurveData(emission.rateOverTime));
         emissionObject.AddField("rateOverDistance", writeMinMaxCurveData(emission.rateOverDistance));
         JSONObject bursts = new JSONObject(JSONObject.Type.ARRAY);
         int bcount = emission.burstCount;
-        for(int i= 0; i < bcount; i++)
+        for (int i = 0; i < bcount; i++)
         {
             bursts.Add(writeBurst(emission.GetBurst(i)));
         }
         emissionObject.AddField("bursts", bursts);
         sysData.AddField("emission", emissionObject);
     }
-    private static void writeShape(ParticleSystem particleSystem, JSONObject sysData,NodeMap map, ResoureMap resMap)
+    private static void writeShape(ParticleSystem particleSystem, JSONObject sysData, NodeMap map, ResoureMap resMap)
     {
         JSONObject shapObject = new JSONObject(JSONObject.Type.OBJECT);
+        JsonUtils.SetComponentsType(shapObject, "PlusShape");
         ShapeModule shape = particleSystem.shape;
         shapObject.AddField("enable", shape.enabled);
-        if (shape.shapeType == ParticleSystemShapeType.Box)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusBoxShape");
-            shapObject.AddField("emitfrom", 0);
-        }
-        if (shape.shapeType == ParticleSystemShapeType.BoxEdge)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusBoxShape");
-            shapObject.AddField("emitfrom", 2);
-        }
-        if (shape.shapeType == ParticleSystemShapeType.BoxShell )
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusBoxShape");
-            shapObject.AddField("emitfrom", 1);
-        }
-        else if (shape.shapeType == ParticleSystemShapeType.Donut)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusDountShape");
-            shapObject.AddField("radius", shape.radius);
-            shapObject.AddField("radiusThickness", shape.radiusThickness);
-            shapObject.AddField("arc", shape.arc);
-            shapObject.AddField("donutRadius", shape.donutRadius);
-        }
-        else if (shape.shapeType == ParticleSystemShapeType.Circle)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusCircleShape");
-            shapObject.AddField("radius", shape.radius);
-            shapObject.AddField("radiusThickness", shape.radiusThickness);
-            shapObject.AddField("arc", shape.arc);
-        }
-        else if (shape.shapeType == ParticleSystemShapeType.Cone)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusConeShape");
-            shapObject.AddField("radius", shape.radius);
-            shapObject.AddField("radiusThickness", shape.radiusThickness);
-            shapObject.AddField("arc", shape.arc);
-            shapObject.AddField("angle", shape.angle);
-            shapObject.AddField("length", shape.length);
-            shapObject.AddField("emitfrom", 0);
-        }
-        else if (shape.shapeType == ParticleSystemShapeType.ConeVolume)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusConeShape");
-            shapObject.AddField("radius", shape.radius);
-            shapObject.AddField("radiusThickness", shape.radiusThickness);
-            shapObject.AddField("arc", shape.arc);
-            shapObject.AddField("angle", shape.angle);
-            shapObject.AddField("length", shape.length);
-            shapObject.AddField("emitfrom", 1);
-        }
-        else if (shape.shapeType == ParticleSystemShapeType.Hemisphere)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusHemisphereShape");
-            shapObject.AddField("radius", shape.radius);
-            shapObject.AddField("radiusThickness", shape.radiusThickness);
-            shapObject.AddField("arc", shape.arc);
-        }
-        else if (shape.shapeType == ParticleSystemShapeType.Sphere)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusSphereShape");
-            shapObject.AddField("radius", shape.radius);
-            shapObject.AddField("radiusThickness", shape.radiusThickness);
-            shapObject.AddField("arc", shape.arc);
-        }else if(shape.shapeType == ParticleSystemShapeType.SingleSidedEdge)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusSideEdgeShape");
-            shapObject.AddField("radius", shape.radius);
-            shapObject.AddField("radiusMode", (int)(object)shape.radiusMode);
-            shapObject.AddField("radiusSpread", shape.radiusSpread);
-            shapObject.AddField("radiusSpeed", writeMinMaxCurveData(shape.radiusSpeed));
-        }else if(shape.shapeType == ParticleSystemShapeType.Mesh)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusMeshShape");
-            shapObject.AddField("mesh", resMap.GetMeshData(shape.mesh,null));
-            shapObject.AddField("type", (int)(object)shape.meshShapeType);
-            shapObject.AddField("mode", (int)(object)shape.meshSpawnMode);
-            shapObject.AddField("singleMaterial", shape.useMeshMaterialIndex);
-            shapObject.AddField("subMeshId", shape.meshMaterialIndex);
-        }
-        else if (shape.shapeType == ParticleSystemShapeType.MeshRenderer)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusMeshRenderShape");
-            shapObject.AddField("render", map.getRefNodeIdObjet(shape.meshRenderer.gameObject, "MeshRenderer"));
-            shapObject.AddField("type", (int)(object)shape.meshShapeType);
-            shapObject.AddField("mode", (int)(object)shape.meshSpawnMode);
-            shapObject.AddField("singleMaterial", shape.useMeshMaterialIndex);
-            shapObject.AddField("subMeshId", shape.meshMaterialIndex);
-        }else if(shape.shapeType == ParticleSystemShapeType.Rectangle)
-        {
-            JsonUtils.SetComponentsType(shapObject, "PlusRectangleShape");
-        }
+        // if (shape.shapeType == ParticleSystemShapeType.Box)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusBoxShape");
+        //     shapObject.AddField("emitfrom", 0);
+        // }
+        // if (shape.shapeType == ParticleSystemShapeType.BoxEdge)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusBoxShape");
+        //     shapObject.AddField("emitfrom", 2);
+        // }
+        // if (shape.shapeType == ParticleSystemShapeType.BoxShell)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusBoxShape");
+        //     shapObject.AddField("emitfrom", 1);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.Donut)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusDountShape");
+        //     shapObject.AddField("radius", shape.radius);
+        //     shapObject.AddField("radiusThickness", shape.radiusThickness);
+        //     shapObject.AddField("arc", shape.arc);
+        //     shapObject.AddField("donutRadius", shape.donutRadius);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.Circle)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusCircleShape");
+        //     shapObject.AddField("radius", shape.radius);
+        //     shapObject.AddField("radiusThickness", shape.radiusThickness);
+        //     shapObject.AddField("arc", shape.arc);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.Cone)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusConeShape");
+        //     shapObject.AddField("radius", shape.radius);
+        //     shapObject.AddField("radiusThickness", shape.radiusThickness);
+        //     shapObject.AddField("arc", shape.arc);
+        //     shapObject.AddField("angle", shape.angle);
+        //     shapObject.AddField("length", shape.length);
+        //     shapObject.AddField("emitfrom", 0);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.ConeVolume)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusConeShape");
+        //     shapObject.AddField("radius", shape.radius);
+        //     shapObject.AddField("radiusThickness", shape.radiusThickness);
+        //     shapObject.AddField("arc", shape.arc);
+        //     shapObject.AddField("angle", shape.angle);
+        //     shapObject.AddField("length", shape.length);
+        //     shapObject.AddField("emitfrom", 1);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.Hemisphere)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusHemisphereShape");
+        //     shapObject.AddField("radius", shape.radius);
+        //     shapObject.AddField("radiusThickness", shape.radiusThickness);
+        //     shapObject.AddField("arc", shape.arc);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.Sphere)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusSphereShape");
+        //     shapObject.AddField("radius", shape.radius);
+        //     shapObject.AddField("radiusThickness", shape.radiusThickness);
+        //     shapObject.AddField("arc", shape.arc);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.SingleSidedEdge)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusSideEdgeShape");
+        //     shapObject.AddField("radius", shape.radius);
+        //     shapObject.AddField("radiusMode", (int)(object)shape.radiusMode);
+        //     shapObject.AddField("radiusSpread", shape.radiusSpread);
+        //     shapObject.AddField("radiusSpeed", writeMinMaxCurveData(shape.radiusSpeed));
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.Mesh)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusMeshShape");
+        //     shapObject.AddField("mesh", resMap.GetMeshData(shape.mesh, null));
+        //     shapObject.AddField("type", (int)(object)shape.meshShapeType);
+        //     shapObject.AddField("mode", (int)(object)shape.meshSpawnMode);
+        //     shapObject.AddField("singleMaterial", shape.useMeshMaterialIndex);
+        //     shapObject.AddField("subMeshId", shape.meshMaterialIndex);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.MeshRenderer)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusMeshRenderShape");
+        //     shapObject.AddField("render", map.getRefNodeIdObjet(shape.meshRenderer.gameObject, "MeshRenderer"));
+        //     shapObject.AddField("type", (int)(object)shape.meshShapeType);
+        //     shapObject.AddField("mode", (int)(object)shape.meshSpawnMode);
+        //     shapObject.AddField("singleMaterial", shape.useMeshMaterialIndex);
+        //     shapObject.AddField("subMeshId", shape.meshMaterialIndex);
+        // }
+        // else if (shape.shapeType == ParticleSystemShapeType.Rectangle)
+        // {
+        //     JsonUtils.SetComponentsType(shapObject, "PlusRectangleShape");
+        // }
 
 
-        shapObject.AddField("scale", JsonUtils.GetVector3Object(shape.scale));
-        Vector3 pos = shape.position;
-        SpaceUtils.changePostion(ref pos);
-        shapObject.AddField("position", JsonUtils.GetVector3Object(pos));
-        Vector3 rotate = shape.rotation;
-        SpaceUtils.changeRotateEuler(ref rotate, false);
-        shapObject.AddField("rotation", JsonUtils.GetVector3Object(rotate));
-        shapObject.AddField("alignToDirection", shape.alignToDirection);
-        shapObject.AddField("randomDirection", shape.randomDirectionAmount);
-        shapObject.AddField("sphericalDirection", shape.sphericalDirectionAmount);
-        shapObject.AddField("randomPosition", shape.randomPositionAmount);
+        // shapObject.AddField("scale", JsonUtils.GetVector3Object(shape.scale));
+        // Vector3 pos = shape.position;
+        // SpaceUtils.changePostion(ref pos);
+        // shapObject.AddField("position", JsonUtils.GetVector3Object(pos));
+        // Vector3 rotate = shape.rotation;
+        // SpaceUtils.changeRotateEuler(ref rotate, false);
+        // shapObject.AddField("rotation", JsonUtils.GetVector3Object(rotate));
+        // shapObject.AddField("alignToDirection", shape.alignToDirection);
+        // shapObject.AddField("randomDirection", shape.randomDirectionAmount);
+        // shapObject.AddField("sphericalDirection", shape.sphericalDirectionAmount);
+        // shapObject.AddField("randomPosition", shape.randomPositionAmount);
         sysData.AddField("shape", shapObject);
     }
-    
+    private static void writeLifetimeByEmitterSpeed(ParticleSystem particleSystem, JSONObject sysData)
+    {
+        LifetimeByEmitterSpeedModule lifetimeByEmitterSpeed = particleSystem.lifetimeByEmitterSpeed;
+        JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
+        JsonUtils.SetComponentsType(dataObject, "PlusLifetimeByEmitterSpeed");
+        dataObject.AddField("enable", lifetimeByEmitterSpeed.enabled);
+        dataObject.AddField("curve", writeMinMaxCurveData(lifetimeByEmitterSpeed.curve));
+        dataObject.AddField("range", JsonUtils.GetVector2Object(lifetimeByEmitterSpeed.range));
+        sysData.AddField("lifetimeByEmitterSpeed", dataObject);
+    }
+
     private static void writeLimitVelocityOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
         LimitVelocityOverLifetimeModule limitVelocityOverLifetime = particleSystem.limitVelocityOverLifetime;
@@ -272,7 +305,7 @@ internal class ParticleSystemData
         JsonUtils.SetComponentsType(dataObject, "PlusLimtVelocityOverLife");
         dataObject.AddField("enable", limitVelocityOverLifetime.enabled);
         dataObject.AddField("space", (int)(object)limitVelocityOverLifetime.space);
-        dataObject.AddField("separateAxes",limitVelocityOverLifetime.separateAxes);    
+        dataObject.AddField("separateAxes", limitVelocityOverLifetime.separateAxes);
         dataObject.AddField("limit", writeMinMaxCurveData(limitVelocityOverLifetime.limit));
         dataObject.AddField("limitX", writeMinMaxCurveData(limitVelocityOverLifetime.limitX));
         dataObject.AddField("limitY", writeMinMaxCurveData(limitVelocityOverLifetime.limitY));
@@ -318,7 +351,18 @@ internal class ParticleSystemData
         dataObject.AddField("range", JsonUtils.GetVector2Object(sizeBySpeed.range));
         sysData.AddField("sizeBySpeed", dataObject);
     }
-
+    private static void writeExternalForces(ParticleSystem particleSystem, JSONObject sysData)
+    {
+        ExternalForcesModule externalForces = particleSystem.externalForces;
+        JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
+        JsonUtils.SetComponentsType(dataObject, "PlusExternalForces");
+        dataObject.AddField("enable", externalForces.enabled);
+        dataObject.AddField("multiplier", writeMinMaxCurveData(externalForces.multiplier));
+        dataObject.AddField("influenceFilter", (int)(object)externalForces.influenceFilter);
+        //TODO
+        Debug.Log(externalForces.influenceCount);
+        sysData.AddField("externalForces", dataObject);
+    }
     private static void writeRotationBySpeed(ParticleSystem particleSystem, JSONObject sysData)
     {
         RotationBySpeedModule rotationBySpeed = particleSystem.rotationBySpeed;
@@ -339,7 +383,7 @@ internal class ParticleSystemData
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusInheritVelocity");
         dataObject.AddField("enable", inheritVelocity.enabled);
-        dataObject.AddField("mode", (int)(object) inheritVelocity.mode);
+        dataObject.AddField("mode", (int)(object)inheritVelocity.mode);
         dataObject.AddField("curveMultiplier", writeMinMaxCurveData(inheritVelocity.curveMultiplier));
         sysData.AddField("inheritVelocity", dataObject);
     }
@@ -359,12 +403,16 @@ internal class ParticleSystemData
         dataObject.AddField("strength", writeMinMaxCurveData(noise.strength));
         dataObject.AddField("frequency", noise.frequency);
 
+
+        dataObject.AddField("scrollSpeed", writeMinMaxCurveData(noise.scrollSpeed));
+        dataObject.AddField("damping", noise.damping);
         dataObject.AddField("octaveCount", noise.octaveCount);
         dataObject.AddField("octaveMultiplier", noise.octaveMultiplier);
         dataObject.AddField("octaveScale", noise.octaveScale);
-
         dataObject.AddField("quality", (int)(object)noise.quality);
-        dataObject.AddField("scrollSpeed", writeMinMaxCurveData(noise.scrollSpeed));
+        dataObject.AddField("remapEnabled", noise.remapEnabled);
+        dataObject.AddField("remap", writeMinMaxCurveData(noise.remap));
+
 
         dataObject.AddField("positionAmount", writeMinMaxCurveData(noise.positionAmount));
         dataObject.AddField("rotationAmount", writeMinMaxCurveData(noise.rotationAmount));
@@ -398,7 +446,7 @@ internal class ParticleSystemData
         dataObject.AddField("enable", subEmitters.enabled);
         JSONObject subDatas = new JSONObject(JSONObject.Type.ARRAY);
         int count = subEmitters.subEmittersCount;
-        for(int i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
         {
             JSONObject subData = new JSONObject(JSONObject.Type.OBJECT);
             JsonUtils.SetComponentsType(subData, "PlusSubmitterData");
@@ -415,21 +463,22 @@ internal class ParticleSystemData
     public static JSONObject GetParticleSystem(ParticleSystem particleSystem, bool isOverride, NodeMap map, ResoureMap resMap)
     {
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystem", isOverride);
-        writeBaseNode(particleSystem, compData);
-        // writeEmission(particleSystem, compData);
-        // writeShape(particleSystem, compData,map, resMap);
-        // writeVelocityOverLifetime(particleSystem, compData);
-        // writeSizeOverLifetime(particleSystem, compData);
-        // writeForceOverLifetime(particleSystem, compData);
-        // writeRotationOverLifetime(particleSystem, compData);
-
-        // writeLimitVelocityOverLifetime(particleSystem, compData);
-        // writeColorOverLifetime(particleSystem, compData);
-        // writeColorBySpeed(particleSystem, compData);
-        // writeSizeBySpeed(particleSystem, compData);
-        // writeRotationBySpeed(particleSystem, compData);
+        JSONObject particleSystemData = writeBaseNode(particleSystem, compData);
+        writeEmission(particleSystem, particleSystemData);
+        //writeShape(particleSystem, compData, map, resMap);
+        writeVelocityOverLifetime(particleSystem, particleSystemData);
+        writeLimitVelocityOverLifetime(particleSystem, particleSystemData);
+        writeLifetimeByEmitterSpeed(particleSystem, particleSystemData);
+        writeForceOverLifetime(particleSystem, particleSystemData);
+        writeColorOverLifetime(particleSystem, particleSystemData);
+        writeColorBySpeed(particleSystem, particleSystemData);
+        writeSizeOverLifetime(particleSystem, particleSystemData);
+        writeSizeBySpeed(particleSystem, particleSystemData);
+        writeRotationOverLifetime(particleSystem, particleSystemData);
+        writeRotationBySpeed(particleSystem, particleSystemData);
+        writeExternalForces(particleSystem, particleSystemData);
         // writeInheritVelocity(particleSystem, compData);
-        // writeNoise(particleSystem, compData);
+        writeNoise(particleSystem, particleSystemData);
         // writeTextureSheetAnimation(particleSystem, compData);
         // writeSubEmittersModule(particleSystem, compData, map);
 
@@ -437,7 +486,7 @@ internal class ParticleSystemData
     }
 
 
-    public static JSONObject GetParticleSystemRenderer(ParticleSystemRenderer renderer, bool isOverride,ResoureMap map)
+    public static JSONObject GetParticleSystemRenderer(ParticleSystemRenderer renderer, bool isOverride, ResoureMap map)
     {
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystemRenderer", isOverride);
         compData.AddField("renderMode", (int)(object)renderer.renderMode);
@@ -469,9 +518,9 @@ internal class ParticleSystemData
         return curveData;
     }
 
-    private static void writeGradientData(Gradient gradient,string propname, JSONObject props)
+    private static void writeGradientData(Gradient gradient, string propname, JSONObject props)
     {
-        if(gradient == null)
+        if (gradient == null)
         {
             return;
         }
@@ -510,7 +559,7 @@ internal class ParticleSystemData
         }
         props.AddField(propname, gradientData);
     }
-    private static JSONObject writeMinMaxCurveData(MinMaxCurve curve,float factor = 1.0f,float min=-1,float max = 1 )
+    private static JSONObject writeMinMaxCurveData(MinMaxCurve curve, float factor = 1.0f, float min = -1, float max = 1)
     {
         JSONObject curveData = new JSONObject(JSONObject.Type.OBJECT);
         //JsonUtils.SetComponentsType(curveData, "MinMaxCurve");
@@ -541,14 +590,14 @@ internal class ParticleSystemData
     private static JSONObject getAnimationCurveData(AnimationCurve animationcurve, float min = -1, float max = 1)
     {
         JSONObject animationcurveData = new JSONObject(JSONObject.Type.OBJECT);
-        JsonUtils.SetComponentsType(animationcurveData, "AnimationCurve");
+        //JsonUtils.SetComponentsType(animationcurveData, "AnimationCurve");
         if (animationcurve != null && animationcurve.length > 0)
         {
             JSONObject subnodeArray = new JSONObject(JSONObject.Type.ARRAY);
             for (int i = 0; i < animationcurve.length; i++)
-            { 
+            {
                 JSONObject subnodeObject = new JSONObject(JSONObject.Type.OBJECT);
-                JsonUtils.SetComponentsType(subnodeObject, "CurveKeyframe");
+                JsonUtils.SetComponentsType(subnodeObject, "FloatKeyframe");
                 subnodeObject.AddField("time", animationcurve[i].time);
                 float value = animationcurve[i].value;
                 if (value >= min && value <= max)
@@ -559,7 +608,7 @@ internal class ParticleSystemData
                 {
                     Debug.LogError("不在范围内");
                 }
-               
+
                 subnodeObject.AddField("inTangent", animationcurve[i].inTangent);
                 subnodeObject.AddField("outTangent", animationcurve[i].outTangent);
                 subnodeObject.AddField("inWeight", animationcurve[i].inWeight);
