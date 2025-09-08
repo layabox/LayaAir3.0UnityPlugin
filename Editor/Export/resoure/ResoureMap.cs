@@ -141,7 +141,7 @@ internal class ResoureMap
             file.Value.SaveFile(exportFiles);
         }
     }
-
+    private JSONObject particleSystemData;
     public void getComponentsData(GameObject gameObject, JSONObject node, NodeMap map)
     {
         Camera camera = gameObject.GetComponent<Camera>();
@@ -166,6 +166,7 @@ internal class ResoureMap
         node.AddField("_$comp", compents);
         List<Component> componentsList = new List<Component>();
         gameObject.GetComponents(componentsList);
+        particleSystemData = null;
         foreach (Component comp in componentsList)
         {
             this.writeComponentData(compents, comp, map, false);
@@ -213,12 +214,18 @@ internal class ResoureMap
         }
         else if (comp is ParticleSystem)
         {
-            compents.Add(ParticleSystemData.GetParticleSystem(comp as ParticleSystem, isOverride, map, this));
+            particleSystemData = ParticleSystemData.GetParticleSystem(comp as ParticleSystem, isOverride, map, this);
+            compents.Add(particleSystemData);
         }
-        // else if(comp is ParticleSystemRenderer)
-        // {
-        //     compents.Add(ParticleSystemData.GetParticleSystemRenderer(comp as ParticleSystemRenderer, isOverride,this));
-        // }
+        else if (comp is ParticleSystemForceField)
+        {
+            compents.Add(ParticleSystemForceFieldData.GetParticleSystemForceField(comp as ParticleSystemForceField, isOverride, map, this));
+        }
+        else if (comp is ParticleSystemRenderer)
+        {
+            ParticleSystemData.GetParticleSystemRenderer(comp as ParticleSystemRenderer, isOverride, this, particleSystemData);
+            //compents.Add(ParticleSystemData.GetParticleSystemRenderer(comp as ParticleSystemRenderer, isOverride,this));
+        }
     }
 
     public JSONObject GetLightComponentData(Light light, bool isOverride)

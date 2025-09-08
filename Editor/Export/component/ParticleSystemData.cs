@@ -93,6 +93,7 @@ internal class ParticleSystemData
     private static void writeRotationOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
         RotationOverLifetimeModule rotationOverLifetime = particleSystem.rotationOverLifetime;
+        if (!rotationOverLifetime.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusRotationOverLife");
         dataObject.AddField("enable", rotationOverLifetime.enabled);
@@ -106,8 +107,9 @@ internal class ParticleSystemData
     }
     private static void writeForceOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
-        Vector3 spaceChage = SpaceUtils.getDirection();
         ForceOverLifetimeModule forceOverLifetime = particleSystem.forceOverLifetime;
+        if (!forceOverLifetime.enabled) return;
+        Vector3 spaceChage = SpaceUtils.getDirection();
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusForceOverLife");
         dataObject.AddField("enable", forceOverLifetime.enabled);
@@ -121,8 +123,9 @@ internal class ParticleSystemData
 
     private static void writeVelocityOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
-        Vector3 spaceChage = SpaceUtils.getDirection();
         VelocityOverLifetimeModule velocityOverLifetime = particleSystem.velocityOverLifetime;
+        if (!velocityOverLifetime.enabled) return;
+        Vector3 spaceChage = SpaceUtils.getDirection();
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusVelocityOverLife");
         dataObject.AddField("enable", velocityOverLifetime.enabled);
@@ -145,6 +148,7 @@ internal class ParticleSystemData
     private static void writeSizeOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
         SizeOverLifetimeModule sizeOverLifetime = particleSystem.sizeOverLifetime;
+        if (!sizeOverLifetime.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusSizeOverLife");
         dataObject.AddField("enable", sizeOverLifetime.enabled);
@@ -290,6 +294,7 @@ internal class ParticleSystemData
     private static void writeLifetimeByEmitterSpeed(ParticleSystem particleSystem, JSONObject sysData)
     {
         LifetimeByEmitterSpeedModule lifetimeByEmitterSpeed = particleSystem.lifetimeByEmitterSpeed;
+        if (!lifetimeByEmitterSpeed.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusLifetimeByEmitterSpeed");
         dataObject.AddField("enable", lifetimeByEmitterSpeed.enabled);
@@ -301,6 +306,7 @@ internal class ParticleSystemData
     private static void writeLimitVelocityOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
         LimitVelocityOverLifetimeModule limitVelocityOverLifetime = particleSystem.limitVelocityOverLifetime;
+        if (!limitVelocityOverLifetime.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusLimtVelocityOverLife");
         dataObject.AddField("enable", limitVelocityOverLifetime.enabled);
@@ -319,6 +325,7 @@ internal class ParticleSystemData
     private static void writeColorOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
         ColorOverLifetimeModule colorOverLifetime = particleSystem.colorOverLifetime;
+        if (!colorOverLifetime.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusColorOverLife");
         dataObject.AddField("enable", colorOverLifetime.enabled);
@@ -329,6 +336,7 @@ internal class ParticleSystemData
     private static void writeColorBySpeed(ParticleSystem particleSystem, JSONObject sysData)
     {
         ColorBySpeedModule colorBySpeed = particleSystem.colorBySpeed;
+        if (!colorBySpeed.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusColorBySpeed");
         dataObject.AddField("enable", colorBySpeed.enabled);
@@ -340,6 +348,7 @@ internal class ParticleSystemData
     private static void writeSizeBySpeed(ParticleSystem particleSystem, JSONObject sysData)
     {
         SizeBySpeedModule sizeBySpeed = particleSystem.sizeBySpeed;
+        if (!sizeBySpeed.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusSizeBySpeed");
         dataObject.AddField("enable", sizeBySpeed.enabled);
@@ -351,21 +360,30 @@ internal class ParticleSystemData
         dataObject.AddField("range", JsonUtils.GetVector2Object(sizeBySpeed.range));
         sysData.AddField("sizeBySpeed", dataObject);
     }
-    private static void writeExternalForces(ParticleSystem particleSystem, JSONObject sysData)
+    private static void writeExternalForces(ParticleSystem particleSystem, JSONObject sysData, NodeMap map)
     {
         ExternalForcesModule externalForces = particleSystem.externalForces;
+        if (!externalForces.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusExternalForces");
         dataObject.AddField("enable", externalForces.enabled);
         dataObject.AddField("multiplier", writeMinMaxCurveData(externalForces.multiplier));
         dataObject.AddField("influenceFilter", (int)(object)externalForces.influenceFilter);
-        //TODO
-        Debug.Log(externalForces.influenceCount);
+        int count = externalForces.influenceCount;
+        JSONObject subDatas = new JSONObject(JSONObject.Type.ARRAY);
+        for (int i = 0; i < count; i++)
+        {
+            subDatas.Add(map.getRefNodeIdObjet(externalForces.GetInfluence(i).gameObject, "ParticleSystemForceField"));
+        }
+        dataObject.AddField("influences", subDatas);
+
+
         sysData.AddField("externalForces", dataObject);
     }
     private static void writeRotationBySpeed(ParticleSystem particleSystem, JSONObject sysData)
     {
         RotationBySpeedModule rotationBySpeed = particleSystem.rotationBySpeed;
+        if (!rotationBySpeed.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusRotationBySpeed");
         dataObject.AddField("enable", rotationBySpeed.enabled);
@@ -380,6 +398,7 @@ internal class ParticleSystemData
     private static void writeInheritVelocity(ParticleSystem particleSystem, JSONObject sysData)
     {
         InheritVelocityModule inheritVelocity = particleSystem.inheritVelocity;
+        if (!inheritVelocity.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusInheritVelocity");
         dataObject.AddField("enable", inheritVelocity.enabled);
@@ -387,11 +406,36 @@ internal class ParticleSystemData
         dataObject.AddField("curveMultiplier", writeMinMaxCurveData(inheritVelocity.curveMultiplier));
         sysData.AddField("inheritVelocity", dataObject);
     }
+    private static void writeCollision(ParticleSystem particleSystem, JSONObject sysData, NodeMap map)
+    {
+        CollisionModule collision = particleSystem.collision;
+        if (!collision.enabled) return;
+        JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
+        JsonUtils.SetComponentsType(dataObject, "PlusCollision");
+        dataObject.AddField("enable", collision.enabled);
+        dataObject.AddField("type", (int)(object)collision.type);
+        int count = collision.planeCount;
+        JSONObject subDatas = new JSONObject(JSONObject.Type.ARRAY);
+        for (int i = 0; i < count; i++)
+        {
+            subDatas.Add(map.getRefNodeIdObjet(collision.GetPlane(i).gameObject));
+        }
+        dataObject.AddField("planeSps", subDatas);
+        dataObject.AddField("dampen", writeMinMaxCurveData(collision.dampen));
+        dataObject.AddField("bounce", writeMinMaxCurveData(collision.bounce));
+        dataObject.AddField("lifetimeLoss", writeMinMaxCurveData(collision.lifetimeLoss));
+        dataObject.AddField("minKillSpeed", collision.minKillSpeed);
+        dataObject.AddField("maxKillSpeed", collision.maxKillSpeed);
+        dataObject.AddField("radiusScale", collision.radiusScale);
 
+
+        sysData.AddField("collision", dataObject);
+    }
 
     private static void writeNoise(ParticleSystem particleSystem, JSONObject sysData)
     {
         NoiseModule noise = particleSystem.noise;
+        if (!noise.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusNoise");
         dataObject.AddField("enable", noise.enabled);
@@ -425,6 +469,7 @@ internal class ParticleSystemData
     private static void writeTextureSheetAnimation(ParticleSystem particleSystem, JSONObject sysData)
     {
         TextureSheetAnimationModule textureSheetAnimation = particleSystem.textureSheetAnimation;
+        if (!textureSheetAnimation.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusTextureSheetAnimation");
         dataObject.AddField("enable", textureSheetAnimation.enabled);
@@ -441,6 +486,7 @@ internal class ParticleSystemData
     private static void writeSubEmittersModule(ParticleSystem particleSystem, JSONObject sysData, NodeMap map)
     {
         SubEmittersModule subEmitters = particleSystem.subEmitters;
+        if (!subEmitters.enabled) return;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusSubEmitters");
         dataObject.AddField("enable", subEmitters.enabled);
@@ -451,13 +497,13 @@ internal class ParticleSystemData
             JSONObject subData = new JSONObject(JSONObject.Type.OBJECT);
             JsonUtils.SetComponentsType(subData, "PlusSubmitterData");
             ParticleSystem subSys = subEmitters.GetSubEmitterSystem(i);
-            subData.AddField("emitter", map.getRefNodeIdObjet(subSys.gameObject, "ParticleSystem"));
+            subData.AddField("particleSystem", map.getRefNodeIdObjet(subSys.gameObject));
             subData.AddField("type", (int)(object)subEmitters.GetSubEmitterType(i));
             subData.AddField("properties", (int)(object)subEmitters.GetSubEmitterProperties(i));
-            subData.AddField("emitProbability", subEmitters.GetSubEmitterEmitProbability(i));
+            subData.AddField("probability", subEmitters.GetSubEmitterEmitProbability(i));
             subDatas.Add(subData);
         }
-        dataObject.AddField("subDatas", subDatas);
+        dataObject.AddField("subEmitters", subDatas);
         sysData.AddField("subEmitters", dataObject);
     }
     public static JSONObject GetParticleSystem(ParticleSystem particleSystem, bool isOverride, NodeMap map, ResoureMap resMap)
@@ -476,19 +522,20 @@ internal class ParticleSystemData
         writeSizeBySpeed(particleSystem, particleSystemData);
         writeRotationOverLifetime(particleSystem, particleSystemData);
         writeRotationBySpeed(particleSystem, particleSystemData);
-        writeExternalForces(particleSystem, particleSystemData);
+        writeExternalForces(particleSystem, particleSystemData, map);
         // writeInheritVelocity(particleSystem, compData);
         writeNoise(particleSystem, particleSystemData);
+        writeCollision(particleSystem, particleSystemData, map);
         // writeTextureSheetAnimation(particleSystem, compData);
-        // writeSubEmittersModule(particleSystem, compData, map);
+        writeSubEmittersModule(particleSystem, particleSystemData, map);
 
         return compData;
     }
 
 
-    public static JSONObject GetParticleSystemRenderer(ParticleSystemRenderer renderer, bool isOverride, ResoureMap map)
+    public static JSONObject GetParticleSystemRenderer(ParticleSystemRenderer renderer, bool isOverride, ResoureMap map, JSONObject compData)
     {
-        JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystemRenderer", isOverride);
+        //JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystemRenderer", isOverride);
         compData.AddField("renderMode", (int)(object)renderer.renderMode);
         compData.AddField("sortMode", (int)(object)renderer.sortMode);
         compData.AddField("alignment", (int)(object)renderer.alignment);
@@ -559,7 +606,7 @@ internal class ParticleSystemData
         }
         props.AddField(propname, gradientData);
     }
-    private static JSONObject writeMinMaxCurveData(MinMaxCurve curve, float factor = 1.0f, float min = -1, float max = 1)
+    public static JSONObject writeMinMaxCurveData(MinMaxCurve curve, float factor = 1.0f, float min = -1, float max = 1)
     {
         JSONObject curveData = new JSONObject(JSONObject.Type.OBJECT);
         //JsonUtils.SetComponentsType(curveData, "MinMaxCurve");
