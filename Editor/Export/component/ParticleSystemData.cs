@@ -60,7 +60,7 @@ internal class ParticleSystemData
         // //randomizeRotationDirection (?)
         mainObject.AddField("flipRotation", main.flipRotation);
 
-        // mainObject.AddField("startColor", writeMinMaxGradientData(main.startColor));
+        mainObject.AddField("startColor", writeMinMaxGradientData(main.startColor));
 
         mainObject.AddField("gravityModifier", writeMinMaxCurveData(main.gravityModifier));
 
@@ -182,6 +182,27 @@ internal class ParticleSystemData
         JsonUtils.SetComponentsType(shapObject, "PlusShape");
         ShapeModule shape = particleSystem.shape;
         shapObject.AddField("enable", shape.enabled);
+        shapObject.AddField("type", (int)(object)shape.shapeType);
+        shapObject.AddField("radius", shape.radius);
+        shapObject.AddField("radiusThickness", shape.radiusThickness);
+        shapObject.AddField("arc", shape.arc);
+        shapObject.AddField("arcMode", (int)(object)shape.arcMode);
+        shapObject.AddField("arcSpread", shape.arcSpread);
+        shapObject.AddField("arcSpeed", (int)(object)shape.arcSpeed);
+        shapObject.AddField("position", JsonUtils.GetVector3Object(shape.position));
+        shapObject.AddField("rotation", JsonUtils.GetVector3Object(shape.rotation));
+        shapObject.AddField("scale", JsonUtils.GetVector3Object(shape.scale));
+        shapObject.AddField("alignToDirection", shape.alignToDirection);
+
+        shapObject.AddField("randomDirectionAmount", shape.randomDirectionAmount);
+        shapObject.AddField("sphericalDirectionAmount", shape.sphericalDirectionAmount);
+        shapObject.AddField("randomPositionAmount", shape.randomPositionAmount);
+
+
+
+
+
+
         // if (shape.shapeType == ParticleSystemShapeType.Box)
         // {
         //     JsonUtils.SetComponentsType(shapObject, "PlusBoxShape");
@@ -465,7 +486,36 @@ internal class ParticleSystemData
         sysData.AddField("noise", dataObject);
     }
 
+    private static void writeTrails(ParticleSystem particleSystem, JSONObject sysData, NodeMap map, ResoureMap resMap)
+    {
+        TrailModule trails = particleSystem.trails;
+        if (!trails.enabled) return;
+        JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
+        JsonUtils.SetComponentsType(dataObject, "PlusTrails");
+        dataObject.AddField("enable", trails.enabled);
+        dataObject.AddField("mode", (int)(object)trails.mode);
 
+        dataObject.AddField("ribbonCount", (int)(object)trails.ribbonCount);
+
+
+
+
+        dataObject.AddField("ratio", trails.ratio);
+        dataObject.AddField("lifetime", writeMinMaxCurveData(trails.lifetime));
+        dataObject.AddField("minVertexDistance", trails.minVertexDistance);
+        dataObject.AddField("worldSpace", trails.worldSpace);
+        dataObject.AddField("dieWithParticles", trails.dieWithParticles);
+        dataObject.AddField("attachRibbonsToTransform", trails.attachRibbonsToTransform);
+        dataObject.AddField("textureMode", (int)(object)trails.textureMode);
+        dataObject.AddField("textureScale", JsonUtils.GetVector2Object(trails.textureScale));
+        dataObject.AddField("sizeAffectsWidth", trails.sizeAffectsWidth);
+        dataObject.AddField("sizeAffectsLifetime", trails.sizeAffectsLifetime);
+        dataObject.AddField("inheritParticleColor", trails.inheritParticleColor);
+        dataObject.AddField("colorOverLifetime", writeMinMaxGradientData(trails.colorOverLifetime));
+        dataObject.AddField("widthOverTrail", writeMinMaxCurveData(trails.widthOverTrail));
+        dataObject.AddField("colorOverTrail", writeMinMaxGradientData(trails.colorOverTrail));
+        sysData.AddField("trails", dataObject);
+    }
     private static void writeTextureSheetAnimation(ParticleSystem particleSystem, JSONObject sysData)
     {
         TextureSheetAnimationModule textureSheetAnimation = particleSystem.textureSheetAnimation;
@@ -475,11 +525,15 @@ internal class ParticleSystemData
         dataObject.AddField("enable", textureSheetAnimation.enabled);
         dataObject.AddField("numTiles", JsonUtils.GetVector2Object(textureSheetAnimation.numTilesX, textureSheetAnimation.numTilesY));
         dataObject.AddField("animation", (int)(object)textureSheetAnimation.animation);
+        dataObject.AddField("frameOverTime", writeMinMaxCurveData(textureSheetAnimation.frameOverTime));
         dataObject.AddField("startFrame", writeMinMaxCurveData(textureSheetAnimation.startFrame));
         dataObject.AddField("cycleCount", textureSheetAnimation.cycleCount);
+        dataObject.AddField("speedRange", JsonUtils.GetVector2Object(textureSheetAnimation.speedRange));
         dataObject.AddField("rowIndex", textureSheetAnimation.rowIndex);
         dataObject.AddField("rowMode", (int)(object)textureSheetAnimation.rowMode);
-        dataObject.AddField("frameOverTime", writeMinMaxCurveData(textureSheetAnimation.frameOverTime));
+        dataObject.AddField("timeMode", (int)(object)textureSheetAnimation.timeMode);
+        dataObject.AddField("fps", textureSheetAnimation.fps);
+
         sysData.AddField("textureSheetAnimation", dataObject);
     }
 
@@ -511,7 +565,7 @@ internal class ParticleSystemData
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystem", isOverride);
         JSONObject particleSystemData = writeBaseNode(particleSystem, compData);
         writeEmission(particleSystem, particleSystemData);
-        //writeShape(particleSystem, compData, map, resMap);
+        writeShape(particleSystem, compData, map, resMap);
         writeVelocityOverLifetime(particleSystem, particleSystemData);
         writeLimitVelocityOverLifetime(particleSystem, particleSystemData);
         writeLifetimeByEmitterSpeed(particleSystem, particleSystemData);
@@ -526,8 +580,9 @@ internal class ParticleSystemData
         // writeInheritVelocity(particleSystem, compData);
         writeNoise(particleSystem, particleSystemData);
         writeCollision(particleSystem, particleSystemData, map);
-        // writeTextureSheetAnimation(particleSystem, compData);
         writeSubEmittersModule(particleSystem, particleSystemData, map);
+        writeTextureSheetAnimation(particleSystem, particleSystemData);
+        writeTrails(particleSystem, particleSystemData, map, resMap);
 
         return compData;
     }
