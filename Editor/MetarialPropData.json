@@ -288,7 +288,7 @@
         ]
     },
     "Particles/Standard Surface": {
-        "targeName": "Particle",
+        "targeName": "CpuParticle3D",
         "textures": [
             {
                 "uName": "_MainTex",
@@ -352,7 +352,7 @@
         ]
     },
     "Particles/Standard Unlit": {
-        "targeName": "Particle",
+        "targeName": "CpuParticle3D",
         "textures": [
             {
                 "uName": "_MainTex",

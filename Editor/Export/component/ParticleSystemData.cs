@@ -188,7 +188,7 @@ internal class ParticleSystemData
         shapObject.AddField("arc", shape.arc);
         shapObject.AddField("arcMode", (int)(object)shape.arcMode);
         shapObject.AddField("arcSpread", shape.arcSpread);
-        shapObject.AddField("arcSpeed", (int)(object)shape.arcSpeed);
+        shapObject.AddField("arcSpeed", writeMinMaxCurveData(shape.arcSpeed));
         shapObject.AddField("position", JsonUtils.GetVector3Object(shape.position));
         shapObject.AddField("rotation", JsonUtils.GetVector3Object(shape.rotation));
         shapObject.AddField("scale", JsonUtils.GetVector3Object(shape.scale));
