@@ -394,7 +394,8 @@ internal class ParticleSystemData
         JSONObject subDatas = new JSONObject(JSONObject.Type.ARRAY);
         for (int i = 0; i < count; i++)
         {
-            subDatas.Add(map.getRefNodeIdObjet(externalForces.GetInfluence(i).gameObject, "ParticleSystemForceField"));
+            if (externalForces.GetInfluence(i))
+                subDatas.Add(map.getRefNodeIdObjet(externalForces.GetInfluence(i).gameObject, "ParticleSystemForceField"));
         }
         dataObject.AddField("influences", subDatas);
 
@@ -439,7 +440,8 @@ internal class ParticleSystemData
         JSONObject subDatas = new JSONObject(JSONObject.Type.ARRAY);
         for (int i = 0; i < count; i++)
         {
-            subDatas.Add(map.getRefNodeIdObjet(collision.GetPlane(i).gameObject));
+            if (collision.GetPlane(i))
+                subDatas.Add(map.getRefNodeIdObjet(collision.GetPlane(i).gameObject));
         }
         dataObject.AddField("planeSps", subDatas);
         dataObject.AddField("dampen", writeMinMaxCurveData(collision.dampen));
@@ -551,7 +553,8 @@ internal class ParticleSystemData
             JSONObject subData = new JSONObject(JSONObject.Type.OBJECT);
             JsonUtils.SetComponentsType(subData, "PlusSubmitterData");
             ParticleSystem subSys = subEmitters.GetSubEmitterSystem(i);
-            subData.AddField("particleSystem", map.getRefNodeIdObjet(subSys.gameObject));
+            if (subSys)
+                subData.AddField("particleSystem", map.getRefNodeIdObjet(subSys.gameObject));
             subData.AddField("type", (int)(object)subEmitters.GetSubEmitterType(i));
             subData.AddField("properties", (int)(object)subEmitters.GetSubEmitterProperties(i));
             subData.AddField("probability", subEmitters.GetSubEmitterEmitProbability(i));
