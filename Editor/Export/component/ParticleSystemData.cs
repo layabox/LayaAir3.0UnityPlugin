@@ -124,7 +124,7 @@ internal class ParticleSystemData
     private static void writeVelocityOverLifetime(ParticleSystem particleSystem, JSONObject sysData)
     {
         VelocityOverLifetimeModule velocityOverLifetime = particleSystem.velocityOverLifetime;
-        if (!velocityOverLifetime.enabled) return;
+        //if (!velocityOverLifetime.enabled) return;
         Vector3 spaceChage = SpaceUtils.getDirection();
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusVelocityOverLife");
@@ -565,7 +565,7 @@ internal class ParticleSystemData
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystem", isOverride);
         JSONObject particleSystemData = writeBaseNode(particleSystem, compData);
         writeEmission(particleSystem, particleSystemData);
-        writeShape(particleSystem, compData, map, resMap);
+        writeShape(particleSystem, particleSystemData, map, resMap);
         writeVelocityOverLifetime(particleSystem, particleSystemData);
         writeLimitVelocityOverLifetime(particleSystem, particleSystemData);
         writeLifetimeByEmitterSpeed(particleSystem, particleSystemData);
