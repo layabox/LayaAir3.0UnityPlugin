@@ -240,8 +240,8 @@ internal class ParticleSystemData
         dataObject.AddField("limitZ", writeMinMaxCurveData(limitVelocityOverLifetime.limitZ));
         dataObject.AddField("dampen", limitVelocityOverLifetime.dampen);
         dataObject.AddField("drag", writeMinMaxCurveData(limitVelocityOverLifetime.drag));
-        dataObject.AddField("multiplyDragBySize", limitVelocityOverLifetime.multiplyDragByParticleSize);
-        dataObject.AddField("multiplyDragByVelocity", limitVelocityOverLifetime.multiplyDragByParticleVelocity);
+        dataObject.AddField("multiplyDragByParticleSize", limitVelocityOverLifetime.multiplyDragByParticleSize);
+        dataObject.AddField("multiplyDragByParticleVelocity", limitVelocityOverLifetime.multiplyDragByParticleVelocity);
         sysData.AddField("limitVelocityOverLifetime", dataObject);
     }
     private static void writeColorOverLifetime(UnityEngine.ParticleSystem particleSystem, JSONObject sysData)
