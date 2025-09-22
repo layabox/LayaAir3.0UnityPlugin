@@ -1,8 +1,8 @@
 using UnityEngine;
-using static UnityEngine.ParticleSystemForceField;
+// using static UnityEngine.ParticleSystemForceField;
 internal class ParticleSystemForceFieldData
 {
-    internal static JSONObject GetParticleSystemForceField(ParticleSystemForceField particleSystemForceField, bool isOverride, NodeMap map, ResoureMap resoureMap)
+    internal static JSONObject GetParticleSystemForceField(UnityEngine.ParticleSystemForceField particleSystemForceField, bool isOverride, NodeMap map, ResoureMap resoureMap)
     {
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystemForceField", isOverride);
         compData.AddField("shape", (int)(object)particleSystemForceField.shape);

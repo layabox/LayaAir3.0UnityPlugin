@@ -224,7 +224,6 @@ internal class ResoureMap
         else if (comp is ParticleSystemRenderer)
         {
             ParticleSystemData.GetParticleSystemRenderer(comp as ParticleSystemRenderer, isOverride, this, particleSystemData);
-            //compents.Add(ParticleSystemData.GetParticleSystemRenderer(comp as ParticleSystemRenderer, isOverride,this));
         }
     }
 
