@@ -273,7 +273,7 @@ internal class ResoureMap
         GameObject gameObject = skinnedMeshRenderer.gameObject;
         for (var i = 0; i < materials.Length; i++)
         {
-            sharedMaterials.Add(this.GetMaterialData(materials[i]));
+            if(materials[i]) sharedMaterials.Add(this.GetMaterialData(materials[i]));
         }
 
         JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
@@ -616,13 +616,13 @@ internal class ResoureMap
 
     public JSONObject GetMaterialData(Material material)
     {
+        if(null == material){
+            return null;
+        }
         JSONObject materFiledata = new JSONObject(JSONObject.Type.OBJECT);
         materFiledata.AddField("_$type", "Material");
-        if (material != null)
-        {
-            MaterialFile jsonFile = this.GetMaterialFile(material);
-            materFiledata.AddField("_$uuid", jsonFile.uuid);
-        }
+        MaterialFile jsonFile = this.GetMaterialFile(material);
+        materFiledata.AddField("_$uuid", jsonFile.uuid);
         return materFiledata;
     }
 
