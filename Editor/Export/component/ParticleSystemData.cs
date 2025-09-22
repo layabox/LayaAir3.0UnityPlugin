@@ -541,6 +541,7 @@ internal class ParticleSystemData
         compData.AddField("cameraVelocityScale", renderer.cameraVelocityScale);
         compData.AddField("velocityScale", renderer.velocityScale);
         compData.AddField("lengthScale", renderer.lengthScale);
+        compData.AddField("flip",  JsonUtils.GetVector3Object(renderer.flip));
         if (renderer.mesh)
         {
             compData.AddField("sharedMesh", map.GetMeshData(renderer.mesh, renderer));
