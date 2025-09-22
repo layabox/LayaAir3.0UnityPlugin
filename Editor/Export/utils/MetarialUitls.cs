@@ -571,7 +571,7 @@ internal class MetarialUitls
     {
         int renderQueue = material.renderQueue;
         props.AddField("renderQueue", renderQueue);
-        RenderMode blendMode = RenderMode.Opaque;
+        //RenderMode blendMode = RenderMode.Opaque;
         if(renderQueue < 2450)
         {
             props.AddField("materialRenderMode", 0);
