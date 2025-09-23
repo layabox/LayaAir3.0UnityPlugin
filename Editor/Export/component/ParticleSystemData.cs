@@ -401,7 +401,9 @@ internal class ParticleSystemData
         dataObject.AddField("octaveScale", noise.octaveScale);
         dataObject.AddField("quality", (int)(object)noise.quality);
         dataObject.AddField("remapEnabled", noise.remapEnabled);
-        dataObject.AddField("remap", writeMinMaxCurveData(noise.remap));
+        dataObject.AddField("remapX", writeMinMaxCurveData(noise.remapX));
+        dataObject.AddField("remapY", writeMinMaxCurveData(noise.remapY));
+        dataObject.AddField("remapZ", writeMinMaxCurveData(noise.remapZ));
 
 
         dataObject.AddField("positionAmount", writeMinMaxCurveData(noise.positionAmount));
@@ -459,8 +461,6 @@ internal class ParticleSystemData
         dataObject.AddField("numTiles", JsonUtils.GetVector2Object(textureSheetAnimation.numTilesX, textureSheetAnimation.numTilesY));
         dataObject.AddField("animation", (int)(object)textureSheetAnimation.animation);
         dataObject.AddField("frameOverTime", writeMinMaxCurveData(textureSheetAnimation.frameOverTime));
-        dataObject.AddField("startFrame", writeMinMaxCurveData(textureSheetAnimation.startFrame));
-        dataObject.AddField("cycleCount", textureSheetAnimation.cycleCount);
         dataObject.AddField("speedRange", JsonUtils.GetVector2Object(textureSheetAnimation.speedRange));
         dataObject.AddField("rowIndex", textureSheetAnimation.rowIndex);
 
@@ -475,7 +475,8 @@ internal class ParticleSystemData
 
         dataObject.AddField("timeMode", (int)(object)textureSheetAnimation.timeMode);
         dataObject.AddField("fps", textureSheetAnimation.fps);
-
+        dataObject.AddField("startFrame", writeMinMaxCurveData(textureSheetAnimation.startFrame));
+        dataObject.AddField("cycleCount", textureSheetAnimation.cycleCount);
         sysData.AddField("textureSheetAnimation", dataObject);
     }
 
@@ -537,17 +538,15 @@ internal class ParticleSystemData
         compData.AddField("renderMode", (int)(object)renderer.renderMode);
         compData.AddField("sortMode", (int)(object)renderer.sortMode);
         compData.AddField("alignment", (int)(object)renderer.alignment);
-        
-        if(renderer.sharedMaterial){compData.AddField("material", map.GetMaterialData(renderer.sharedMaterial));}
 
-        
+        if (renderer.sharedMaterial) { compData.AddField("material", map.GetMaterialData(renderer.sharedMaterial)); }
 
-        if(renderer.trailMaterial)compData.AddField("trailMaterial", map.GetMaterialData(renderer.trailMaterial));
+        if (renderer.trailMaterial) compData.AddField("trailMaterial", map.GetMaterialData(renderer.trailMaterial));
 
         compData.AddField("cameraVelocityScale", renderer.cameraVelocityScale);
         compData.AddField("velocityScale", renderer.velocityScale);
         compData.AddField("lengthScale", renderer.lengthScale);
-        compData.AddField("flip",  JsonUtils.GetVector3Object(renderer.flip));
+        compData.AddField("flip", JsonUtils.GetVector3Object(renderer.flip));
         if (renderer.mesh)
         {
             compData.AddField("sharedMesh", map.GetMeshData(renderer.mesh, renderer));
