@@ -547,10 +547,23 @@ internal class ParticleSystemData
         compData.AddField("velocityScale", renderer.velocityScale);
         compData.AddField("lengthScale", renderer.lengthScale);
         compData.AddField("flip", JsonUtils.GetVector3Object(renderer.flip));
-        if (renderer.mesh)
+        JSONObject meshes = new JSONObject(JSONObject.Type.ARRAY);
+        var meshCount = renderer.meshCount;
+
+        Mesh[] particleMeshes = new Mesh[meshCount];
+        renderer.GetMeshes(particleMeshes); // 将网格填充到数组中
+        for (int i = 0; i < meshCount; i++)
         {
-            compData.AddField("sharedMesh", map.GetMeshData(renderer.mesh, renderer));
+            JSONObject meshItemObj = new JSONObject(JSONObject.Type.OBJECT);
+            JsonUtils.SetComponentsType(meshItemObj, "MeshItem");
+            meshItemObj.AddField("mesh", map.GetMeshData(particleMeshes[i], renderer));
+            meshes.Add(meshItemObj);
         }
+        compData.AddField("meshes", meshes);
+        // if (renderer.mesh)
+        // {
+        //     compData.AddField("sharedMesh", map.GetMeshData(renderer.mesh, renderer));
+        // }
         compData.AddField("pivot", JsonUtils.GetVector3Object(renderer.pivot));
         return compData;
     }

@@ -39,6 +39,7 @@ internal class JsonUtils
         JsonUtils.registclassMap.Add("PlusCollision", "911a7d8f-ee26-415d-b402-7188e1bb87c0");
         JsonUtils.registclassMap.Add("ParticleSystemForceField", "5cb29556-5d65-416d-b203-f7126bad146b");
         JsonUtils.registclassMap.Add("PlusTrails", "c1c63215-5155-415b-9847-61741dc62b6c");
+        JsonUtils.registclassMap.Add("MeshItem", "17726b3d-5c87-416c-a078-c29b86064394");
 
 
         JsonUtils.registclassMap.Add("PlusBoxShape", "cfdbb0bc-27ab-4d63-8b94-cdcc24a97d2f");
