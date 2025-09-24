@@ -30,7 +30,7 @@ internal class JsonUtils
         JsonUtils.registclassMap.Add("PlusColorBySpeed", "71b74bb3-558b-4dca-97cc-d444781d3caf");
         JsonUtils.registclassMap.Add("PlusSizeBySpeed", "cdd7f2a1-0ba0-415d-a9c5-22406b15e2c1");
         JsonUtils.registclassMap.Add("PlusRotationBySpeed", "172e8ace-f8e2-4df1-b5c2-d50fe17f2740");
-        JsonUtils.registclassMap.Add("PlusInheritVelocity", "f76eb54c-1957-4844-ae8d-0a0e66953036");
+        JsonUtils.registclassMap.Add("PlusInheritVelocity", "343fc527-709b-4e99-a00f-71fcec2e77e0");
         JsonUtils.registclassMap.Add("PlusNoise", "c79e0ae7-5cec-4e78-a41b-eafaacc52845");
         JsonUtils.registclassMap.Add("PlusTextureSheetAnimation", "6d5e6217-7a72-4955-859e-148df1efeb8e");
         JsonUtils.registclassMap.Add("PlusSubEmitters", "5fa562e6-998f-446c-b0ba-201a2cfa57f9");

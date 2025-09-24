@@ -337,7 +337,7 @@ internal class ParticleSystemData
         JsonUtils.SetComponentsType(dataObject, "PlusInheritVelocity");
         dataObject.AddField("enable", inheritVelocity.enabled);
         dataObject.AddField("mode", (int)(object)inheritVelocity.mode);
-        dataObject.AddField("curveMultiplier", writeMinMaxCurveData(inheritVelocity.curveMultiplier));
+        dataObject.AddField("curve", writeMinMaxCurveData(inheritVelocity.curveMultiplier));
         sysData.AddField("inheritVelocity", dataObject);
     }
     private static void writeCollision(UnityEngine.ParticleSystem particleSystem, JSONObject sysData, NodeMap map)
