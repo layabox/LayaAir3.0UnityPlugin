@@ -71,6 +71,9 @@ internal class ParticleSystemData
         // //playOnAwake
         mainObject.AddField("playOnAwake", particleSystem.main.playOnAwake);
 
+        mainObject.AddField("emitterVelocityMode", (int)(object)particleSystem.main.emitterVelocityMode);
+        mainObject.AddField("emitterVelocity", JsonUtils.GetVector3Object(particleSystem.main.emitterVelocity));
+
 
 
         mainObject.AddField("maxParticles", particleSystem.main.maxParticles);
@@ -521,7 +524,7 @@ internal class ParticleSystemData
         writeRotationOverLifetime(particleSystem, particleSystemData);
         writeRotationBySpeed(particleSystem, particleSystemData);
         writeExternalForces(particleSystem, particleSystemData, map);
-        //writeInheritVelocity(particleSystem, particleSystemData);
+        writeInheritVelocity(particleSystem, particleSystemData);
         writeNoise(particleSystem, particleSystemData);
         writeCollision(particleSystem, particleSystemData, map);
         writeSubEmittersModule(particleSystem, particleSystemData, map);
