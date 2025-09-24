@@ -71,8 +71,16 @@ internal class ParticleSystemData
         // //playOnAwake
         mainObject.AddField("playOnAwake", particleSystem.main.playOnAwake);
 
-        mainObject.AddField("emitterVelocityMode", (int)(object)particleSystem.main.emitterVelocityMode);
-        mainObject.AddField("emitterVelocity", JsonUtils.GetVector3Object(particleSystem.main.emitterVelocity));
+
+        dynamic dmain = particleSystem.main;
+        try
+        {
+            mainObject.AddField("emitterVelocityMode", (int)(object)dmain.emitterVelocityMode);
+            mainObject.AddField("emitterVelocity", JsonUtils.GetVector3Object(dmain.emitterVelocity));
+        }
+        catch
+        {
+        }
 
 
 
