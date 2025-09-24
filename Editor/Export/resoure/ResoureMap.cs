@@ -214,8 +214,7 @@ internal class ResoureMap
         }
         else if (comp is ParticleSystem)
         {
-            particleSystemData = ParticleSystemData.GetParticleSystem(comp as ParticleSystem, isOverride, map, this);
-            compents.Add(particleSystemData);
+
         }
         else if (comp is ParticleSystemForceField)
         {
@@ -223,7 +222,15 @@ internal class ResoureMap
         }
         else if (comp is ParticleSystemRenderer)
         {
-            ParticleSystemData.GetParticleSystemRenderer(comp as ParticleSystemRenderer, isOverride, this, particleSystemData);
+            ParticleSystem ps = gameObject.GetComponent("ParticleSystem") as ParticleSystem;
+            if (null != ps)
+            {
+                particleSystemData = ParticleSystemData.GetParticleSystem(ps, isOverride, map, this);
+                compents.Add(particleSystemData);
+                ParticleSystemData.GetParticleSystemRenderer(comp as ParticleSystemRenderer, isOverride, this, particleSystemData);
+            }
+
+
         }
     }
 
@@ -273,7 +280,7 @@ internal class ResoureMap
         GameObject gameObject = skinnedMeshRenderer.gameObject;
         for (var i = 0; i < materials.Length; i++)
         {
-            if(materials[i]) sharedMaterials.Add(this.GetMaterialData(materials[i]));
+            if (materials[i]) sharedMaterials.Add(this.GetMaterialData(materials[i]));
         }
 
         JSONObject compData = new JSONObject(JSONObject.Type.OBJECT);
@@ -616,7 +623,8 @@ internal class ResoureMap
 
     public JSONObject GetMaterialData(Material material)
     {
-        if(null == material){
+        if (null == material)
+        {
             return null;
         }
         JSONObject materFiledata = new JSONObject(JSONObject.Type.OBJECT);
