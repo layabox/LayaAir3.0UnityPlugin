@@ -290,10 +290,6 @@
         "targeName": "CpuParticle3D",
         "textures": [
             {
-                "uName": "_EmisColor",
-                "layaName": "u_AlbedoColor"
-            },
-            {
                 "uName": "_MainTex",
                 "layaName": "u_AlbedoTexture",
                 "defind": "ALBEDOTEXTURE"
@@ -303,10 +299,6 @@
     "Legacy Shaders/Particles/VertexLit Blended": {
         "targeName": "CpuParticle3D",
         "textures": [
-            {
-                "uName": "_EmisColor",
-                "layaName": "u_AlbedoColor"
-            },
             {
                 "uName": "_MainTex",
                 "layaName": "u_AlbedoTexture",
