@@ -571,7 +571,7 @@ internal class ParticleSystemData
     private static JSONObject writeMinMaxGradientData(ParticleSystem.MinMaxGradient gradient)
     {
         JSONObject curveData = new JSONObject(JSONObject.Type.OBJECT);
-        JsonUtils.SetComponentsType(curveData, "MinMaxGradient");
+        //JsonUtils.SetComponentsType(curveData, "MinMaxGradient");
         writeGradientData(gradient.gradient, "gradient", curveData);
         writeGradientData(gradient.gradientMax, "gradientMax", curveData);
         writeGradientData(gradient.gradientMin, "gradientMin", curveData);
