@@ -521,7 +521,7 @@ internal class ParticleSystemData
         writeRotationOverLifetime(particleSystem, particleSystemData);
         writeRotationBySpeed(particleSystem, particleSystemData);
         writeExternalForces(particleSystem, particleSystemData, map);
-        writeInheritVelocity(particleSystem, particleSystemData);
+        //writeInheritVelocity(particleSystem, particleSystemData);
         writeNoise(particleSystem, particleSystemData);
         writeCollision(particleSystem, particleSystemData, map);
         writeSubEmittersModule(particleSystem, particleSystemData, map);
