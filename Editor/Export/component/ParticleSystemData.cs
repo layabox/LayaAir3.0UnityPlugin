@@ -589,7 +589,7 @@ internal class ParticleSystemData
             return;
         }
         JSONObject gradientData = new JSONObject(JSONObject.Type.OBJECT);
-        JsonUtils.SetComponentsType(gradientData, "Gradient");
+        //JsonUtils.SetComponentsType(gradientData, "Gradient");
         //alpha
         {
             JSONObject alphaElements = new JSONObject(JSONObject.Type.OBJECT);
