@@ -33,7 +33,7 @@ public class ServeConfig
     private bool _isGetConfig = false;
     public IEnumerator initConfig(Action ac)
     {
-        string url = "https://ldc-1251285021.cos.ap-shanghai.myqcloud.com/layaair/unity/ExportPlugin.conf";
+        string url = "https://ldc-1251285021.file.myqcloud.com/layaair/unity/ExportPlugin.conf";
         UnityWebRequest request = UnityWebRequest.Get(url);
         yield return request.SendWebRequest();
 
