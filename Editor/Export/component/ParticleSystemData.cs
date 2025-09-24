@@ -572,10 +572,10 @@ internal class ParticleSystemData
     {
         JSONObject curveData = new JSONObject(JSONObject.Type.OBJECT);
         //JsonUtils.SetComponentsType(curveData, "MinMaxGradient");
-        writeGradientData(gradient.gradient, "gradient", curveData);
+        //writeGradientData(gradient.gradient, "gradient", curveData);
         writeGradientData(gradient.gradientMax, "gradientMax", curveData);
         writeGradientData(gradient.gradientMin, "gradientMin", curveData);
-        curveData.AddField("color", JsonUtils.GetColorObject(gradient.color));
+        //curveData.AddField("color", JsonUtils.GetColorObject(gradient.color));
         curveData.AddField("colorMax", JsonUtils.GetColorObject(gradient.colorMax));
         curveData.AddField("colorMin", JsonUtils.GetColorObject(gradient.colorMin));
         curveData.AddField("mode", (int)(object)gradient.mode);
