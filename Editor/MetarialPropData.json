@@ -286,6 +286,54 @@
             }
         ]
     },
+    "Legacy Shaders/Particles/Alpha Blended": {
+        "targeName": "CpuParticle3D",
+        "textures": [
+            {
+                "uName": "_EmisColor",
+                "layaName": "u_AlbedoColor"
+            },
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
+        ]
+    },
+    "Legacy Shaders/Particles/VertexLit Blended": {
+        "targeName": "CpuParticle3D",
+        "textures": [
+            {
+                "uName": "_EmisColor",
+                "layaName": "u_AlbedoColor"
+            },
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
+        ]
+    },
+    "Mobile/Particles/Additive": {
+        "targeName": "CpuParticle3D",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
+        ]
+    },
+    "Legacy Shaders/Particles/Multiply (Double)": {
+        "targeName": "CpuParticle3D",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_AlbedoTexture",
+                "defind": "ALBEDOTEXTURE"
+            }
+        ]
+    },
     "Legacy Shaders/Particles/Additive": {
         "targeName": "CpuParticle3D",
         "textures": [

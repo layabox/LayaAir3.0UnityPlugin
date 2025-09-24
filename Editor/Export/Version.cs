@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using static LanguageConfig;
+//using static LanguageConfig;
 
 public class Setting : EditorWindow
 {
@@ -24,14 +24,14 @@ public class Setting : EditorWindow
         string[] selections = new[] { "English", "中文" };
         int languageIndex = EditorGUILayout.Popup("Language",sleIndex, selections);
         sleIndex = languageIndex;
-        languages currentLanguage = languages.English;
+        LanguageConfig.languages currentLanguage = LanguageConfig.languages.English;
         switch (languageIndex)
         {
-            case 0: currentLanguage = languages.English;
+            case 0: currentLanguage = LanguageConfig.languages.English;
                 break;
-            case 1: currentLanguage = languages.Chinese;
+            case 1: currentLanguage = LanguageConfig.languages.Chinese;
                 break;
-            default: currentLanguage = languages.Chinese;
+            default: currentLanguage = LanguageConfig.languages.Chinese;
                 break;
         }
         if (LanguageConfig.setLanguages(currentLanguage))
