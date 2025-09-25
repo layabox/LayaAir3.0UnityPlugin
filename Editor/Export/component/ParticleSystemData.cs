@@ -49,7 +49,7 @@ internal class ParticleSystemData
         }
         else
         {
-            mainObject.AddField("startRotation", writeMinMaxCurveData(main.startRotation, Mathf.Rad2Deg));
+            mainObject.AddField("startRotation", writeMinMaxCurveData(main.startRotation, -Mathf.Rad2Deg));
 
         }
 
