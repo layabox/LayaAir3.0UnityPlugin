@@ -191,6 +191,7 @@ internal class ParticleSystemData
         ParticleSystem.ShapeModule shape = particleSystem.shape;
         shapObject.AddField("enable", shape.enabled);
         shapObject.AddField("type", (int)(object)shape.shapeType);
+        shapObject.AddField("angle", shape.angle);
         shapObject.AddField("radius", shape.radius);
         shapObject.AddField("radiusThickness", shape.radiusThickness);
         shapObject.AddField("arc", shape.arc);
@@ -471,6 +472,10 @@ internal class ParticleSystemData
         dataObject.AddField("enable", textureSheetAnimation.enabled);
         dataObject.AddField("numTiles", JsonUtils.GetVector2Object(textureSheetAnimation.numTilesX, textureSheetAnimation.numTilesY));
         dataObject.AddField("animation", (int)(object)textureSheetAnimation.animation);
+        // dataObject.AddField("frameOverTimeMultiplier", textureSheetAnimation.frameOverTimeMultiplier);
+        // Debug.Log("frameOverTimeMultiplier：" + textureSheetAnimation.frameOverTimeMultiplier);
+        // Debug.Log("constantMin:" + textureSheetAnimation.frameOverTime.constantMin);
+        // Debug.Log("constantMax:" + textureSheetAnimation.frameOverTime.constantMax);
         dataObject.AddField("frameOverTime", writeMinMaxCurveData(textureSheetAnimation.frameOverTime));
         dataObject.AddField("speedRange", JsonUtils.GetVector2Object(textureSheetAnimation.speedRange));
         dataObject.AddField("rowIndex", textureSheetAnimation.rowIndex);
