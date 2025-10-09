@@ -26,7 +26,7 @@ public class LayaAir3D : EditorWindow
    
     
 
-    [MenuItem("LayaAir3D 3.0/Export Tool", false, 1)]
+    [MenuItem("LayaAir3 Plugin/Export Tool", false, 1)]
     public static void initLayaExport()
     {
         LanguageConfig.configLanguage();
@@ -35,13 +35,13 @@ public class LayaAir3D : EditorWindow
         Util.FileUtil.FileStreamLoadTexture(Util.FileUtil.getPluginResUrl("LayaResouce/Export.png"), exporttu);
     }
 
-    [MenuItem("LayaAir3D 3.0/Help/Study")]
+    [MenuItem("LayaAir3 Plugin/Help/Study")]
     static void initLayaStudy()
     {
         ServeConfig.getInstance().openurl(URLType.StudyURL);
     }
 
-    [MenuItem("LayaAir3D 3.0/Help/Answsers")]
+    [MenuItem("LayaAir3 Plugin/Help/Answsers")]
     static void initLayaAsk()
     {
         ServeConfig.getInstance().openurl(URLType.LayaAskURL);
