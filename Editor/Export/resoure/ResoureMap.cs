@@ -99,6 +99,11 @@ internal class ResoureMap
 
     public AnimationClipFile GetAnimationClipFile(AnimationClip aniclip, GameObject gameObject)
     {
+        if (null == gameObject)
+        {
+            Debug.LogWarning("gameObject is null, AnimationClip: " + aniclip.name + " is missing");
+            return null;
+        }
         string laniPath = AssetsUtil.GetAnimationClipPath(aniclip);
 
         if (!this.HaveFileData(laniPath))
@@ -453,6 +458,11 @@ internal class ResoureMap
 
     private JSONObject GetAnimaterLayerData(AnimatorControllerLayer layer, GameObject gameObject, bool isbaseLayer)
     {
+        if (null == gameObject)
+        {
+            Debug.LogWarning("gameObject is null, AnimatorControllerLayer: " + layer.name + " is missing");
+            return null;
+        }
         JSONObject layarNode = new JSONObject(JSONObject.Type.OBJECT);
         layarNode.AddField("_$type", "AnimatorControllerLayer");
         layarNode.AddField("playOnWake", true);

@@ -66,10 +66,15 @@ class GameObjectUitls
 
     public static bool isCameraOrLight(GameObject gameObject)
     {
+        if (null == gameObject)
+        {
+            return false;
+        }
         if (gameObject.GetComponent<Camera>() != null)
         {
             return true;
-        }else if (gameObject.GetComponent<Light>() != null)
+        }
+        else if (gameObject.GetComponent<Light>() != null)
         {
             return true;
         }
@@ -78,7 +83,7 @@ class GameObjectUitls
             return false;
         }
     }
-   
+
 
     private const float k_MaxByteForOverexposedColor = 0.7490196078431373f;
     public static void DecomposeHdrColor(Color linearColorHdr, out Color baseLinearColor, out float exposure)
@@ -105,9 +110,9 @@ class GameObjectUitls
         }
         /*if (QualitySettings.activeColorSpace == ColorSpace.Gamma)
         {*/
-            r = Mathf.LinearToGammaSpace(r);
-            g = Mathf.LinearToGammaSpace(g);
-            b = Mathf.LinearToGammaSpace(b);
+        r = Mathf.LinearToGammaSpace(r);
+        g = Mathf.LinearToGammaSpace(g);
+        b = Mathf.LinearToGammaSpace(b);
         //}
         baseLinearColor.r = r;
         baseLinearColor.g = g;
@@ -115,13 +120,13 @@ class GameObjectUitls
 
     }
 
-    public static void MergeHdrColor( Color baseLinearColor, float exposure, out Color linearColorHdr)
+    public static void MergeHdrColor(Color baseLinearColor, float exposure, out Color linearColorHdr)
     {
-        var scaleFactor =(float) Mathf.Pow(2.0f, exposure);
+        var scaleFactor = (float)Mathf.Pow(2.0f, exposure);
         // var scaleFactor =(float)Math.Exp(Mathf.Log(2f) * exposure) / 255f  ;
-        linearColorHdr.r = baseLinearColor.r*scaleFactor;
-        linearColorHdr.g = baseLinearColor.g*scaleFactor;
-        linearColorHdr.b = baseLinearColor.b*scaleFactor;
+        linearColorHdr.r = baseLinearColor.r * scaleFactor;
+        linearColorHdr.g = baseLinearColor.g * scaleFactor;
+        linearColorHdr.b = baseLinearColor.b * scaleFactor;
         linearColorHdr.a = baseLinearColor.a;
     }
 
@@ -223,6 +228,11 @@ class GameObjectUitls
 
     public static void writeClip(AnimationClip aniclip, FileStream fs, GameObject gameObject, string clipName)
     {
+        if (gameObject == null)
+        {
+            Debug.LogWarning("gameObject is null, Aniamtor: " + clipName + " is missing");
+            return;
+        }
 
         List<string> stringDatas = new List<string>();
         stringDatas.Add("ANIMATIONS");
@@ -267,17 +277,27 @@ class GameObjectUitls
                     {
                         stringDatas.Add(strArr[m]);
                     }
-                    Transform ct = child.transform.Find(strArr[m]);
-                    if (ct)
+                    if (child != null && child.transform != null)
                     {
-                        child = ct.gameObject;
+                        Transform ct = child.transform.Find(strArr[m]);
+                        if (ct)
+                        {
+                            child = ct.gameObject;
+                        }
+                        else
+                        {
+                            child = null;
+                            Debug.LogWarning(gameObject.name + "'s Aniamtor: " + clipName + " clip " + strArr[m] + " is missing");
+                            break;
+                        }
                     }
                     else
                     {
                         child = null;
-                        Debug.LogWarning(gameObject.name + "'s Aniamtor: " + clipName + " clip " + strArr[m] + " is missing");
+                        Debug.LogWarning("child is null, Aniamtor: " + clipName + " clip " + strArr[m] + " is missing");
                         break;
                     }
+
                 }
                 object targetObject = AnimationUtility.GetAnimatedObject(gameObject, editorCurveBindings[j]);
                 EditorCurveBinding binding = editorCurveBindings[j];
@@ -385,13 +405,13 @@ class GameObjectUitls
         for (int j = 0; j < startTimeList.Count; j++)
         {
             Util.FileUtil.WriteData(fs, (float)startTimeList[j]);
-        } 
+        }
 
         Util.FileUtil.WriteData(fs, (UInt16)stringDatas.IndexOf(clipName));//动画名字符索引
 
         float aniTotalTime = startTimeList.Count == 0 ? 0.0f : (float)startTimeList[startTimeList.Count - 1];
         Util.FileUtil.WriteData(fs, aniTotalTime);///动画总时长
-        if(aniclip.wrapMode == WrapMode.Loop)
+        if (aniclip.wrapMode == WrapMode.Loop)
         {
             Util.FileUtil.WriteData(fs, true);
         }
@@ -399,7 +419,7 @@ class GameObjectUitls
         {
             Util.FileUtil.WriteData(fs, aniclip.isLooping);//动画是否循环
         }
-       
+
 
         Util.FileUtil.WriteData(fs, (UInt16)clipFrameRate);//frameRate
 
