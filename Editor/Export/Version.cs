@@ -8,7 +8,7 @@ public class Setting : EditorWindow
     int sleIndex = 0;
 
     
-    [MenuItem("LayaAir3D 3.0/Setting")]
+    [MenuItem("LayaAir3 Plugin/Setting")]
     public static void initTutorial()
     {
         setting = (Setting)EditorWindow.GetWindow(typeof(Setting));
