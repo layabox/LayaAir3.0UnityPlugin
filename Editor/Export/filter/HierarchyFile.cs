@@ -66,6 +66,9 @@ internal class HierarchyFile
             // 检查是否启用批量导出一级节点
             if (ExportConfig.BatchMade)
             {
+                // 用于跟踪已使用的文件名，处理同名节点
+                Dictionary<string, int> usedFileNames = new Dictionary<string, int>();
+                
                 // 批量导出一级节点：将每个根节点的一级子节点分别导出为独立的 .lh 文件
                 for (int i = 0; i < gameObjects.Length; i++)
                 {
@@ -85,8 +88,20 @@ internal class HierarchyFile
                             continue;
                         }
                         
-                        // 将每个一级子节点导出为独立的 .lh 文件
-                        string fileName = GameObjectUitls.cleanIllegalChar(childObject.name, true) + ".lh";
+                        // 生成唯一的文件名，处理同名节点
+                        string baseName = GameObjectUitls.cleanIllegalChar(childObject.name, true);
+                        string fileName;
+                        if (usedFileNames.ContainsKey(baseName))
+                        {
+                            usedFileNames[baseName]++;
+                            fileName = baseName + "_" + usedFileNames[baseName] + ".lh";
+                        }
+                        else
+                        {
+                            usedFileNames[baseName] = 0;
+                            fileName = baseName + ".lh";
+                        }
+                        
                         this.resouremap.AddExportFile(new JsonFile(fileName, this.nodeMap.getPerfabJson(childObject)));
                     }
                 }
