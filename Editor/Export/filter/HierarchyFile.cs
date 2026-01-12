@@ -62,17 +62,50 @@ internal class HierarchyFile
         else
         {
             GameObject[] gameObjects = scene.GetRootGameObjects();
-            for (int i = 0; i < gameObjects.Length; i++)
+            
+            // 检查是否启用批量导出一级节点
+            if (ExportConfig.BatchMade)
             {
-                GameObject gameObject = gameObjects[i];
-                if (!gameObject.activeInHierarchy && ExportConfig.IgnoreNotActiveGameObject)
+                // 批量导出一级节点：将每个根节点的一级子节点分别导出为独立的 .lh 文件
+                for (int i = 0; i < gameObjects.Length; i++)
                 {
-                    continue;
+                    GameObject rootObject = gameObjects[i];
+                    if (!rootObject.activeInHierarchy && ExportConfig.IgnoreNotActiveGameObject)
+                    {
+                        continue;
+                    }
+                    
+                    // 遍历根节点的一级子节点
+                    Transform rootTransform = rootObject.transform;
+                    for (int j = 0; j < rootTransform.childCount; j++)
+                    {
+                        GameObject childObject = rootTransform.GetChild(j).gameObject;
+                        if (!childObject.activeInHierarchy && ExportConfig.IgnoreNotActiveGameObject)
+                        {
+                            continue;
+                        }
+                        
+                        // 将每个一级子节点导出为独立的 .lh 文件
+                        string fileName = GameObjectUitls.cleanIllegalChar(childObject.name, true) + ".lh";
+                        this.resouremap.AddExportFile(new JsonFile(fileName, this.nodeMap.getPerfabJson(childObject)));
+                    }
                 }
-                GameObject perfabRoot = PerfabFile.getPrefabInstanceRoot(gameObject);
-                if (perfabRoot == null||perfabRoot != gameObject)
+            }
+            else
+            {
+                // 原有逻辑：将根节点导出为 .lh 文件
+                for (int i = 0; i < gameObjects.Length; i++)
                 {
-                    this.resouremap.AddExportFile(new JsonFile(gameObject.name + ".lh", this.nodeMap.getPerfabJson(gameObject)));
+                    GameObject gameObject = gameObjects[i];
+                    if (!gameObject.activeInHierarchy && ExportConfig.IgnoreNotActiveGameObject)
+                    {
+                        continue;
+                    }
+                    GameObject perfabRoot = PerfabFile.getPrefabInstanceRoot(gameObject);
+                    if (perfabRoot == null||perfabRoot != gameObject)
+                    {
+                        this.resouremap.AddExportFile(new JsonFile(gameObject.name + ".lh", this.nodeMap.getPerfabJson(gameObject)));
+                    }
                 }
             }
         }
