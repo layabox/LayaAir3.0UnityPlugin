@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ChineseLanguage>
-  <Scene>场  景</Scene>
-  <Sprite3D>预  设</Sprite3D>
+  <Scene>导出为场景</Scene>
+  <Sprite3D>导出为预设</Sprite3D>
   <MeshSetting> 模 型 设 置 </MeshSetting>
   <IgnoreVerticesUV> 忽 略 顶 点 UV</IgnoreVerticesUV>
   <IgnoreVerticesColor> 忽 略 顶 点 颜 色</IgnoreVerticesColor>
