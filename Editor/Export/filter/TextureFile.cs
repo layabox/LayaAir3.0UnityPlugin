@@ -212,8 +212,14 @@ internal class TextureFile : FileData
     }
 
     override protected string getOutFilePath(string origpath) {
+        if (string.IsNullOrEmpty(origpath))
+        {
+            return "default_texture";
+        }
         string ext = Path.GetExtension(origpath).ToLower();
-        string savePath = origpath.Substring(0, origpath.LastIndexOf("."));
+        int lastDotIndex = origpath.LastIndexOf(".");
+        // 修复：使用 >= 0 来正确处理以点开头的文件名，并确保 lastDotIndex 有效
+        string savePath = lastDotIndex >= 0 ? origpath.Substring(0, lastDotIndex) : origpath;
         this.rgbmEncoding = ext == ".hdr" || ext == ".exr";
         if (this.rgbmEncoding) {
             savePath += ".hdr";

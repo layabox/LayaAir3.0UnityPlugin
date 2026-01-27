@@ -326,7 +326,7 @@ internal class JSONObject {
 #endif
 				} else if(str[0] == '"') {
 					type = Type.STRING;
-					this.str = str.Substring(1, str.Length - 2);
+					this.str = str.Length >= 2 ? str.Substring(1, str.Length - 2) : "";
 				} else {
 					int tokenTmp = 1;
 					/*
