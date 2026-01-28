@@ -805,5 +805,500 @@
                 "layaName": "u_Shininess"
             }
         ]
+    },
+    "Particles/Standard Unlit": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_Color",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Particles/Standard Surface": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_Color",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_Color",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Mobile/Particles/Additive": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_TintColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Mobile/Particles/Alpha Blended": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_TintColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Mobile/Particles/Multiply": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            }
+        ]
+    },
+    "Particles/Additive": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_TintColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Particles/Alpha Blended": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_TintColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Particles/Alpha Blended Premultiply": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_TintColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Particles/Multiply": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            }
+        ]
+    },
+    "Legacy Shaders/Particles/Additive": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_TintColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Legacy Shaders/Particles/Alpha Blended": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_TintColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Legacy Shaders/Particles/Alpha Blended Premultiply": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_TintColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_TintColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Legacy Shaders/Particles/Multiply": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_MainTex",
+                "layaName": "u_texture"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_MainTex_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_MainTex",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            }
+        ]
+    },
+    "Universal Render Pipeline/Particles/Unlit": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_BaseMap",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_BaseColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_BaseMap_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_BaseMap",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_BaseColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Universal Render Pipeline/Particles/Lit": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_BaseMap",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_BaseColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_BaseMap_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_BaseMap",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_BaseColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
+    },
+    "Universal Render Pipeline/Particles/Simple Lit": {
+        "targeName": "PARTICLESHURIKEN",
+        "textures": [
+            {
+                "uName": "_BaseMap",
+                "layaName": "u_texture"
+            }
+        ],
+        "colors": [
+            {
+                "uName": "_BaseColor",
+                "layaName": "u_Tintcolor"
+            }
+        ],
+        "tillOffset": [
+            {
+                "uName": "_BaseMap_ST",
+                "layaName": "u_TilingOffset"
+            }
+        ],
+        "defineds": [
+            {
+                "uName": "_BaseMap",
+                "layaName": "DIFFUSEMAP",
+                "from": 3
+            },
+            {
+                "uName": "_BaseColor",
+                "layaName": "TINTCOLOR",
+                "from": 2
+            }
+        ]
     }
 }

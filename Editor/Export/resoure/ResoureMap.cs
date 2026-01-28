@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
+using LayaExport;
 
 internal class ResoureMap 
 {
@@ -78,10 +79,16 @@ internal class ResoureMap
 
     public MaterialFile GetMaterialFile(Material material)
     {
+        if (material == null)
+        {
+            Debug.LogWarning("LayaAir3D: Material is null, cannot export.");
+            return null;
+        }
+        
         string path = AssetsUtil.GetMaterialPath(material);
         if (!this.HaveFileData(path))
         {
-            this.AddExportFile(new MaterialFile(this,material));
+            this.AddExportFile(new MaterialFile(this, material));
         }
         return this.GetFileData(path) as MaterialFile;
     }
@@ -90,11 +97,29 @@ internal class ResoureMap
     {
         string picturePath = AssetsUtil.GetTextureFile(texture);
         
+        // 检查是否是 Unity 内置资源，内置资源无法导出
+        if (IsBuiltinResource(picturePath))
+        {
+            return null;
+        }
+        
         if (!this.HaveFileData(picturePath))
         {
             this.AddExportFile(new TextureFile(picturePath,texture as Texture2D, isNormal));
         }
         return this.GetFileData(picturePath) as TextureFile;
+    }
+    
+    /// <summary>
+    /// 检查资源路径是否是 Unity 内置资源
+    /// </summary>
+    public static bool IsBuiltinResource(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return true;
+        return path.Contains("unity_builtin_extra") || 
+               path.Contains("unity_default_resources") ||
+               path.StartsWith("Resources/") && !System.IO.File.Exists(path);
     }
 
     public AnimationClipFile GetAnimationClipFile(AnimationClip aniclip, GameObject gameObject)
@@ -203,9 +228,18 @@ internal class ResoureMap
         }else if (comp is ReflectionProbe)
         {
             compents.Add(this.GetReflectionProbe(comp as ReflectionProbe, isOverride));
-        }else if(comp is LODGroup)
+        }        else if(comp is LODGroup)
         {
             compents.Add(this.GetLodGroup(comp as LODGroup, map, isOverride));
+        }
+        else if(comp is ParticleSystem)
+        {
+            // 粒子系统导出 - 使用新版粒子导出器，传递ResoureMap以正确导出材质
+            JSONObject particleComp = LayaParticleExportV2.ExportParticleSystemV2(gameObject, this);
+            if (particleComp != null)
+            {
+                compents.Add(particleComp);
+            }
         }
     }
 
@@ -601,7 +635,10 @@ internal class ResoureMap
         if (material != null)
         {
             MaterialFile jsonFile = this.GetMaterialFile(material);
-            materFiledata.AddField("_$uuid", jsonFile.uuid);
+            if (jsonFile != null)
+            {
+                materFiledata.AddField("_$uuid", jsonFile.uuid);
+            }
         }
         return materFiledata;
     }

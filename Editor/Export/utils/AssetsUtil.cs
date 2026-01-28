@@ -39,10 +39,17 @@ internal class AssetsUtil
     }
     private static string GetFilePath(string path, string exit, string fileName  = null)
     {
-        string basePath = GameObjectUitls.cleanIllegalChar(path.Split('.')[0], false);
+        if (string.IsNullOrEmpty(path))
+        {
+            return (fileName != null ? GameObjectUitls.cleanIllegalChar(fileName, true) : "default") + exit;
+        }
+        // 修复：安全地获取不带扩展名的路径
+        int dotIndex = path.LastIndexOf('.');
+        string basePath = dotIndex >= 0 ? path.Substring(0, dotIndex) : path;
+        basePath = GameObjectUitls.cleanIllegalChar(basePath, false);
         if (fileName != null)
         {
-            basePath += "-" + GameObjectUitls.cleanIllegalChar(fileName,true);
+            basePath += "-" + GameObjectUitls.cleanIllegalChar(fileName, true);
         }
         return basePath + exit;
     }
