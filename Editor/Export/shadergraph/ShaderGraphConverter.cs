@@ -295,14 +295,17 @@ namespace LayaAir3.Converter
             Jval layaFrag;
             if (isUnlit)
             {
+                // Unlit_fragment 实际 4 input：0:alphaTest(float,基类注入) 1:NormalTS 2:Color 3:Alpha。
+                // 少了头部 float 会让 BaseColor 落进 NormalTS 槽 = 纯白球（见 UNLIT_FRAGMENT_SLOTS 偏移）。
                 layaFrag = Jval.Obj()
                     .Set("x", 600).Set("y", 400)
                     .Set("constDataID", "Unlit_fragment")
                     .Set("id", fragId)
                     .Set("inputList", Jval.Arr(
-                        Jval.Obj().Set("type", "vec3").Set("defVal", Vec3(0, 0, 1)),
-                        Jval.Obj().Set("type", "vec3").Set("defVal", Vec3(1, 1, 1)),
-                        Jval.Obj().Set("type", "float").Set("defVal", 1)))
+                        Jval.Obj().Set("type", "float").Set("defVal", "_remove_"),   // 0 alphaTest
+                        Jval.Obj().Set("type", "vec3").Set("defVal", Vec3(0, 0, 1)),  // 1 NormalTS
+                        Jval.Obj().Set("type", "vec3").Set("defVal", Vec3(1, 1, 1)),  // 2 Color
+                        Jval.Obj().Set("type", "float").Set("defVal", 1)))           // 3 Alpha
                     .Set("outputList", Jval.Arr())
                     .Set("select", false);
             }
@@ -1911,10 +1914,14 @@ namespace LayaAir3.Converter
             var arr = Jval.Arr();
             foreach (var n in layaArrRef) arr.Push(n);
 
+            // ⭐ 顶层 materialType 必须写：IDE ScenePanel.initShaderData 读顶层 data.materialType 匹配
+            // 终端节点（materialType+"fragment"）；缺它会回落 PBR_ 隐藏 Unlit_fragment + 新建空终端 =
+            // 节点图与片段着色器断连。material.materialType 只喂 Inspector 下拉，不参与终端匹配，两者须一致。
+            int materialTypeNum = shaderType == "unlit" ? 2 : 0;   // PBR=0 Blinnphong=1 Unlit=2 Particle=3
             var material = Jval.Obj()
                 .Set("twoSided", false)
                 .Set("blendModes", 0)
-                .Set("materialType", shaderType == "unlit" ? 2 : 0)
+                .Set("materialType", materialTypeNum)
                 .Set("anisotropy", false).Set("clear coat", false).Set("sheen", false)
                 .Set("transmission", false).Set("iridescence", false)
                 .Set("scene fog", false).Set("alpha test", alphaClip)
@@ -1928,6 +1935,8 @@ namespace LayaAir3.Converter
                 .Set("arr", arr)
                 .Set("x", 0).Set("y", 0).Set("scale", 1)
                 .Set("bluePrintNum", bluePrintNum)
+                .Set("materialType", materialTypeNum)
+                .Set("currAutoCreateDefault", materialTypeNum)   // 与 materialType 一致 → IDE 不再补建默认终端
                 .Set("material", material)
                 .Set("uniformData", Jval.Obj().Set("uniformArr", uArr))
                 .Set("customInclude", Jval.Null())

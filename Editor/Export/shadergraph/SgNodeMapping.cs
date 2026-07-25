@@ -67,10 +67,10 @@ namespace LayaAir3.Converter
             {"Position",0},{"Normal",1},{"Tangent",2},
         };
 
-        // Unlit_fragment 3 input：0:NormalTS 1:Color 2:Alpha
+        // Unlit_fragment 实际 4 input：0:alphaTest(基类注入) 1:NormalTS 2:Color 3:Alpha
         public static readonly Dictionary<string, int> UNLIT_FRAGMENT_SLOTS = new Dictionary<string, int>
         {
-            {"NormalTS",0},{"Color",1},{"Alpha",2},
+            {"NormalTS",1},{"Color",2},{"Alpha",3},
         };
 
         public static readonly Dictionary<string, string> BLOCK_TO_UNLIT_SLOT = new Dictionary<string, string>
