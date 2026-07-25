@@ -354,8 +354,17 @@ namespace LayaAir3.Converter
                 property: (u) => Jval.Obj().Set("mode", ((int)u.NumOf("m_BlendMode", 0) == 1) ? "Reoriented" : "Default"));
             m["NormalReconstructZNode"] = M("color/normalReconstructZ", S("In"), S("Out"),
                 inTypes: S("vec2"), outTypes: S("vec3"));
-            m["NormalFromHeightNode"] = M("function/custom", S("In"), S("Out"),
-                customGlsl: (u, c) => Cfg(S("h"), S("float"), "vec3", "float dx = dFdx(h); float dy = dFdy(h); return normalize(vec3(-dx, -dy, 1.0));"));
+            // NormalFromHeight → 原生 color/normalFromHeight（切线空间偏导求法线）。忽略 World 模式（属 D 组）。
+            m["NormalFromHeightNode"] = M("color/normalFromHeight", S("In", "Strength"), S("Out"),
+                inTypes: S("float", "float"), outTypes: S("vec3"));
+            // 屏幕空间偏导 DDX/DDY/DDXY（导数在蓝图 FS 可用：WebGL2 原生 / WebGL1 GL_OES_standard_derivatives）
+            m["DDXNode"]  = M("math/derivative/DDX",  S("In"), S("Out"), inTypes: S("float"), outTypes: S("float"), outFromInputs: new[] { 0 });
+            m["DDYNode"]  = M("math/derivative/DDY",  S("In"), S("Out"), inTypes: S("float"), outTypes: S("float"), outFromInputs: new[] { 0 });
+            m["DDXYNode"] = M("math/derivative/DDXY", S("In"), S("Out"), inTypes: S("float"), outTypes: S("float"), outFromInputs: new[] { 0 });
+            // Dither → 原生 utility/dither（4×4 Bayer 屏幕空间抖动）。忽略 ScreenPosition 输入（内部用 gl_FragCoord）。
+            m["DitherNode"] = M("utility/dither", S("In"), S("Out"), inTypes: S("float"), outTypes: S("float"), outFromInputs: new[] { 0 });
+            // ⛔ ParallaxMappingNode 不接：原生 uv/parallax 取标量 h + 显式 viewDir，Unity 版内部采纹理 + 自动切线视线（D 组），
+            //    I/O 语义不等价，硬接会错接。待 D 组切线视线后评估。
             m["GradientNode"] = M("function/custom", S(), S("Out"),
                 customGlsl: (u, c) =>
                 {
@@ -372,8 +381,38 @@ namespace LayaAir3.Converter
                     return Cfg(S(), S(), "vec4",
                         "return vec4(" + F(kx, 4) + ", " + F(ky, 4) + ", " + F(kz, 4) + ", " + F(a0, 4) + ");");
                 });
-            m["ObjectNode"] = M("function/custom", S(), S("Position"),
-                customGlsl: (u, c) => Cfg(S(), S(), "vec3", "return vec3(0.0, 0.0, 0.0);"));
+            // ObjectNode → 原生 inputdata/object/objectPosition（u_WorldMat[3].xyz）。Scale 输出会回落到 Position。
+            m["ObjectNode"] = M("inputdata/object/objectPosition", S(), S("Out"), outTypes: S("vec3"));
+            // ── C 组：Cubemap（Laya 已有 samplerCube 采样节点 + textureCube 资产节点）──
+            // ⚠ samplerCube 的 position(方向) 输入 IDE hidden，映射后需实机确认；Sampler/LOD 忽略。
+            m["CubemapAssetNode"]  = M("texture/textureCube", S("path"), S("Out"), outTypes: S("samplerCube"));
+            m["SampleCubemapNode"] = M("texture/samplerCube", S("Cube", "ViewDir"), S("rgba"), outTypes: S("vec4"));
+            // Texture2DArray / Texture3D（Laya 类型系统 + 采样节点，300es 原生）。采样用 vec3 Coord。
+            m["Texture2DArrayAssetNode"] = M("texture/texture2DArray", S("path"), S("Out"), outTypes: S("sampler2DArray"));
+            m["Texture3DAssetNode"]      = M("texture/texture3D",      S("path"), S("Out"), outTypes: S("sampler3D"));
+            m["SampleTexture3DNode"]      = M("texture/sample3D",      S("Texture", "UVW"), S("rgba"), outTypes: S("vec4"));
+            // ⚠ Unity SampleTexture2DArray 的 UV+Index → Laya 单 Coord(vec3)：Index 丢失（需 Append 手拼 vec3）。
+            m["SampleTexture2DArrayNode"] = M("texture/sample2DArray", S("Texture", "UV"), S("rgba"), outTypes: S("vec4"));
+            // ── 矩阵/Transform：空间变换（引擎 u_WorldMat/u_View/u_ViewProjection，反向 inverse()）──
+            // Unity CoordinateSpace: Object=0/View=1/World=2/Tangent=3/AbsoluteWorld=4；ConversionType: Position=0/Direction=1。
+            m["TransformNode"] = M("math/matrix/transform", S("In"), S("Out"), inTypes: S("vec3"), outTypes: S("vec3"),
+                property: (u) =>
+                {
+                    string[] spaces = { "Object", "View", "World", "Tangent", "AbsoluteWorld" };
+                    string[] types = { "Position", "Direction" };
+                    var c = u.Get("m_Conversion");
+                    int from = c != null ? (int)c.NumOf("from", 0) : 0;
+                    int to = c != null ? (int)c.NumOf("to", 0) : 0;
+                    int ct = (int)u.NumOf("m_ConversionType", 0);
+                    return Jval.Obj()
+                        .Set("from", (from >= 0 && from < spaces.Length) ? spaces[from] : "Object")
+                        .Set("to", (to >= 0 && to < spaces.Length) ? spaces[to] : "World")
+                        .Set("type", (ct >= 0 && ct < types.Length) ? types[ct] : "Position");
+                });
+            // ── D 组：场景/相机数据节点（uniform 已在蓝图作用域）──
+            m["SceneColorNode"] = M("inputdata/scene/sceneColor", S(), S("Out"), outTypes: S("vec3"));
+            m["SceneDepthNode"] = M("inputdata/scene/sceneDepth", S(), S("Out"), outTypes: S("float"));   // 仅 Linear01；真数据需相机开深度纹理
+            m["FogNode"] = M("inputdata/scene/fog", S(), S("RGBA", "Color", "Density"), outTypes: S("vec4", "vec3", "float"));
             m["TriplanarNode"] = M("function/custom", S("Texture", "Position", "Normal", "Tile", "Blend"), S("Out"),
                 customGlsl: (u, c) => Cfg(S("tex", "pos", "norm", "tile", "blend"), S("sampler2D", "vec3", "vec3", "float", "float"), "vec4",
                     "vec3 uv = pos * tile; vec3 bw = pow(abs(norm), vec3(blend)); bw /= max(dot(bw, vec3(1.0)), 0.0001); return texture(tex, uv.zy) * bw.x + texture(tex, uv.xz) * bw.y + texture(tex, uv.xy) * bw.z;"));
