@@ -413,6 +413,20 @@ namespace LayaAir3.Converter
             m["SceneColorNode"] = M("inputdata/scene/sceneColor", S(), S("Out"), outTypes: S("vec3"));
             m["SceneDepthNode"] = M("inputdata/scene/sceneDepth", S(), S("Out"), outTypes: S("float"));   // 仅 Linear01；真数据需相机开深度纹理
             m["FogNode"] = M("inputdata/scene/fog", S(), S("RGBA", "Color", "Density"), outTypes: S("vec4", "vec3", "float"));
+            // 主方向光方向 → 原生 mainLightDirection。
+            m["MainLightDirectionNode"] = M("inputdata/light/mainLightDirection", S(), S("Out"), outTypes: S("vec3"));
+            // Screen（宽/高）→ viewport 的 width/height 分量（u_Viewport.zw）。
+            m["ScreenNode"] = M("inputdata/camera/viewport", S(), S("RGBA", "x", "y", "width", "height"));
+            // 变换矩阵 → transformationMatrix。m_matrix 前 5（ModelView/Model/View/Projection/ViewProjection）；逆矩阵回落 Model。
+            m["TransformationMatrixNode"] = M("math/matrix/transformationMatrix", S(), S("Out"), outTypes: S("mat4"),
+                property: (u) =>
+                {
+                    string[] names = { "ModelView", "Model", "View", "Projection", "ViewProjection" };
+                    int mm = (int)u.NumOf("m_matrix", 0);
+                    return Jval.Obj().Set("matrix", (mm >= 0 && mm < names.Length) ? names[mm] : "Model");
+                });
+            // 采样立方体贴图（raw）→ 复用 samplerCube。
+            m["SampleRawCubemapNode"] = M("texture/samplerCube", S("Cube", "ViewDir"), S("rgba"), outTypes: S("vec4"));
             m["TriplanarNode"] = M("function/custom", S("Texture", "Position", "Normal", "Tile", "Blend"), S("Out"),
                 customGlsl: (u, c) => Cfg(S("tex", "pos", "norm", "tile", "blend"), S("sampler2D", "vec3", "vec3", "float", "float"), "vec4",
                     "vec3 uv = pos * tile; vec3 bw = pow(abs(norm), vec3(blend)); bw /= max(dot(bw, vec3(1.0)), 0.0001); return texture(tex, uv.zy) * bw.x + texture(tex, uv.xz) * bw.y + texture(tex, uv.xy) * bw.z;"));
