@@ -63,6 +63,8 @@ namespace LayaAir3.Converter
         public readonly Dictionary<string, bool> KeywordDefines = new Dictionary<string, bool>();
         private string shaderType;      // "lit" | "unlit"
         private Jval pbrFragNode;
+        private HashSet<string> vertexReachable;                                  // 顶点段可达的 Unity 节点（m_Space 修复）
+        private readonly Dictionary<int, Dictionary<int, string>> nodeLocks = new Dictionary<int, Dictionary<int, string>>();  // layaId → {inputIdx: 锁定类型}
 
         public List<string> Warnings { get { return warnings; } }
 
@@ -92,8 +94,10 @@ namespace LayaAir3.Converter
         {
             BuildEdgeIndex();
             shaderType = DetectShaderType();
+            vertexReachable = ComputeVertexReachable();   // m_Space 修复需知节点是否在顶点段
             FindMasterStackBlocks();
             PropagateTypes();
+            ApplyInputLocks();   // PropagateTypes 会把已连线的 lockInputs 从上游还原 → 之后再补锁
             return BuildBpsJson();
         }
 
@@ -371,6 +375,28 @@ namespace LayaAir3.Converter
             if (!unityIdToObj.TryGetValue(fromUnityNodeId, out srcU)) return;
             string srcType = ShortType(srcU);
 
+            // PreviewNode 纯直通（Out = In，调试用）——不建 Laya 节点，把下游连到 Preview 的 In 上游；
+            // In 悬空则取 Preview In slot 的常量默认写进目标（透明转发）。
+            if (srcType == "PreviewNode")
+            {
+                string inSlotObjId = FindSlotObjIdByLocalId(srcU, 0);   // Preview In = slot0
+                InEdge upEdge = null;
+                if (inSlotObjId != null) inputEdgeByUnitySlot.TryGetValue(inSlotObjId, out upEdge);
+                if (upEdge != null)
+                    ConnectInput(toLayaNode, toInputIdx, upEdge.FromNodeId, upEdge.FromSlotId);
+                else
+                {
+                    var inSlot = Idx.GetById(FindSlotByLocalId(srcU, 0));
+                    if (inSlot != null)
+                    {
+                        string ty = layaInputSlot.StrOf("type") ?? "float";
+                        var v = ExtractSlotDefault(inSlot, ty);
+                        if (v != null) layaInputSlot.Set("defVal", v);
+                    }
+                }
+                return;
+            }
+
             if (srcType == "SplitNode")
             {
                 string ch = null;
@@ -496,6 +522,82 @@ namespace LayaAir3.Converter
             return null;
         }
 
+        // ─────────────────────────────────────────────────────────────
+        // SampleGradient 内联：渐变数据编译期已知 → 一串 mix（对应 JS extractGradient + buildGradientGLSL）。
+        // Gradient 输入(slot0)由此方法手动读取（不走 Laya 连线）；Time 是唯一运行时输入。
+        // ─────────────────────────────────────────────────────────────
+        private static string GradF(double v) { return v.ToString("F6", CultureInfo.InvariantCulture); }
+
+        // 从 SampleGradient 的 Gradient 输入取渐变数据：colors 每项 {r,g,b,pos}、alphas 每项 {a,pos}。
+        // 数据源二选一：上游 GradientNode（m_Serializable* 格式）或该输入 slot 的内嵌默认（key/ctime/atime 格式）。
+        private void ExtractGradient(Jval sampleU, List<double[]> colors, List<double[]> alphas)
+        {
+            string gSlotObjId = FindSlotObjIdByLocalId(sampleU, 0);   // Gradient input = slot 0
+            InEdge edge = null;
+            if (gSlotObjId != null) inputEdgeByUnitySlot.TryGetValue(gSlotObjId, out edge);
+            if (edge != null)
+            {
+                Jval gn;
+                if (unityIdToObj.TryGetValue(edge.FromNodeId, out gn) && gn != null)
+                {
+                    var ck = gn.Get("m_SerializableColorKeys");
+                    if (ck != null && ck.IsArray)
+                    {
+                        for (int i = 0; i < ck.Count; i++)
+                        { var k = ck.At(i); colors.Add(new double[] { k.NumOf("x", 0), k.NumOf("y", 0), k.NumOf("z", 0), k.NumOf("w", 0) }); }
+                        var ak = gn.Get("m_SerializableAlphaKeys");
+                        if (ak != null && ak.IsArray)
+                            for (int i = 0; i < ak.Count; i++)
+                            { var k = ak.At(i); alphas.Add(new double[] { k.NumOf("x", 1), k.NumOf("y", 0) }); }
+                        else
+                            alphas.Add(new double[] { 1, 0 });
+                        return;
+                    }
+                }
+            }
+            // 内嵌 slot：keyN{r,g,b,a} + ctimeN/atimeN(0..65535) + NumColorKeys/NumAlphaKeys
+            Jval slot = gSlotObjId != null ? Idx.GetById(gSlotObjId) : null;
+            Jval val = slot != null ? slot.Get("m_Value") : null;
+            if (val != null)
+            {
+                int nc = (int)val.NumOf("m_NumColorKeys", 2);
+                int na = (int)val.NumOf("m_NumAlphaKeys", 2);
+                for (int i = 0; i < nc; i++)
+                {
+                    var k = val.Get("key" + i);
+                    double r = k != null ? k.NumOf("r", 1) : 1, g = k != null ? k.NumOf("g", 1) : 1, b = k != null ? k.NumOf("b", 1) : 1;
+                    colors.Add(new double[] { r, g, b, val.NumOf("ctime" + i, 0) / 65535.0 });
+                }
+                for (int i = 0; i < na; i++)
+                {
+                    var k = val.Get("key" + i);
+                    double a = k != null ? k.NumOf("a", 1) : 1;
+                    alphas.Add(new double[] { a, val.NumOf("atime" + i, 0) / 65535.0 });
+                }
+                return;
+            }
+            colors.Add(new double[] { 1, 1, 1, 0 });   // 兜底白
+            alphas.Add(new double[] { 1, 0 });
+        }
+
+        // 生成 SampleGradient 的内联 GLSL（mode 0 blend）：逐段 mix。Time 为运行时输入。
+        public string BuildGradientGlsl(Jval sampleU)
+        {
+            var colors = new List<double[]>();
+            var alphas = new List<double[]>();
+            ExtractGradient(sampleU, colors, alphas);
+            var lines = new List<string>();
+            lines.Add("vec3 gcol = vec3(" + GradF(colors[0][0]) + ", " + GradF(colors[0][1]) + ", " + GradF(colors[0][2]) + ");");
+            for (int i = 1; i < colors.Count; i++)
+                lines.Add("gcol = mix(gcol, vec3(" + GradF(colors[i][0]) + ", " + GradF(colors[i][1]) + ", " + GradF(colors[i][2]) +
+                    "), clamp((Time - " + GradF(colors[i - 1][3]) + ") / (" + GradF(colors[i][3] - colors[i - 1][3]) + " + 1e-6), 0.0, 1.0));");
+            lines.Add("float galpha = " + GradF(alphas[0][0]) + ";");
+            for (int i = 1; i < alphas.Count; i++)
+                lines.Add("galpha = mix(galpha, " + GradF(alphas[i][0]) + ", clamp((Time - " + GradF(alphas[i - 1][1]) + ") / (" + GradF(alphas[i][1] - alphas[i - 1][1]) + " + 1e-6), 0.0, 1.0));");
+            lines.Add("return vec4(gcol, galpha);");
+            return string.Join("\n", lines.ToArray());
+        }
+
         // 推断 Unity output slot 在 Laya 端的标量类型
         private string InferOutputType(string unityNodeId, int slotId)
         {
@@ -552,6 +654,123 @@ namespace LayaAir3.Converter
             return null;
         }
 
+        // ── m_Space 修复：顶点段可达节点 BFS（Laya WS 几何节点顶点段不可用，需回落 OS）──
+        private HashSet<string> ComputeVertexReachable()
+        {
+            var reachable = new HashSet<string>();
+            var stack = new Stack<string>();
+            foreach (var n in Idx.Nodes)
+            {
+                if (ShortType(n) != "BlockNode") continue;
+                string desc = n.StrOf("m_SerializedDescriptor") ?? "";
+                if (desc.Split('.')[0] != "VertexDescription") continue;
+                string inSlotObjId = FirstInputSlotObjId(n);
+                InEdge edge;
+                if (inSlotObjId != null && inputEdgeByUnitySlot.TryGetValue(inSlotObjId, out edge))
+                    stack.Push(edge.FromNodeId);
+            }
+            while (stack.Count > 0)
+            {
+                string nid = stack.Pop();
+                if (reachable.Contains(nid)) continue;
+                reachable.Add(nid);
+                Jval u;
+                if (!unityIdToObj.TryGetValue(nid, out u)) continue;
+                var slots = u.Get("m_Slots");
+                if (slots == null) continue;
+                foreach (var sref in slots.Items)
+                {
+                    var s = Idx.GetById(sref.StrOf("m_Id"));
+                    if (s == null || (int)s.NumOf("m_SlotType", -1) != 0) continue;   // 只走 input
+                    InEdge e;
+                    if (inputEdgeByUnitySlot.TryGetValue(s.StrOf("m_ObjectId"), out e))
+                        stack.Push(e.FromNodeId);
+                }
+            }
+            return reachable;
+        }
+
+        private static string SpaceName(int s)
+        {
+            string v;
+            return SgNodeMapping.SPACE_NAME.TryGetValue(s, out v) ? v : s.ToString();
+        }
+
+        // 按 m_Space 解析几何节点的 Laya constDataID；非几何节点返回 null（用 map.Id）
+        private string ResolveSpaceId(string t, Jval u)
+        {
+            Dictionary<int, string> table;
+            if (!SgNodeMapping.SPACE_NODE.TryGetValue(t, out table)) return null;
+            int space = u.Has("m_Space") ? (int)u.NumOf("m_Space", 0) : 0;   // 缺省 Object
+            // 顶点段用法：Laya WS 节点取 pixel.normalWS，顶点段(位移，initPixelParams 前)不可用 → 强制回落 OS
+            if (space != 0 && vertexReachable != null && vertexReachable.Contains(u.StrOf("m_ObjectId")))
+            {
+                Warn("[space] " + t + " m_Space=" + SpaceName(space) + " 但用于顶点段，回落 Object（Laya WS 节点顶点段不可用）");
+                space = 0;
+            }
+            string id;
+            if (table.TryGetValue(space, out id))
+            {
+                if (space != 0) Warn("[space] " + t + " m_Space=" + SpaceName(space) + " → " + id);
+                return id;
+            }
+            // View(1)/Tangent(3)：Laya 无对应空间 → 回落该类型默认（Object 或 WS），并告警
+            string fallback = table.ContainsKey(0) ? table[0] : (table.ContainsKey(2) ? table[2] : null);
+            Warn("[space] " + t + " m_Space=" + SpaceName(space) + " Laya 无对应空间，回落 " + fallback);
+            return fallback;
+        }
+
+        // 补锁：把 lockInputs 指定的输入恢复成声明维度（PropagateTypes 之后跑，覆盖其对已连线输入的还原）
+        private void ApplyInputLocks()
+        {
+            if (nodeLocks.Count == 0) return;
+            var idToNode = new Dictionary<int, Jval>();
+            foreach (var n in layaArrRef) idToNode[(int)n.NumOf("id", -1)] = n;
+            foreach (var kv in nodeLocks)
+            {
+                Jval n;
+                if (!idToNode.TryGetValue(kv.Key, out n)) continue;
+                var inList = n.Get("inputList");
+                if (inList == null) continue;
+                foreach (var lk in kv.Value)
+                    if (lk.Key < inList.Count) inList.At(lk.Key).Set("type", lk.Value);
+            }
+        }
+
+        private static int DimRank(string ty)
+        {
+            switch (ty)
+            {
+                case "vec4": case "color": return 4;
+                case "vec3": return 3;
+                case "vec2": return 2;
+                default: return 1;   // float/int/bool
+            }
+        }
+
+        // outFromInputs 专用：把 mat2/3/4 也纳入排名（matrixTranspose 输出跟随输入矩阵维度）。
+        // 与 DimRank 分开：unifyInputs/lockInputs 不认矩阵类型（无节点同时用矩阵与 unify）。
+        private static int DimRankMat(string ty)
+        {
+            switch (ty)
+            {
+                case "vec4": case "color": case "mat4": return 4;
+                case "vec3": case "mat3": return 3;
+                case "vec2": case "mat2": return 2;
+                default: return 1;
+            }
+        }
+
+        private static Jval BoxToJval(object v)
+        {
+            if (v is Jval) return (Jval)v;   // inputDefaults 可直接给 Jval（如 channelMixer 的 vec3 默认）
+            if (v is bool) return Jval.Of((bool)v);
+            if (v is int) return Jval.Of((int)v);
+            if (v is double) return Jval.Of((double)v);
+            if (v is float) return Jval.Of((double)(float)v);
+            return Jval.Of(v == null ? null : v.ToString());
+        }
+
         private Jval InitPbrFragInputList()
         {
             Func<string, Jval, Jval> E = (type, def) =>
@@ -598,6 +817,19 @@ namespace LayaAir3.Converter
 
             if (t == "PropertyNode") return ConvertPropertyNode(u);
             if (t == "SplitNode") return null;
+            // PreviewNode 直通：转发到其 In 上游的转换结果（ConnectInput 已处理透明转发，此处兜底直接递归路径）。
+            if (t == "PreviewNode")
+            {
+                string inSlotObjId = FindSlotObjIdByLocalId(u, 0);
+                InEdge upEdge = null;
+                if (inSlotObjId != null) inputEdgeByUnitySlot.TryGetValue(inSlotObjId, out upEdge);
+                if (upEdge != null)
+                {
+                    var fwd = ConvertNodeRecursive(upEdge.FromNodeId);
+                    if (fwd != null) { unityToLaya[unityNodeId] = fwd; return fwd; }
+                }
+                return CreateConstFloat(0, UiPos(u));   // In 悬空 → 常量 0
+            }
             if (t == "VertexColorNode") return ConvertVertexColorWithAdapter(u);
 
             NodeMap map;
@@ -613,9 +845,11 @@ namespace LayaAir3.Converter
 
             int layaId = NextId();
             var pos = UiPos(u);
+            // 几何节点按 m_Space 选正确的 OS/WS 节点（旧版忽略 m_Space 恒用 Object → 静默出错）
+            string constDataID = ResolveSpaceId(t, u) ?? map.Id;
             var layaNode = Jval.Obj()
                 .Set("x", pos.X).Set("y", pos.Y)
-                .Set("constDataID", map.Id)
+                .Set("constDataID", constDataID)
                 .Set("id", layaId)
                 .Set("inputList", Jval.Arr())
                 .Set("outputList", Jval.Arr())
@@ -623,10 +857,27 @@ namespace LayaAir3.Converter
             if (map.Ver != 0) layaNode.Set("ver", map.Ver);
             var inList = layaNode.Get("inputList");
             var outList = layaNode.Get("outputList");
-            foreach (var inputName in (map.Inputs ?? new string[0]))
-                inList.Push(Jval.Obj().Set("type", GuessInputType(t, inputName)).Set("defVal", "_remove_"));
-            foreach (var outputName in (map.Outputs ?? new string[0]))
-                outList.Push(Jval.Obj().Set("type", GuessOutputType(t, outputName)));
+            // inTypes/outTypes 可为函数形式（如 swizzle 按 mask 决定维度）→ 先解析成有效数组
+            string[] effInTypes = map.InTypesFn != null ? map.InTypesFn(u) : map.InTypes;
+            string[] effOutTypes = map.OutTypesFn != null ? map.OutTypesFn(u) : map.OutTypes;
+            var mapInputs = map.Inputs ?? new string[0];
+            for (int i = 0; i < mapInputs.Length; i++)
+            {
+                string ty = (effInTypes != null && i < effInTypes.Length) ? effInTypes[i] : GuessInputType(t, mapInputs[i]);
+                inList.Push(Jval.Obj().Set("type", ty).Set("defVal", "_remove_"));
+            }
+            var mapOutputs = map.Outputs ?? new string[0];
+            for (int i = 0; i < mapOutputs.Length; i++)
+            {
+                string ty = (effOutTypes != null && i < effOutTypes.Length) ? effOutTypes[i] : GuessOutputType(t, mapOutputs[i]);
+                outList.Push(Jval.Obj().Set("type", ty));
+            }
+            // 原生 mode 节点的 propertyVal（comparison 的 mode、rotate/rotateAboutAxis 的 unit、normalBlend 的 mode）
+            if (map.Property != null)
+            {
+                var pv = map.Property(u);
+                if (pv != null) layaNode.Set("propertyVal", pv);
+            }
 
             layaArrRef.Add(layaNode);
             unityToLaya[unityNodeId] = layaNode;
@@ -667,6 +918,15 @@ namespace LayaAir3.Converter
                     inList.At(3).Set("defVal", c.NumOf("a", 1));
                 }
             }
+            // inputDefaults：把 Unity 节点开关字段（非 slot）写进对应 Laya 输入默认值（flipbook 的 m_InvertX/m_InvertY）
+            if (map.InputDefaults != null)
+            {
+                var defs = map.InputDefaults(u);
+                if (defs != null)
+                    foreach (var kv in defs)
+                        if (kv.Key < inList.Count && inList.At(kv.Key).Get("info") == null)
+                            inList.At(kv.Key).Set("defVal", BoxToJval(kv.Value));
+            }
             if (t == "ClampNode" && inList.Count >= 3)
             {
                 if (!HasConcreteDefVal(inList.At(1))) inList.At(1).Set("defVal", 0);
@@ -688,6 +948,41 @@ namespace LayaAir3.Converter
                 inList.At(0).Set("info", Info((int)constNode.NumOf("id"), 0));
                 AddReverseLink(constNode, 0, layaId, 0);
                 inList.At(0).Remove("defVal");
+            }
+            // unifyInputs：某些输入必须同维（distance/dot 不广播，如 sphereMask 的 Coords/Center）。
+            // 统一到最宽的【已连线】输入维度（未连线跟随；defVal 超维会被 getDefaultValue 优雅截断）。
+            if (map.UnifyInputs != null && inList.Count > 0)
+            {
+                string best = null; int bestR = 0;
+                foreach (int idx in map.UnifyInputs)
+                    if (idx < inList.Count && inList.At(idx).Get("info") != null)
+                    { int r = DimRank(inList.At(idx).StrOf("type")); if (r > bestR) { bestR = r; best = inList.At(idx).StrOf("type"); } }
+                if (best == null)
+                    foreach (int idx in map.UnifyInputs)
+                        if (idx < inList.Count)
+                        { int r = DimRank(inList.At(idx).StrOf("type")); if (r > bestR) { bestR = r; best = inList.At(idx).StrOf("type"); } }
+                if (best != null)
+                    foreach (int idx in map.UnifyInputs)
+                        if (idx < inList.Count) inList.At(idx).Set("type", best == "color" ? "vec4" : best);
+            }
+            // lockInputs：锁形状输入维度不被上游传播覆盖（saturation dot(In,vec3)、uv 系 uv-Center）。
+            // ⚠ 记进 nodeLocks，末尾 PropagateTypes 之后再补锁——否则已连线输入会被从上游还原。
+            if (map.LockInputs != null && effInTypes != null)
+            {
+                var locks = new Dictionary<int, string>();
+                foreach (int idx in map.LockInputs)
+                    if (idx < inList.Count && idx < effInTypes.Length)
+                    { inList.At(idx).Set("type", effInTypes[idx]); locks[idx] = effInTypes[idx]; }
+                if (locks.Count > 0) nodeLocks[layaId] = locks;
+            }
+            // 多态原生节点（remap/branch/negate/matrixTranspose）：输出维度 = 指定输入解析后的最宽维度
+            if (map.OutFromInputs != null && outList.Count > 0)
+            {
+                string best = null; int bestR = 0;
+                foreach (int idx in map.OutFromInputs)
+                    if (idx < inList.Count)
+                    { int r = DimRankMat(inList.At(idx).StrOf("type")); if (r > bestR) { bestR = r; best = inList.At(idx).StrOf("type"); } }
+                if (best != null) outList.At(0).Set("type", best == "color" ? "vec4" : best);
             }
             foreach (var inp in inList.Items)
             {
@@ -1535,6 +1830,8 @@ namespace LayaAir3.Converter
                 if (list[i] == slotName) return i;
                 if (Norm(list[i]) == Norm(slotName)) return i;
             }
+            // 该输出在 Laya 侧无对应（如 Time 除 Time 外的 Sine/Cosine/Delta）→ 归一到 index 0，告警而非静默。
+            Warn("[output-slot] " + t + " 的输出 \"" + slotName + "\" 在 Laya 无对应，回落到 index 0");
             return 0;
         }
 
