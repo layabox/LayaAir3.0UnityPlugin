@@ -529,6 +529,8 @@ namespace LayaAir3.Converter
             m["FadeTransitionNode"] = M("color/fadeTransition", S("NoiseValue", "FadeValue", "FadeContrast"), S("Fade"),
                 inTypes: S("float", "float", "float"), outTypes: S("float"));
             m["NormalUnpackNode"] = M("color/normalUnpack", S("In"), S("Out"), inTypes: S("vec4"), outTypes: S("vec3"));
+            // NormalFromTexture → 原生 color/normalFromTexture（采样偏移差分 + 叉乘）。Sampler 忽略。
+            m["NormalFromTextureNode"] = M("color/normalFromTexture", S("Texture", "UV", "Offset", "Strength"), S("Out"), outTypes: S("vec3"));
             // ── 常量/PBR 数据 ──
             m["ConstantNode"] = M("inputdata/basic/constant", S(), S("Out"), outTypes: S("float"),
                 property: (u) =>
