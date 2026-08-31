@@ -595,11 +595,30 @@ internal class ParticleSystemData
     private static JSONObject writeMinMaxGradientData(ParticleSystem.MinMaxGradient gradient)
     {
         JSONObject curveData = new JSONObject(JSONObject.Type.OBJECT);
-        writeGradientData(gradient.gradientMax, "gradientMax", curveData);
-        writeGradientData(gradient.gradientMin, "gradientMin", curveData);
-        curveData.AddField("colorMax", JsonUtils.GetColorObject(gradient.colorMax));
-        curveData.AddField("colorMin", JsonUtils.GetColorObject(gradient.colorMin));
-        curveData.AddField("mode", (int)(object)gradient.mode);
+        ParticleSystemGradientMode mode = gradient.mode;
+        curveData.AddField("mode", (int)(object)mode);
+
+        // MinMaxGradient behaves like a tagged union. Reading properties that do not
+        // belong to the active mode can return undefined native data in some Unity
+        // versions, which previously produced NaN and extreme float values in .lh.
+        switch (mode)
+        {
+            case ParticleSystemGradientMode.Color:
+                curveData.AddField("colorMax", JsonUtils.GetColorObject(gradient.color));
+                break;
+            case ParticleSystemGradientMode.Gradient:
+            case ParticleSystemGradientMode.RandomColor:
+                writeGradientData(gradient.gradient, "gradientMax", curveData);
+                break;
+            case ParticleSystemGradientMode.TwoColors:
+                curveData.AddField("colorMin", JsonUtils.GetColorObject(gradient.colorMin));
+                curveData.AddField("colorMax", JsonUtils.GetColorObject(gradient.colorMax));
+                break;
+            case ParticleSystemGradientMode.TwoGradients:
+                writeGradientData(gradient.gradientMin, "gradientMin", curveData);
+                writeGradientData(gradient.gradientMax, "gradientMax", curveData);
+                break;
+        }
         return curveData;
     }
 
