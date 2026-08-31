@@ -209,14 +209,14 @@
         <tr><td class="feat">Sub Emitters（子发射器）</td><td><span class="badge no">✗</span></td><td><span class="badge full">✓</span></td></tr>
         <tr><td class="feat">Lights（灯光）</td><td><span class="badge no">✗</span></td><td><span class="badge no">✗</span></td></tr>
         <tr><td class="feat">Trigger（触发器）</td><td><span class="badge no">✗</span></td><td><span class="badge no">✗</span></td></tr>
-        <tr><td class="feat">Custom Data（自定义数据）</td><td><span class="badge no">✗</span></td><td><span class="badge no">✗</span></td></tr>
+        <tr><td class="feat">Custom Data（自定义数据）</td><td><span class="badge no">✗</span></td><td><span class="badge full">✓</span></td></tr>
         <tr><td class="feat">其余常规模块（发射 / 形状 / 各 over Lifetime…）</td><td><span class="badge full">✓</span></td><td><span class="badge full">✓</span></td></tr>
       </tbody>
     </table>
     <div class="note">
       <b>注意：插件自动转 CPU 只认 <code>Noise</code> / <code>Trails</code> / <code>速度限制（LimitVelocityOverLifetime）</code> 三者</b>（<code>RequiresCPUParticle</code>）。
       其余 GPU 不支持的模块若要走 CPU，需手动给粒子挂 <code>LayaParticleExportSetting</code> 设为 <code>CPU Particle</code>；否则按 GPU 导出、该模块效果丢失。
-      <b>Lights / Trigger / Custom Data 两条路径都不支持。</b>
+      <b>Lights / Trigger 两条路径都不支持；Custom Data 仅 CPU 路径支持，且不会触发自动切换。</b>
     </div>
   </section>
 

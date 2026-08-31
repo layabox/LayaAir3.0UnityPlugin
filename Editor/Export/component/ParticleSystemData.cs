@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 internal class ParticleSystemData
 {
@@ -453,6 +454,86 @@ internal class ParticleSystemData
         sysData.AddField("subEmitters", dataObject);
     }
 
+    private static JSONObject writeCustomDataStream(
+        ParticleSystem.CustomDataModule customData,
+        ParticleSystemCustomData stream)
+    {
+        JSONObject streamObject = new JSONObject(JSONObject.Type.OBJECT);
+        ParticleSystemCustomDataMode mode = customData.GetMode(stream);
+        streamObject.AddField("mode", (int)(object)mode);
+
+        if (mode == ParticleSystemCustomDataMode.Vector)
+        {
+            int componentCount = Mathf.Clamp(customData.GetVectorComponentCount(stream), 1, 4);
+            streamObject.AddField("vectorComponentCount", componentCount);
+
+            string[] componentNames = { "vectorX", "vectorY", "vectorZ", "vectorW" };
+            for (int component = 0; component < componentCount; component++)
+            {
+                streamObject.AddField(
+                    componentNames[component],
+                    writeMinMaxCurveData(
+                        customData.GetVector(stream, component),
+                        1.0f,
+                        float.NegativeInfinity,
+                        float.PositiveInfinity
+                    )
+                );
+            }
+        }
+        else if (mode == ParticleSystemCustomDataMode.Color)
+        {
+            streamObject.AddField("color", writeMinMaxGradientData(customData.GetColor(stream)));
+        }
+
+        return streamObject;
+    }
+
+    private static void writeCustomData(UnityEngine.ParticleSystem particleSystem, JSONObject sysData)
+    {
+        ParticleSystem.CustomDataModule customData = particleSystem.customData;
+        JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
+        dataObject.AddField("enable", customData.enabled);
+        dataObject.AddField(
+            "custom1",
+            writeCustomDataStream(customData, ParticleSystemCustomData.Custom1)
+        );
+        dataObject.AddField(
+            "custom2",
+            writeCustomDataStream(customData, ParticleSystemCustomData.Custom2)
+        );
+        sysData.AddField("customData", dataObject);
+    }
+
+    private static bool hasCustomVertexStream(
+        List<ParticleSystemVertexStream> streams,
+        string customStreamPrefix)
+    {
+        for (int i = 0; i < streams.Count; i++)
+        {
+            if (streams[i].ToString().StartsWith(customStreamPrefix, System.StringComparison.Ordinal))
+                return true;
+        }
+        return false;
+    }
+
+    private static void writeCustomDataVertexStreams(
+        UnityEngine.ParticleSystemRenderer renderer,
+        JSONObject compData)
+    {
+        List<ParticleSystemVertexStream> streams = new List<ParticleSystemVertexStream>();
+        renderer.GetActiveVertexStreams(streams);
+        compData.AddField("enableCustom1VertexStream", hasCustomVertexStream(streams, "Custom1"));
+        compData.AddField("enableCustom2VertexStream", hasCustomVertexStream(streams, "Custom2"));
+
+        streams.Clear();
+#if UNITY_2022_1_OR_NEWER
+        renderer.GetActiveTrailVertexStreams(streams);
+#endif
+        compData.AddField("enableCustom1TrailVertexStream", hasCustomVertexStream(streams, "Custom1"));
+        compData.AddField("enableCustom2TrailVertexStream", hasCustomVertexStream(streams, "Custom2"));
+    }
+
     public static JSONObject GetParticleSystem(UnityEngine.ParticleSystem particleSystem, bool isOverride, NodeMap map, ResoureMap resMap)
     {
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystem", isOverride);
@@ -476,6 +557,7 @@ internal class ParticleSystemData
         writeSubEmittersModule(particleSystem, particleSystemData, map);
         writeTextureSheetAnimation(particleSystem, particleSystemData);
         writeTrails(particleSystem, particleSystemData, map, resMap);
+        writeCustomData(particleSystem, particleSystemData);
         return compData;
     }
 
@@ -492,6 +574,7 @@ internal class ParticleSystemData
         compData.AddField("velocityScale", renderer.velocityScale);
         compData.AddField("lengthScale", renderer.lengthScale);
         compData.AddField("flip", JsonUtils.GetVector3Object(renderer.flip));
+        writeCustomDataVertexStreams(renderer, compData);
 
         JSONObject meshes = new JSONObject(JSONObject.Type.ARRAY);
         var meshCount = renderer.meshCount;
