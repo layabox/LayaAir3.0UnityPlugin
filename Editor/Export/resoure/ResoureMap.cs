@@ -226,10 +226,14 @@ internal class ResoureMap
 
         string picturePath = AssetsUtil.GetTextureFile(texture);
 
-        // 检查是否是 Unity 内置资源，内置资源无法导出
+        // Unity 内置资源没有普通的 Assets 路径。已知可安全提取的纹理映射到
+        // 导出目录中的稳定虚拟路径，其余内置资源继续跳过。
         if (IsBuiltinResource(picturePath))
         {
-            return null;
+            if (!TryGetBuiltinTextureExportPath(texture, out picturePath))
+            {
+                return null;
+            }
         }
 
         if (!this.HaveFileData(picturePath))
@@ -237,6 +241,40 @@ internal class ResoureMap
             this.AddExportFile(new TextureFile(picturePath, texture2D, isNormal, isSpriteTexture));
         }
         return this.GetFileData(picturePath) as TextureFile;
+    }
+
+    /// <summary>
+    /// 将支持导出的 Unity 内置纹理映射到 Laya 输出目录中的资源路径。
+    /// 当前只支持 Default-Particle；其他内置纹理不能假定为白纹理。
+    /// </summary>
+    public static bool TryGetBuiltinTextureExportPath(Texture texture, out string exportPath)
+    {
+        exportPath = null;
+        if (texture == null)
+        {
+            return false;
+        }
+
+        Texture2D defaultParticle = AssetDatabase.GetBuiltinExtraResource<Texture2D>("Default-Particle.psd");
+        bool isDefaultParticle = defaultParticle != null &&
+            defaultParticle.GetInstanceID() == texture.GetInstanceID();
+
+        // 部分 Unity 版本返回的对象实例可能不同，但内置资源名称保持一致。
+        if (!isDefaultParticle)
+        {
+            isDefaultParticle = string.Equals(
+                texture.name,
+                "Default-Particle",
+                System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (!isDefaultParticle)
+        {
+            return false;
+        }
+
+        exportPath = "Assets/LayaBuiltin/Default-Particle.png";
+        return true;
     }
     
     /// <summary>

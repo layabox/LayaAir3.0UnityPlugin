@@ -53,6 +53,7 @@ internal class TextureFile : FileData
     private bool isNormal;
     private LayaTextureImportFormat importFormat;
     private bool hasAlphaChannel;
+    private bool m_isBuiltinTexture;
 
     // 导出前保存的原始导入设置，SaveFile 结束后用于还原，确保不污染 Unity 项目资源
     private string              m_importerPath           = null;
@@ -67,6 +68,8 @@ internal class TextureFile : FileData
         this.texture          = texture;
         this.isNormal         = isNormal;
         this.m_isSpriteTexture = isSpriteTexture;
+        this.m_isBuiltinTexture = texture != null && ResoureMap.IsBuiltinResource(
+            AssetDatabase.GetAssetPath(texture.GetInstanceID()));
         // updatePath 内部会调用 getOutFilePath，后者依赖 hasAlphaChannel 来决定
         // 输出扩展名（.png 或 .jpg）。但 getTextureInfo 才会准确设置 hasAlphaChannel，
         // 晚于 updatePath 执行，导致 hasAlphaChannel 始终是默认值 false，所有纹理
@@ -89,39 +92,70 @@ internal class TextureFile : FileData
     /// <summary>
     /// 当无法获取TextureImporter时，使用默认值初始化纹理信息
     /// </summary>
+    private void setImporterMetadata(JSONObject importerData) {
+        // FileData 会读取已存在的 .meta；重复导出时必须替换旧字段，不能继续追加同名 key。
+        while (this.m_metaData.keys != null && this.m_metaData.keys.Contains("importer")) {
+            this.m_metaData.RemoveField("importer");
+        }
+        this.m_metaData.AddField("importer", importerData);
+    }
+
     private void initDefaultTextureInfo() {
         this.importFormat = LayaTextureImportFormat.R8G8B8A8;
         this.hasAlphaChannel = true;
         
         var sRGB = !this.isNormal;
         WrapMode wrapMode = WrapMode.Clamp;
+        if (texture != null) {
+            switch (texture.wrapMode) {
+                case TextureWrapMode.Repeat:
+                    wrapMode = WrapMode.Repeat;
+                    break;
+                case TextureWrapMode.Mirror:
+                    wrapMode = WrapMode.Mirrored;
+                    break;
+            }
+        }
+        bool generateMipmap = texture != null && texture.mipmapCount > 1;
+        int anisoLevel = texture != null ? texture.anisoLevel : 1;
+        int filterMode = 1;
+        if (texture != null) {
+            switch (texture.filterMode) {
+                case FilterMode.Point:
+                    filterMode = 0;
+                    break;
+                case FilterMode.Trilinear:
+                    filterMode = 2;
+                    break;
+            }
+        }
         
         // 默认importer数据
         JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
         importData.AddField("sRGB", sRGB);
         importData.AddField("wrapMode", (int)wrapMode);
-        importData.AddField("generateMipmap", true);
-        importData.AddField("anisoLevel", 1);
+        importData.AddField("generateMipmap", generateMipmap);
+        importData.AddField("anisoLevel", anisoLevel);
         importData.AddField("alphaChannel", hasAlphaChannel);
         
         JSONObject platformDefault = new JSONObject(JSONObject.Type.OBJECT);
         platformDefault.AddField("format", (int)this.importFormat);
         importData.AddField("platformDefault", platformDefault);
-        this.m_metaData.AddField("importer", importData);
+        this.setImporterMetadata(importData);
         
         // constructParams
         this.constructParams.Add(texture != null ? texture.width : 1);
         this.constructParams.Add(texture != null ? texture.height : 1);
         this.constructParams.Add((int)LayaTextureFormat.R8G8B8A8);
-        this.constructParams.Add(true); // mipmap
+        this.constructParams.Add(generateMipmap); // mipmap
         this.constructParams.Add(false); // canRead
         this.constructParams.Add(sRGB);
         
         // propertyParams
-        this.propertyParams.AddField("filterMode", 1);
+        this.propertyParams.AddField("filterMode", filterMode);
         this.propertyParams.AddField("wrapModeU", (int)wrapMode);
         this.propertyParams.AddField("wrapModeV", (int)wrapMode);
-        this.propertyParams.AddField("anisoLevel", 1);
+        this.propertyParams.AddField("anisoLevel", anisoLevel);
     }
 
     private void getTextureInfo() {
@@ -139,6 +173,10 @@ internal class TextureFile : FileData
         string path = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
         if (import == null) {
+            if (m_isBuiltinTexture) {
+                initDefaultTextureInfo();
+                return;
+            }
             FileUtil.setStatuse(false);
             Debug.LogError(LOGHEAD + path + " can't export   You should check the texture file format");
             // 使用默认值初始化，避免后续空引用
@@ -175,7 +213,7 @@ internal class TextureFile : FileData
             if (m_isSpriteTexture) {
                 JSONObject spriteImporter = new JSONObject(JSONObject.Type.OBJECT);
                 spriteImporter.AddField("textureType", 2);
-                this.m_metaData.AddField("importer", spriteImporter);
+                this.setImporterMetadata(spriteImporter);
                 // constructParams / propertyParams 保持空数组（已在方法开头初始化），
                 // 精灵纹理不会被材质系统调用 jsonObject()，无需填充。
                 return;
@@ -262,7 +300,7 @@ internal class TextureFile : FileData
                 }
                 importData.AddField("platformDefault", platformDefault);
             }
-            this.m_metaData.AddField("importer", importData);
+            this.setImporterMetadata(importData);
         }
 
         if (true) { // constructParams
@@ -404,11 +442,54 @@ internal class TextureFile : FileData
         }
     }
 
+    /// <summary>
+    /// 读取纹理像素。普通项目纹理由 TextureImporter 保证可读；Unity 内置纹理
+    /// 没有 TextureImporter，无法直接读取时通过 RenderTexture 做 GPU 回读。
+    /// </summary>
+    private Color[] getTexturePixels() {
+        try {
+            return this.texture.GetPixels(0);
+        } catch (UnityException) {
+            return getTexturePixelsFromGpu();
+        } catch (ArgumentException) {
+            return getTexturePixelsFromGpu();
+        }
+    }
+
+    private Color[] getTexturePixelsFromGpu() {
+        RenderTexture temporary = RenderTexture.GetTemporary(
+            this.texture.width,
+            this.texture.height,
+            0,
+            RenderTextureFormat.ARGB32,
+            RenderTextureReadWrite.Default);
+        RenderTexture previous = RenderTexture.active;
+        Texture2D readableTexture = new Texture2D(
+            this.texture.width,
+            this.texture.height,
+            TextureFormat.RGBA32,
+            false);
+        try {
+            Graphics.Blit(this.texture, temporary);
+            RenderTexture.active = temporary;
+            readableTexture.ReadPixels(
+                new Rect(0, 0, this.texture.width, this.texture.height),
+                0,
+                0);
+            readableTexture.Apply();
+            return readableTexture.GetPixels(0);
+        } finally {
+            RenderTexture.active = previous;
+            RenderTexture.ReleaseTemporary(temporary);
+            UnityEngine.Object.DestroyImmediate(readableTexture);
+        }
+    }
+
     public override void SaveFile(Dictionary<string, FileData> exportFiles) {
         base.saveMeta();
         string filePath = this.filePath;
+        Color[] pixels = this.getTexturePixels();
         if (this.rgbmEncoding) {
-            Color[] pixels = this.texture.GetPixels(0);
             if (QualitySettings.activeColorSpace == ColorSpace.Gamma) {
                 ExportLogger.Log("Current color space is gamma.. Your Img will change to Linear Space");
                 gammaColorsToLinear(pixels);
@@ -416,16 +497,18 @@ internal class TextureFile : FileData
             this.exportHDRFile(this.outPath, pixels, this.texture.height, this.texture.width);
         } else if (this.hasAlphaChannel) {
             Texture2D uncompressedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
-            uncompressedTexture.SetPixels(texture.GetPixels()); // 将压缩纹理的像素复制到未压缩纹理
+            uncompressedTexture.SetPixels(pixels); // 将压缩纹理的像素复制到未压缩纹理
             uncompressedTexture.Apply();
             byte[] bytes = uncompressedTexture.EncodeToPNG();
             File.WriteAllBytes(this.outPath, bytes);
+            UnityEngine.Object.DestroyImmediate(uncompressedTexture);
         } else {
             Texture2D uncompressedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
-            uncompressedTexture.SetPixels(texture.GetPixels()); // 将压缩纹理的像素复制到未压缩纹理
+            uncompressedTexture.SetPixels(pixels); // 将压缩纹理的像素复制到未压缩纹理
             uncompressedTexture.Apply();
             byte[] bytes = uncompressedTexture.EncodeToJPG();
             File.WriteAllBytes(this.outPath, bytes);
+            UnityEngine.Object.DestroyImmediate(uncompressedTexture);
         }
 
         // 像素读取完成后，还原导出前修改过的导入设置，不永久污染 Unity 项目资源

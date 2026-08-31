@@ -854,8 +854,12 @@ internal class MetarialUitls
                 string texPath = UnityEditor.AssetDatabase.GetAssetPath(text1.GetInstanceID());
                 if (ResoureMap.IsBuiltinResource(texPath))
                 {
-                    Debug.LogWarning("LayaAir3D: Skipping built-in texture: " + texPath);
-                    continue;
+                    string builtinExportPath;
+                    if (!ResoureMap.TryGetBuiltinTextureExportPath(text1, out builtinExportPath))
+                    {
+                        Debug.LogWarning("LayaAir3D: Skipping unsupported built-in texture '" + text1.name + "': " + texPath);
+                        continue;
+                    }
                 }
                 
                 TextureConfig tConfig = plist.Value;
