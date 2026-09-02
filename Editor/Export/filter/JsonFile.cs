@@ -6,7 +6,10 @@ internal class JsonFile : FileData
 {
     protected JSONObject m_data;
     private List<string> m_regexlist;
-    public JsonFile(string path,JSONObject data):base(path)
+    public JsonFile(
+        string path,
+        JSONObject data,
+        bool usePrimarySavePath = false):base(path, usePrimarySavePath)
     {
         this.m_data = data;
         this.m_regexlist = new List<string>();

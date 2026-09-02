@@ -29,6 +29,13 @@ public class ExportConfig
     //导出地址
     private static string _SAVEPATH = "Assets";
 
+    // 公共依赖资源导出地址。为空时与 SAVEPATH 相同，保持旧行为。
+    // 该值主要供批处理/自定义导出入口在一次导出期间临时设置。
+    private static string _SHAREDRESOURCEPATH = "";
+
+    // 保留输出目录中已经存在的手工迁移 Shader。
+    private static bool _PreserveExistingShaderFiles = false;
+
     //启用自定义Shader导出
     private static bool _EnableCustomShaderExport = false;
 
@@ -188,6 +195,22 @@ public class ExportConfig
         }
     }
 
+    /// <summary>
+    /// 材质、纹理、模型、Shader 等依赖资源的公共输出目录。
+    /// 空字符串表示继续输出到 SavePath()，兼容现有导出流程。
+    /// </summary>
+    public static string SHAREDRESOURCEPATH
+    {
+        get { return _SHAREDRESOURCEPATH; }
+        set { _SHAREDRESOURCEPATH = value ?? ""; }
+    }
+
+    public static bool PreserveExistingShaderFiles
+    {
+        get { return _PreserveExistingShaderFiles; }
+        set { _PreserveExistingShaderFiles = value; }
+    }
+
     //启用自定义Shader导出
     public static bool EnableCustomShaderExport
     {
@@ -285,6 +308,13 @@ public class ExportConfig
         {
             return _SAVEPATH;
         }
+    }
+
+    public static string ResourceSavePath()
+    {
+        return string.IsNullOrEmpty(_SHAREDRESOURCEPATH)
+            ? SavePath()
+            : _SHAREDRESOURCEPATH;
     }
     public static void initConfig()
     {
@@ -396,6 +426,8 @@ public class ExportConfig
         CustomizeDirectory = false;
         CustomizeDirectoryName = "";
         _SAVEPATH = "Assets";
+        _SHAREDRESOURCEPATH = "";
+        _PreserveExistingShaderFiles = false;
         EnableCustomShaderExport = false;
     }
 }

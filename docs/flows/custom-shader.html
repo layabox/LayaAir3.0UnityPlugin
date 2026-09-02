@@ -58,6 +58,7 @@
       材质 shader <b>不在</b> <code>MetarialPropData.json</code> 里，<b>且</b>导出面板勾了「启用自定义 Shader 自动导出」时，
       <code>MetarialUitls.WriteMetarial</code> 才转交 <code>WriteAutoCustomShaderMaterial</code>。
       <b>没勾</b>则未注册 shader 的普通材质跳过导出、粒子材质回退 Laya 内置粒子 shader（见 material-shader 页）。
+      如果自定义 Unity Shader 已在该 JSON 中登记，则会优先按配置映射为指定的已有 Laya Shader 材质，不进入本页的源码转换流程。
     </p>
 
     <figure class="shot sm">
@@ -76,7 +77,7 @@
       </div></div>
       <div class="ci"><div class="n">C</div><div class="c">
         <div class="t">模板优先（更可靠）</div>
-        <div class="d"><code>TryLoadPreConvertedTemplate</code>：若 <code>Editor/Mappings/templat_Shaders/</code> 有<b>手工预转好</b>的同名模板（<code>Mesh_</code>/<code>Particle_</code> 前缀回退查找），直接用模板，跳过自动转译。<b>没有模板才走下面的启发式转换。</b></div>
+        <div class="d"><code>TryLoadPreConvertedTemplate</code>：优先查找项目中的 <code>Assets/**/Editor/LayaAir/ShaderTemplates/</code> 同名模板，再查找插件内置模板（支持 <code>Mesh_</code>/<code>Particle_</code> 前缀回退）。找到后直接使用，跳过自动转译。<b>没有模板才走下面的启发式转换。</b></div>
       </div></div>
     </div>
   </section>
@@ -108,7 +109,7 @@
       <thead><tr><th>模式</th><th>说明</th></tr></thead>
       <tbody>
         <tr><td class="feat">内置规则（默认）</td><td class="note">全部用 C# 硬编码正则替换规则（<code>useMappingTableMode = false</code>）</td></tr>
-        <tr><td class="feat">映射表 Hybrid（可选）</td><td class="note">加载 JSON 映射表（<code>ShaderMappingEngine</code>）：按 priority 用表里的 types / functions / variables / patterns 规则，<b>内置规则兜底</b>。把 <code>example_custom_mappings.json</code> 复制为 <code>ProjectSettings/LayaShaderMappings.json</code> 才会启用映射表模式（无独立开关，文件存在即启用）；<code>Editor/Mappings/</code> 下的 example 文件只是模板，永远不会被读取</td></tr>
+        <tr><td class="feat">映射表 Hybrid（可选）</td><td class="note">加载 JSON 映射表（<code>ShaderMappingEngine</code>）：按 priority 用表里的 types / functions / variables / patterns 规则，<b>内置规则兜底</b>。把 <code>example_custom_mappings.json</code> 复制为 <code>Assets/**/Editor/LayaAir/ShaderMappings.json</code> 即可启用；项目中若存在多份同名配置会报错并停止使用项目映射</td></tr>
       </tbody>
     </table>
     <p style="padding:8px 22px 18px;margin:0;color:var(--text-soft);font-size:14px;">
@@ -165,7 +166,7 @@
       <b>说明该自动转换的适用范围与局限。</b>
       HLSL→GLSL 转换是<b>启发式</b>的：常见的属性、贴图采样、类型映射、渲染状态能自动转换，
       但<b>复杂 Shader（尤其 Unity 表面着色器 <code>#pragma surface</code>、手写复杂片元逻辑）可能无法完整转换，导出后需在 Laya 中手动调整 Shader</b>。
-      对外观要求严格的 Shader，推荐用 ① 的<b>预转换模板</b>（<code>Editor/Mappings/templat_Shaders/</code> 放手工转好的同名模板）替代自动转译。
+      对外观要求严格的 Shader，推荐用 ① 的<b>预转换模板</b>（放在项目的 <code>Assets/**/Editor/LayaAir/ShaderTemplates/</code>，文件名为对应的 <code>*.shader.txt</code>）替代自动转译。
     </p>
 
     <figure class="shot sm">

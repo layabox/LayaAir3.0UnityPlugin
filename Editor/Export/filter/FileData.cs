@@ -8,6 +8,7 @@ internal class FileData
     private string m_uuid;
     protected string m_outPath;
     protected JSONObject m_metaData;
+    private readonly bool m_usePrimarySavePath;
     public string metaPath
     {
         get
@@ -28,7 +29,10 @@ internal class FileData
     {
         get
         {
-            return ExportConfig.SavePath() + "/" + this.m_outPath;
+            string rootPath = m_usePrimarySavePath
+                ? ExportConfig.SavePath()
+                : ExportConfig.ResourceSavePath();
+            return rootPath + "/" + this.m_outPath;
         }
     }
 
@@ -39,8 +43,9 @@ internal class FileData
             return this.m_path;
         }
     }
-    public FileData(string path)
+    public FileData(string path, bool usePrimarySavePath = false)
     {
+        this.m_usePrimarySavePath = usePrimarySavePath;
         this.updatePath(path);
     }
 

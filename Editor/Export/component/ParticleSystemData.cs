@@ -175,6 +175,7 @@ internal class ParticleSystemData
         shapObject.AddField("angle", shape.angle);
         shapObject.AddField("radius", shape.radius);
         shapObject.AddField("radiusThickness", shape.radiusThickness);
+        shapObject.AddField("length", shape.length);
         shapObject.AddField("arc", shape.arc);
         shapObject.AddField("arcMode", (int)(object)shape.arcMode);
         shapObject.AddField("arcSpread", shape.arcSpread);
@@ -505,33 +506,170 @@ internal class ParticleSystemData
         sysData.AddField("customData", dataObject);
     }
 
-    private static bool hasCustomVertexStream(
-        List<ParticleSystemVertexStream> streams,
-        string customStreamPrefix)
+    private static JSONObject writeVertexStreamArray(List<ParticleSystemVertexStream> streams)
     {
+        JSONObject data = new JSONObject(JSONObject.Type.ARRAY);
         for (int i = 0; i < streams.Count; i++)
         {
-            if (streams[i].ToString().StartsWith(customStreamPrefix, System.StringComparison.Ordinal))
-                return true;
+            data.Add((int)streams[i]);
         }
-        return false;
+        return data;
     }
 
-    private static void writeCustomDataVertexStreams(
+    private static bool tryValidateVertexStreams(
+        List<ParticleSystemVertexStream> streams,
+        bool trail,
+        out string reason)
+    {
+        HashSet<int> seen = new HashSet<int>();
+        bool hasPosition = false;
+
+        for (int i = 0; i < streams.Count; i++)
+        {
+            int stream = (int)streams[i];
+            if (stream < 0 || stream > 52)
+            {
+                reason = "contains an unsupported stream value: " + stream;
+                return false;
+            }
+            if (!seen.Add(stream))
+            {
+                reason = "contains a duplicate stream: " + streams[i];
+                return false;
+            }
+
+            if (stream == (int)ParticleSystemVertexStream.Position)
+                hasPosition = true;
+
+            // CPUParticle uses Unity 2022.3 stream ordinals and validates the
+            // target-specific Main/Trail subsets during deserialization.
+            if (!trail && stream >= 49)
+            {
+                reason = "contains a Trail-only stream in the Main layout: " + streams[i];
+                return false;
+            }
+            if (trail && (stream == 5 || stream == 6 || stream == 7 || stream == 45))
+            {
+                reason = "contains a Main-only stream in the Trail layout: " + streams[i];
+                return false;
+            }
+        }
+
+        if (!hasPosition)
+        {
+            reason = "does not contain Position";
+            return false;
+        }
+
+        reason = null;
+        return true;
+    }
+
+    private static void writeVertexStreamConfiguration(
+        UnityEngine.ParticleSystemRenderer renderer,
+        JSONObject compData,
+        List<ParticleSystemVertexStream> streams,
+        bool useCustomStreams,
+        bool trail)
+    {
+        string toggleField = trail
+            ? "useCustomTrailVertexStreams"
+            : "useCustomVertexStreams";
+        string streamsField = trail
+            ? "trailVertexStreams"
+            : "vertexStreams";
+
+        // GetActiveVertexStreams/GetActiveTrailVertexStreams still return the
+        // default layout when Unity's custom-stream override is disabled, so
+        // the serialized toggle must be checked independently.
+        if (!useCustomStreams)
+        {
+            compData.AddField(toggleField, false);
+            return;
+        }
+
+        // An enabled override without a stream layout cannot be consumed by
+        // CPUParticle's strict deserializer. Fall back to its default layout.
+        if (streams.Count == 0)
+        {
+            Debug.LogWarning(
+                "[LayaAir Export] '" + renderer.gameObject.name + "': enabled "
+                + (trail ? "Trail" : "Main")
+                + " Custom Vertex Streams has an empty layout. The custom layout was not exported."
+            );
+            compData.AddField(toggleField, false);
+            return;
+        }
+
+        string reason;
+        if (!tryValidateVertexStreams(streams, trail, out reason))
+        {
+            Debug.LogWarning(
+                "[LayaAir Export] '" + renderer.gameObject.name + "': invalid "
+                + (trail ? "Trail" : "Main") + " Custom Vertex Streams ("
+                + reason + "). The custom layout was not exported."
+            );
+            compData.AddField(toggleField, false);
+            return;
+        }
+
+        compData.AddField(toggleField, true);
+        compData.AddField(streamsField, writeVertexStreamArray(streams));
+    }
+
+    private static bool getUseCustomVertexStreams(
+        UnityEngine.ParticleSystemRenderer renderer,
+        bool trail)
+    {
+        // Unity 2022 serializes these Inspector toggles but does not expose them
+        // through ParticleSystemRenderer's public API.
+        UnityEditor.SerializedObject serializedRenderer = new UnityEditor.SerializedObject(renderer);
+        serializedRenderer.UpdateIfRequiredOrScript();
+        string propertyName = trail
+            ? "m_UseCustomTrailVertexStreams"
+            : "m_UseCustomVertexStreams";
+        UnityEditor.SerializedProperty property = serializedRenderer.FindProperty(propertyName);
+
+        // Preserve the previous behaviour on Unity versions that do not expose
+        // the serialized field; stream validation still guards the final data.
+        return property == null || property.boolValue;
+    }
+
+    private static void writeCustomVertexStreams(
         UnityEngine.ParticleSystemRenderer renderer,
         JSONObject compData)
     {
         List<ParticleSystemVertexStream> streams = new List<ParticleSystemVertexStream>();
         renderer.GetActiveVertexStreams(streams);
-        compData.AddField("enableCustom1VertexStream", hasCustomVertexStream(streams, "Custom1"));
-        compData.AddField("enableCustom2VertexStream", hasCustomVertexStream(streams, "Custom2"));
+        writeVertexStreamConfiguration(
+            renderer,
+            compData,
+            streams,
+            getUseCustomVertexStreams(renderer, false),
+            false);
 
-        streams.Clear();
 #if UNITY_2022_1_OR_NEWER
+        streams.Clear();
         renderer.GetActiveTrailVertexStreams(streams);
+        writeVertexStreamConfiguration(
+            renderer,
+            compData,
+            streams,
+            getUseCustomVertexStreams(renderer, true),
+            true);
+#else
+        compData.AddField("useCustomTrailVertexStreams", false);
 #endif
-        compData.AddField("enableCustom1TrailVertexStream", hasCustomVertexStream(streams, "Custom1"));
-        compData.AddField("enableCustom2TrailVertexStream", hasCustomVertexStream(streams, "Custom2"));
+    }
+
+    private static bool getApplyActiveColorSpace(UnityEngine.ParticleSystemRenderer renderer)
+    {
+        // Unity 2022 serializes this Renderer option but does not expose it through
+        // ParticleSystemRenderer's public C# API. Read the Inspector/YAML field directly.
+        UnityEditor.SerializedObject serializedRenderer = new UnityEditor.SerializedObject(renderer);
+        serializedRenderer.UpdateIfRequiredOrScript();
+        UnityEditor.SerializedProperty property = serializedRenderer.FindProperty("m_ApplyActiveColorSpace");
+        return property == null || property.boolValue;
     }
 
     public static JSONObject GetParticleSystem(UnityEngine.ParticleSystem particleSystem, bool isOverride, NodeMap map, ResoureMap resMap)
@@ -573,8 +711,10 @@ internal class ParticleSystemData
         compData.AddField("cameraVelocityScale", renderer.cameraVelocityScale);
         compData.AddField("velocityScale", renderer.velocityScale);
         compData.AddField("lengthScale", renderer.lengthScale);
+        compData.AddField("maxParticleSize", renderer.maxParticleSize);
+        compData.AddField("applyActiveColorSpace", getApplyActiveColorSpace(renderer));
         compData.AddField("flip", JsonUtils.GetVector3Object(renderer.flip));
-        writeCustomDataVertexStreams(renderer, compData);
+        writeCustomVertexStreams(renderer, compData);
 
         JSONObject meshes = new JSONObject(JSONObject.Type.ARRAY);
         var meshCount = renderer.meshCount;

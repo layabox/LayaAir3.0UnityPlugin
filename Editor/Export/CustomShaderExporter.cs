@@ -60,6 +60,10 @@ internal class CustomShaderExporter
     // 映射表模式是否已初始化
     private static bool mappingEngineInitialized = false;
 
+    // 项目级配置统一放在 Assets/**/Editor/LayaAir 下，由 AssetDatabase 发现。
+    private const string ProjectShaderMappingsAssetSuffix = "/Editor/LayaAir/ShaderMappings.json";
+    private const string ProjectShaderTemplatesAssetDirectory = "/Editor/LayaAir/ShaderTemplates/";
+
     // 性能统计
     private static System.Diagnostics.Stopwatch conversionTimer = new System.Diagnostics.Stopwatch();
     private static long builtInConversionTime = 0;
@@ -372,7 +376,7 @@ internal class CustomShaderExporter
     };
 
     // ==================== 特定模板shader的属性名覆盖映射 ====================
-    // 当通用 PropertyNameMappings 的结果与 templat_Shaders 中的实际变量名不符时，使用此覆盖表
+    // 当通用 PropertyNameMappings 的结果与预转换模板中的实际变量名不符时，使用此覆盖表
     // 键：layaShaderName（由 GenerateLayaShaderName 生成）
     // 值：Unity属性名 → 模板中的精确 Laya 变量名
     private static readonly Dictionary<string, Dictionary<string, string>> TemplatePropertyOverrides
@@ -685,6 +689,11 @@ internal class CustomShaderExporter
     public static void ClearCache()
     {
         exportedShaders.Clear();
+        // Project mappings are editable assets. Reload them for every export instead
+        // of keeping a stale static mapping engine for the whole Unity domain.
+        mappingEngine = null;
+        useMappingTableMode = false;
+        mappingEngineInitialized = false;
     }
 
     /// <summary>
@@ -959,19 +968,134 @@ internal class CustomShaderExporter
     }
 
     /// <summary>
-    /// 尝试从插件template目录加载预转换的GLSL模板文件
-    /// 预转换模板用于含BRDFData等Unity SRP专有结构体的复杂自定义shader
+    /// 尝试加载预转换的 GLSL 模板。项目模板优先于插件内置模板。
+    /// 项目模板必须放在 Assets/**/Editor/LayaAir/ShaderTemplates/ 下。
+    /// 预转换模板用于含BRDFData等Unity SRP专有结构体的复杂自定义shader。
     /// 返回null表示没有找到对应模板，调用方应退回到HLSL转换流程
     /// </summary>
+    private static string FindUniqueProjectAssetPath(string searchFilter, string requiredSuffix, string displayName)
+    {
+        string[] guids = AssetDatabase.FindAssets(searchFilter, new[] { "Assets" });
+        var matchingPaths = new List<string>();
+        foreach (string guid in guids)
+        {
+            string assetPath = AssetDatabase.GUIDToAssetPath(guid).Replace('\\', '/');
+            if (assetPath.EndsWith(requiredSuffix, System.StringComparison.OrdinalIgnoreCase) &&
+                !matchingPaths.Contains(assetPath))
+            {
+                matchingPaths.Add(assetPath);
+            }
+        }
+
+        if (matchingPaths.Count == 0)
+            return null;
+
+        matchingPaths.Sort(System.StringComparer.OrdinalIgnoreCase);
+        if (matchingPaths.Count > 1)
+        {
+            Util.FileUtil.setStatuse(false);
+            Debug.LogError(
+                $"LayaAir3D: Multiple project {displayName} files were found. " +
+                $"Keep only one Assets/**{requiredSuffix}: " +
+                string.Join(", ", matchingPaths.ToArray()));
+            return null;
+        }
+
+        return matchingPaths[0];
+    }
+
     private static string TryLoadPreConvertedTemplate(string shaderName)
     {
-        string[] possiblePaths = new string[]
+        try
         {
-            // 搜索 Editor/Mappings/templat_Shaders/ 目录（内置预转换GLSL模板库）
-            Path.Combine(Application.dataPath, "LayaAir3.0UnityPlugin/Editor/Mappings/templat_Shaders/" + shaderName + ".shader"),
-            Path.Combine(Application.dataPath.Replace("/Assets", ""), "Assets/LayaAir3.0UnityPlugin/Editor/Mappings/templat_Shaders/" + shaderName + ".shader"),
-            Path.Combine(Directory.GetCurrentDirectory(), "Assets/LayaAir3.0UnityPlugin/Editor/Mappings/templat_Shaders/" + shaderName + ".shader"),
+            string expectedAssetName = shaderName + ".shader.txt";
+
+            // Project-owned templates are explicitly scoped and override package templates.
+            string projectTemplateSuffix = ProjectShaderTemplatesAssetDirectory + expectedAssetName;
+            string projectTemplateAssetPath = FindUniqueProjectAssetPath(
+                shaderName,
+                projectTemplateSuffix,
+                $"shader template '{shaderName}'");
+            if (!string.IsNullOrEmpty(projectTemplateAssetPath))
+            {
+                TextAsset projectTextAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(projectTemplateAssetPath);
+                if (projectTextAsset != null)
+                {
+                    string normalizedProjectText = projectTextAsset.text.Replace("\uFEFF", "").TrimStart();
+                    if (normalizedProjectText.StartsWith("Shader3D Start"))
+                    {
+                        ExportLogger.Log(
+                            $"LayaAir3D: Found project GLSL template for '{shaderName}' at: {projectTemplateAssetPath}");
+                        return normalizedProjectText;
+                    }
+                }
+
+                Debug.LogWarning(
+                    $"LayaAir3D: Project shader template is not a valid Laya Shader3D template: {projectTemplateAssetPath}");
+            }
+
+            // AssetDatabase can read text assets from virtual UPM package paths even when
+            // the package has no physical directory under the project's Packages folder.
+            // This exporter is distributed as com.layaair.export-tool. Loading the
+            // package-relative asset path works for embedded, registry and file: UPM
+            // packages, while keeping the Laya shader hidden from Unity's shader importer.
+            string packageAssetPath = "Packages/com.layaair.export-tool/Editor/Mappings/ShaderTemplates/" + expectedAssetName;
+            TextAsset packageTextAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(packageAssetPath);
+            if (packageTextAsset != null)
+            {
+                string normalizedPackageText = packageTextAsset.text.Replace("\uFEFF", "").TrimStart();
+                if (normalizedPackageText.StartsWith("Shader3D Start"))
+                {
+                    ExportLogger.Log($"LayaAir3D: Found package GLSL template for '{shaderName}' at: {packageAssetPath}");
+                    return normalizedPackageText;
+                }
+            }
+
+        }
+        catch (System.Exception)
+        {
+            // Continue with direct file-system lookup below.
+        }
+
+        var possiblePaths = new List<string>();
+        string[] fileNames = new string[]
+        {
+            shaderName + ".shader",
+            // Use a text suffix for package templates so Unity does not try to compile
+            // LayaAir Shader3D syntax as a Unity shader asset.
+            shaderName + ".shader.txt",
         };
+
+        string[] legacyRoots = new string[]
+        {
+            // 搜索 Editor/Mappings/ShaderTemplates/ 目录（内置预转换GLSL模板库）
+            Path.Combine(Application.dataPath, "LayaAir3.0UnityPlugin/Editor/Mappings/ShaderTemplates"),
+            Path.Combine(Application.dataPath.Replace("/Assets", ""), "Assets/LayaAir3.0UnityPlugin/Editor/Mappings/ShaderTemplates"),
+            Path.Combine(Directory.GetCurrentDirectory(), "Assets/LayaAir3.0UnityPlugin/Editor/Mappings/ShaderTemplates"),
+        };
+
+        foreach (string root in legacyRoots)
+            foreach (string fileName in fileNames)
+                possiblePaths.Add(Path.Combine(root, fileName));
+
+        // Local/file UPM packages do not physically exist under the project's Packages
+        // directory. Resolve the package installation path from its virtual asset path so
+        // bundled templates work for both embedded and file: package installations.
+        try
+        {
+            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(
+                "Packages/com.layaair.export-tool/Editor/Export/CustomShaderExporter.cs");
+            if (packageInfo != null && !string.IsNullOrEmpty(packageInfo.resolvedPath))
+            {
+                string packageTemplateRoot = Path.Combine(packageInfo.resolvedPath, "Editor/Mappings/ShaderTemplates");
+                foreach (string fileName in fileNames)
+                    possiblePaths.Add(Path.Combine(packageTemplateRoot, fileName));
+            }
+        }
+        catch (System.Exception)
+        {
+            // Older Unity versions may not expose package information for embedded assemblies.
+        }
 
         foreach (var path in possiblePaths)
         {
@@ -1239,9 +1363,12 @@ internal class CustomShaderExporter
         // 保存properties到parseResult，供后续使用
         parseResult.properties = properties;
 
-        // ⭐ 关键修复：先检测是否是粒子shader，再确定ShaderType
-        // 这样可以确保粒子shader使用正确的ShaderType (Effect)
-        parseResult.isParticleBillboard = IsParticleShader(materialType, unityShaderName, sourceCode, materialFile);
+        // CPU 粒子由 CpuParticle3DRenderer 生成普通 Mesh 顶点数据，不能使用
+        // Shuriken GPU 粒子的 attributeMap / particleShuriKenSpriteVS.glsl。
+        // 因此 CPU 粒子保留粒子材质属性，但顶点与 Shader 生成必须走普通 D3 分支。
+        bool isCpuParticle = materialFile != null && materialFile.IsCPUParticle();
+        bool isParticleShader = IsParticleShader(materialType, unityShaderName, sourceCode, materialFile);
+        parseResult.isParticleBillboard = isParticleShader && !isCpuParticle;
 
         // 根据组件类型和isParticleBillboard结果确定ShaderType
         LayaShaderType shaderType;
@@ -1251,20 +1378,16 @@ internal class CustomShaderExporter
             shaderType = LayaShaderType.D2_BaseRenderNode2D;
             ExportLogger.Log($"LayaAir3D: 2D component detected, using ShaderType: D2_BaseRenderNode2D");
         }
+        else if (isCpuParticle)
+        {
+            shaderType = LayaShaderType.D3;
+            ExportLogger.Log($"LayaAir3D: CPU particle detected, using ordinary D3 mesh shader path: {layaShaderName}");
+        }
         else if (parseResult.isParticleBillboard)
         {
-            if (materialFile != null && materialFile.IsCPUParticle())
-            {
-                // CPU粒子走Mesh管线，使用D3类型
-                shaderType = LayaShaderType.D3;
-                ExportLogger.Log($"LayaAir3D: CPU particle detected, using ShaderType: D3 (Mesh pipeline)");
-            }
-            else
-            {
-                // 普通粒子shader使用Effect类型
-                shaderType = LayaShaderType.Effect;
-                ExportLogger.Log($"LayaAir3D: Particle shader detected, using ShaderType: Effect");
-            }
+            // Shuriken GPU 粒子使用 Effect + 粒子专用顶点格式。
+            shaderType = LayaShaderType.Effect;
+            ExportLogger.Log($"LayaAir3D: Particle shader detected, using ShaderType: Effect");
         }
         else if (materialType == LayaMaterialType.Custom)
         {
@@ -2137,6 +2260,100 @@ internal class CustomShaderExporter
         }
 
         return resolved;
+    }
+
+    /// <summary>
+    /// ShaderGraph assets contain graph JSON rather than ShaderLab pass text, so ParseRenderState
+    /// cannot find Blend/Cull/ZWrite/ZTest directives. ShaderGraph serializes the effective Built-in
+    /// target state onto the material as _BUILTIN_* properties; resolve those values directly.
+    /// </summary>
+    private static ResolvedRenderState ResolveShaderGraphRenderState(Material material)
+    {
+        var resolved = new ResolvedRenderState();
+
+        int surface = GetFirstMaterialInt(material, material.renderQueue >= 3000 ? 1 : 0,
+            "_BUILTIN_Surface", "_Surface", "_SurfaceType");
+        bool transparent = surface != 0 || material.renderQueue >= 3000;
+
+        resolved.hasBlend = true;
+        resolved.s_Blend = transparent ? 1 : 0;
+        if (transparent)
+        {
+            int srcBlend;
+            int dstBlend;
+            bool hasSrc = TryGetFirstMaterialInt(material, out srcBlend,
+                "_BUILTIN_SrcBlend", "_SrcBlend");
+            bool hasDst = TryGetFirstMaterialInt(material, out dstBlend,
+                "_BUILTIN_DstBlend", "_DstBlend");
+
+            if (hasSrc && hasDst)
+            {
+                resolved.s_BlendSrc = UnityBlendFactorToLayaInt(srcBlend);
+                resolved.s_BlendDst = UnityBlendFactorToLayaInt(dstBlend);
+            }
+            else
+            {
+                // ShaderGraph AlphaMode: 0=Alpha, 1=Premultiply, 2=Additive, 3=Multiply.
+                int blendMode = GetFirstMaterialInt(material, 0, "_BUILTIN_Blend", "_Blend", "_BlendMode");
+                switch (blendMode)
+                {
+                    case 1: // Premultiply
+                        resolved.s_BlendSrc = 1; // One
+                        resolved.s_BlendDst = 7; // OneMinusSrcAlpha
+                        break;
+                    case 2: // Additive
+                        resolved.s_BlendSrc = 6; // SrcAlpha
+                        resolved.s_BlendDst = 1; // One
+                        break;
+                    case 3: // Multiply
+                        resolved.s_BlendSrc = 4; // DstColor
+                        resolved.s_BlendDst = 0; // Zero
+                        break;
+                    default: // Alpha
+                        resolved.s_BlendSrc = 6; // SrcAlpha
+                        resolved.s_BlendDst = 7; // OneMinusSrcAlpha
+                        break;
+                }
+            }
+        }
+
+        int cull = GetFirstMaterialInt(material, 2,
+            "_BUILTIN_CullMode", "_CullMode", "_Cull");
+        resolved.hasCull = true;
+        resolved.s_Cull = UnityCullToLayaInt(cull);
+
+        int zWrite = GetFirstMaterialInt(material, transparent ? 0 : 1,
+            "_BUILTIN_ZWrite", "_ZWrite");
+        resolved.hasZWrite = true;
+        resolved.s_DepthWrite = zWrite != 0;
+
+        int zTest = GetFirstMaterialInt(material, 4,
+            "_BUILTIN_ZTest", "_ZTest");
+        resolved.hasZTest = true;
+        resolved.s_DepthTest = UnityZTestToLayaInt(zTest);
+
+        return resolved;
+    }
+
+    private static int GetFirstMaterialInt(Material material, int fallback, params string[] propertyNames)
+    {
+        int value;
+        return TryGetFirstMaterialInt(material, out value, propertyNames) ? value : fallback;
+    }
+
+    private static bool TryGetFirstMaterialInt(Material material, out int value, params string[] propertyNames)
+    {
+        foreach (string propertyName in propertyNames)
+        {
+            if (material.HasProperty(propertyName))
+            {
+                value = material.GetInt(propertyName);
+                return true;
+            }
+        }
+
+        value = 0;
+        return false;
     }
 
     /// <summary>
@@ -5154,6 +5371,55 @@ internal class CustomShaderExporter
     /// <summary>
     /// 初始化映射引擎（混合架构）
     /// </summary>
+    private static string ProjectAssetPathToAbsolutePath(string assetPath)
+    {
+        if (string.IsNullOrEmpty(assetPath))
+            return null;
+
+        DirectoryInfo projectDirectory = Directory.GetParent(Application.dataPath);
+        string projectRoot = projectDirectory != null
+            ? projectDirectory.FullName
+            : Directory.GetCurrentDirectory();
+        return Path.GetFullPath(Path.Combine(
+            projectRoot,
+            assetPath.Replace('/', Path.DirectorySeparatorChar)));
+    }
+
+    private static string FindBundledShaderMappingPath()
+    {
+        try
+        {
+            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(
+                "Packages/com.layaair.export-tool/Editor/Export/CustomShaderExporter.cs");
+            if (packageInfo != null && !string.IsNullOrEmpty(packageInfo.resolvedPath))
+            {
+                string packagePath = Path.Combine(
+                    packageInfo.resolvedPath,
+                    "Editor/Mappings/builtin_unity_to_laya.json");
+                if (File.Exists(packagePath))
+                    return packagePath;
+            }
+        }
+        catch (System.Exception)
+        {
+            // Continue with legacy Assets installation paths.
+        }
+
+        string[] legacyPaths = new[]
+        {
+            Path.Combine(Application.dataPath, "LayaAir3.0UnityPlugin/Editor/Mappings/builtin_unity_to_laya.json"),
+            Path.Combine(Directory.GetCurrentDirectory(),
+                "Assets/LayaAir3.0UnityPlugin/Editor/Mappings/builtin_unity_to_laya.json")
+        };
+        foreach (string path in legacyPaths)
+        {
+            if (File.Exists(path))
+                return path;
+        }
+
+        return null;
+    }
+
     private static void InitializeMappingEngine()
     {
         if (mappingEngineInitialized)
@@ -5161,9 +5427,13 @@ internal class CustomShaderExporter
 
         mappingEngineInitialized = true;
 
-        // 检查用户自定义映射表
-        string projectMappingPath = Path.Combine(Directory.GetCurrentDirectory(), "ProjectSettings/LayaShaderMappings.json");
-        bool hasUserMappings = File.Exists(projectMappingPath);
+        // 项目级转换规则与材质映射采用相同的 Assets/Editor/LayaAir 发现机制。
+        string projectMappingAssetPath = FindUniqueProjectAssetPath(
+            "ShaderMappings",
+            ProjectShaderMappingsAssetSuffix,
+            "shader mapping");
+        string projectMappingPath = ProjectAssetPathToAbsolutePath(projectMappingAssetPath);
+        bool hasUserMappings = !string.IsNullOrEmpty(projectMappingPath) && File.Exists(projectMappingPath);
 
         if (hasUserMappings)
         {
@@ -5175,8 +5445,8 @@ internal class CustomShaderExporter
             mappingEngine = new ShaderMappingEngine();
 
             // 加载内置映射表
-            string builtinMappingPath = Path.Combine(Application.dataPath, "LayaAir3.0UnityPlugin/Editor/Mappings/builtin_unity_to_laya.json");
-            if (File.Exists(builtinMappingPath))
+            string builtinMappingPath = FindBundledShaderMappingPath();
+            if (!string.IsNullOrEmpty(builtinMappingPath))
             {
                 if (mappingEngine.LoadMappings(builtinMappingPath))
                 {
@@ -5191,7 +5461,7 @@ internal class CustomShaderExporter
             // 加载用户映射表（可覆盖内置规则）
             if (mappingEngine.LoadMappings(projectMappingPath))
             {
-                ExportLogger.Log($"LayaAir3D: ✓ Loaded custom mappings from: {projectMappingPath}");
+                ExportLogger.Log($"LayaAir3D: ✓ Loaded custom mappings from: {projectMappingAssetPath}");
                 useMappingTableMode = true;
             }
 
@@ -5210,7 +5480,9 @@ internal class CustomShaderExporter
         else
         {
             ExportLogger.Log("LayaAir3D: No custom mappings found, using built-in conversion mode");
-            ExportLogger.Log($"LayaAir3D: To enable mapping table mode, create: {projectMappingPath}");
+            ExportLogger.Log(
+                "LayaAir3D: To enable mapping table mode, create " +
+                "Assets/**/Editor/LayaAir/ShaderMappings.json");
             useMappingTableMode = false;
         }
     }
@@ -12566,18 +12838,19 @@ internal class CustomShaderExporter
                 return $"        {prop.layaName}: {{ type: {typeStr}, default: {defaultValue}{options} }},";
 
             case ShaderUtil.ShaderPropertyType.Color:
-                typeStr = "Color";
                 if (prop.isHDR)
                 {
-                    // HDR颜色归一化到[0,1]，与Unity面板显示的颜色保持一致
-                    Color hdrC = prop.defaultColor;
-                    float hdrMax = Mathf.Max(hdrC.r, hdrC.g, hdrC.b);
-                    if (hdrMax > 1f)
-                        hdrC = new Color(hdrC.r / hdrMax, hdrC.g / hdrMax, hdrC.b / hdrMax, hdrC.a);
-                    defaultValue = FormatColorDefault(hdrC);
+                    // HDR Color must bypass Laya's Color gamma conversion. Unity material
+                    // values are already the linear float4 consumed by the shader, and may
+                    // legitimately exceed 1.0, so export them losslessly as Vector4.
+                    typeStr = "Vector4";
+                    defaultValue = FormatVector4Default(new Vector4(
+                        prop.defaultColor.r, prop.defaultColor.g,
+                        prop.defaultColor.b, prop.defaultColor.a));
                 }
                 else
                 {
+                    typeStr = "Color";
                     defaultValue = FormatColorDefault(prop.defaultColor);
                 }
                 return $"        {prop.layaName}: {{ type: {typeStr}, default: {defaultValue} }},";
@@ -12696,16 +12969,29 @@ internal class CustomShaderExporter
 
         if (matShaderSource != null)
         {
-            // 第一步：解析 shader 渲染状态（保留原始 token，区分硬编码和属性引用）
-            ShaderParseResult matParseResult = new ShaderParseResult();
-            ParseRenderState(matShaderSource, matParseResult);
+            bool isShaderGraph = shaderPath.EndsWith(".shadergraph", System.StringComparison.OrdinalIgnoreCase);
+            ShaderParseResult matParseResult = null;
+            ResolvedRenderState resolved;
 
-            // 第二步：结合材质数据，解析出实际生效的 Laya 渲染参数
-            // ⭐ GUI 脚本属性值修正：某些 shader 的 CustomEditor 在运行时覆盖材质属性，
-            // 但 .mat 序列化的是旧值。此处模拟 GUI 脚本逻辑，生成正确的属性值。
-            Dictionary<string, int> guiOverrides = BuildShaderGUIOverrides(material, baseLayaShaderName ?? layaShaderName);
+            if (isShaderGraph)
+            {
+                // ShaderGraph source is JSON and does not contain ShaderLab pass directives.
+                // Read the effective target state serialized in _BUILTIN_* material properties.
+                resolved = ResolveShaderGraphRenderState(material);
+                ExportLogger.Log($"LayaAir3D: Resolved ShaderGraph render state from material properties: {material.name}");
+            }
+            else
+            {
+                // 第一步：解析 shader 渲染状态（保留原始 token，区分硬编码和属性引用）
+                matParseResult = new ShaderParseResult();
+                ParseRenderState(matShaderSource, matParseResult);
 
-            ResolvedRenderState resolved = ResolveRenderState(matParseResult, material, guiOverrides);
+                // 第二步：结合材质数据，解析出实际生效的 Laya 渲染参数
+                // ⭐ GUI 脚本属性值修正：某些 shader 的 CustomEditor 在运行时覆盖材质属性，
+                // 但 .mat 序列化的是旧值。此处模拟 GUI 脚本逻辑，生成正确的属性值。
+                Dictionary<string, int> guiOverrides = BuildShaderGUIOverrides(material, baseLayaShaderName ?? layaShaderName);
+                resolved = ResolveRenderState(matParseResult, material, guiOverrides);
+            }
 
             // 第三步：与预定义模式匹配
             matchedRenderMode = MatchRenderMode(resolved);
@@ -12741,7 +13027,7 @@ internal class CustomShaderExporter
                 props.AddField("s_Blend", resolved.s_Blend);
 
                 // Blend 参数 — 只写入属性引用（动态）的值，硬编码部分由 shader statefirst 处理
-                if (matParseResult.blendSrc != null)
+                if (matParseResult != null && matParseResult.blendSrc != null)
                 {
                     if (resolved.s_Blend == 2)
                     {
@@ -12795,8 +13081,13 @@ internal class CustomShaderExporter
             props.AddField("s_DepthWrite", zWrite);
         }
 
-        props.AddField("alphaTest", PropDatasConfig.GetAlphaTest(material));
-        props.AddField("alphaTestValue", PropDatasConfig.GetAlphaTestValue(material));
+        bool alphaTest = PropDatasConfig.GetAlphaTest(material) ||
+            GetFirstMaterialInt(material, 0, "_BUILTIN_AlphaClip", "_AlphaClip") != 0;
+        float alphaTestValue = material.HasProperty("_Alpha_Clip_Threshold")
+            ? material.GetFloat("_Alpha_Clip_Threshold")
+            : PropDatasConfig.GetAlphaTestValue(material);
+        props.AddField("alphaTest", alphaTest);
+        props.AddField("alphaTestValue", alphaTestValue);
         
         // 导出纹理
         JSONObject textures = new JSONObject(JSONObject.Type.ARRAY);
@@ -13334,7 +13625,8 @@ internal class CustomShaderExporter
     }
 
     /// <summary>
-    /// 导出颜色属性（HDR颜色归一化到[0,1]，与Unity面板显示的颜色保持一致）
+    /// 导出颜色属性。HDR 颜色保留 Unity shader 使用的原始线性 float4，
+    /// 不归一化、不截断，并由模板声明为 Vector4 以绕过 Laya Color 的 gamma 转换。
     /// </summary>
     private static void ExportColorProperty(Material material, string propName, string layaName, JSONObject props, bool isHDR = false)
     {
@@ -13343,15 +13635,8 @@ internal class CustomShaderExporter
         JSONObject colorValue = new JSONObject(JSONObject.Type.ARRAY);
         if (isHDR)
         {
-            // HDR颜色：归一化到[0,1]，与Unity面板显示的颜色一致
+            // HDR values can exceed 1.0. Preserve RGB intensity and alpha exactly.
             Vector4 vec = material.GetVector(propName);
-            float maxChannel = Mathf.Max(vec.x, vec.y, vec.z);
-            if (maxChannel > 1f)
-            {
-                vec.x /= maxChannel;
-                vec.y /= maxChannel;
-                vec.z /= maxChannel;
-            }
             colorValue.Add(vec.x);
             colorValue.Add(vec.y);
             colorValue.Add(vec.z);
@@ -13483,6 +13768,12 @@ internal class ShaderFile : FileData
     {
         try
         {
+            if (ExportConfig.PreserveExistingShaderFiles && File.Exists(this.outPath))
+            {
+                ExportLogger.Log($"LayaAir3D: Preserved existing shader file: {this.outPath}");
+                return;
+            }
+
             string directory = Path.GetDirectoryName(this.outPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {

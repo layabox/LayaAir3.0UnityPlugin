@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "name": "Project Custom Mappings Example",
-  "description": "示例：项目自定义映射表。将此文件复制到 ProjectSettings/LayaShaderMappings.json 来启用自定义规则",
+  "description": "示例：项目自定义 Shader 转换映射表。复制为 Assets/<任意目录>/Editor/LayaAir/ShaderMappings.json 来启用；项目中只保留一份",
 
   "mappings": {
     "types": [

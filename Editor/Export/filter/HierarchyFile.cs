@@ -115,7 +115,7 @@ internal class HierarchyFile
 
                         JSONObject perfabJson = this.nodeMap.getPerfabJson(childObject);
                         addAtlasPreloads(perfabJson);
-                        this.resouremap.AddExportFile(new JsonFile(fileName, perfabJson));
+                        this.resouremap.AddExportFile(new JsonFile(fileName, perfabJson, true));
                     }
                 }
             }
@@ -131,7 +131,7 @@ internal class HierarchyFile
                     }
                     JSONObject perfabJson = this.nodeMap.getPerfabJson(gameObject);
                     addAtlasPreloads(perfabJson);
-                    this.resouremap.AddExportFile(new JsonFile(gameObject.name + ".lh", perfabJson));
+                    this.resouremap.AddExportFile(new JsonFile(gameObject.name + ".lh", perfabJson, true));
                 }
             }
         }
@@ -231,6 +231,6 @@ internal class HierarchyFile
             child.Add(this.nodeMap.getJsonObject(gameObjects[i].gameObject));
         }
 
-        this.resouremap.AddExportFile(new JsonFile(sceneName, node));
+        this.resouremap.AddExportFile(new JsonFile(sceneName, node, true));
     }
 }

@@ -29,7 +29,7 @@
   </header>
 
   <div class="note" style="background:#f4f7ff;border-color:#cfe0ff;">
-    <b>本章思路：</b>材质导出的核心是按 shader 名查表映射：① 先以 shader 名查到对应的映射配置，据此逐类映射 → ② 渲染状态、③ 贴图、④ 颜色（HDR 需分解）、⑤ float（含条件规则）、⑥ defines 宏 → ⑦ 天空盒为特例，单独导出 <code>.cubemap</code>。
+    <b>本章思路：</b>材质导出的核心是按 shader 名查表映射：① 先以 shader 名查到对应的映射配置，据此逐类映射 → ② 渲染状态、③ 贴图、④ 颜色（HDR 需分解）、⑤ 基础类型（含条件规则）、⑥ defines 宏 → ⑦ 天空盒为特例，单独导出 <code>.cubemap</code>。
   </div>
 
   <div class="note">
@@ -43,7 +43,7 @@
     <a href="#s2">② 渲染状态</a>
     <a href="#s3">③ 贴图映射</a>
     <a href="#s4">④ 颜色 + HDR</a>
-    <a href="#s5">⑤ float + 条件规则</a>
+    <a href="#s5">⑤ 基础类型 + 条件规则</a>
     <a href="#s6">⑥ defines</a>
     <a href="#s7">⑦ 天空盒</a>
   </nav>
@@ -79,6 +79,20 @@
       <code>_MetallicGlossMap</code>、<code>_EmissionMap</code>、<code>_OcclusionMap</code>…）+ 颜色 + float + 条件规则。
       已配置的 shader 类型：<code>Standard/PBR</code>、<code>BlinnPhong</code>、<code>Unlit</code>、<code>Skybox</code> 系、<code>PARTICLESHURIKEN</code>。
     </div>
+    <div class="note">
+      <b>自定义 Unity Shader 也可以走这张表：</b>以完整的 <code>material.shader.name</code> 作为 JSON key，
+      <code>targeName</code> 填 Laya 端已存在的 Shader 名称。此方式只导出材质参数和资源引用，<b>不会生成 Laya Shader 源码</b>；
+      没有登记的 Shader 才会在启用开关后进入自动转换流程。
+    </div>
+    <div class="note">
+      <b>项目级配置：</b>Unity 项目可在任意 Editor 特殊目录下创建
+      <code>Assets/**/Editor/LayaAir/MaterialMappings.json</code>，例如
+      <code>Assets/Game/Editor/LayaAir/MaterialMappings.json</code>。导出器通过 AssetDatabase 查找，因此不要求 Editor 位于 Assets 根层；
+      同一个项目只能保留一个该名称和目录结构的配置文件，避免产生不确定的覆盖顺序。
+      插件先加载内置配置，再加载项目配置；同名 Shader 的项目配置会完整覆盖内置条目。
+      <code>materials</code> 用于普通材质，<code>cpuParticle</code> 用于 CPU 粒子材质，后者未命中时仍回退到普通材质表。
+      项目配置使用正确拼写 <code>targetName</code>，同时兼容旧拼写 <code>targeName</code>。
+    </div>
   </section>
 
   <!-- ② 渲染状态 -->
@@ -104,7 +118,8 @@
     <p style="padding:16px 22px 18px;margin:0;color:var(--text-soft);font-size:14px;">
       <b>将配置中的各贴图槽映射到 Laya 字段并导出。</b>
       遍历配置的贴图槽，<code>material.GetTexture(uName)</code> → 导出 <code>TextureFile</code> → 加入 <code>textures</code> 数组（带 layaName）。
-      <b>内置资源贴图跳过</b>（<code>unity_builtin_extra</code> 等）；法线贴图标 <code>isNormal</code>。平铺偏移走 <code>tillOffset</code> 写 Vector4。
+      <b>内置资源贴图跳过</b>（<code>unity_builtin_extra</code> 等）；法线贴图标 <code>isNormal</code>。
+      平铺偏移不是属性类型：新配置在对应 texture 上用 <code>tilingOffset</code> 指定 Laya 字段，旧 <code>tillOffset</code> 数组仍兼容；两者均写为 <code>[scale.x, scale.y, offset.x, offset.y]</code>。
     </p>
   </section>
 
@@ -145,15 +160,45 @@
     </div>
   </section>
 
-  <!-- ⑤ float + rule -->
+  <!-- ⑤ 基础类型 + rule -->
   <section class="group" id="s5">
     <div class="group-head">
-      <div class="gh-left"><h2>⑤ float + 条件规则</h2></div>
+      <div class="gh-left"><h2>⑤ 基础类型 + 条件规则</h2></div>
     </div>
-    <p style="padding:16px 22px 18px;margin:0;color:var(--text-soft);font-size:14px;">
-      <b>逐个映射 float，部分带条件规则按情况切换取值来源。</b>
-      <code>material.GetFloat(uName)</code> → 写 layaName。支持 <b>rule 条件改名</b>：如材质有 <code>_MetallicGlossMap</code> 贴图时，
-      光滑度改为从 <code>_GlossMapScale</code> 读取（Laya 端字段仍是 <code>u_Smoothness</code>，变的只是去 Unity 材质取值的属性名）。<code>isGamma</code> 标记的值经 <code>LinearToGammaSpace</code> 转换。
+    <p style="padding:16px 22px 0;margin:0;color:var(--text-soft);font-size:14px;">
+      <b>新版 <code>properties</code> 显式声明类型，支持 Float、Int、Bool、Vector2、Vector3、Vector4、Color。</b>
+      Vector2/3 会按实际分量数写入；Bool 写 JSON 布尔值；Color 可用 <code>hdrName</code> 拆分 HDR 强度。
+      <code>Float</code> 可用 <code>isGamma</code> 转换，所有类型均可复用 <code>rule</code> 条件改名。
+    </p>
+    <div class="code">
+      <div class="cap"><span class="pill out">Assets/**/Editor/LayaAir/MaterialMappings.json</span> 手动迁移 Shader 的项目配置示例</div>
+<pre>{
+  "materials": {
+    "Custom/MyShader": {
+      "targetName": "MyLayaShader",
+      "textures": [
+        { "uName": "_MainTex", "layaName": "u_MainTexture",
+          "define": "MAINTEXTURE", "tilingOffset": "u_TilingOffset" }
+      ],
+      "properties": [
+        { "uName": "_Intensity", "layaName": "u_Intensity", "type": "Float" },
+        { "uName": "_Mode",      "layaName": "u_Mode",      "type": "Int" },
+        { "uName": "_Enabled",   "layaName": "u_Enabled",   "type": "Bool" },
+        { "uName": "_Scroll",    "layaName": "u_Scroll",    "type": "Vector2" },
+        { "uName": "_Direction", "layaName": "u_Direction", "type": "Vector3" },
+        { "uName": "_Params",    "layaName": "u_Params",    "type": "Vector4" },
+        { "uName": "_Tint",      "layaName": "u_Tint",      "type": "Color",
+          "hdrName": "u_TintIntensity" }
+      ]
+    }
+  },
+  "cpuParticle": {}
+}</pre>
+    </div>
+    <p style="padding:8px 22px 18px;margin:0;color:var(--text-soft);font-size:14px;">
+      旧版 <code>floats</code> / <code>colors</code> / <code>tillOffset</code> 无需迁移；若新旧配置写入同一个 Laya 字段，
+      <code>properties</code> 的结果优先。旧 float 的 <b>rule 条件改名</b>行为也保持不变：例如有
+      <code>_MetallicGlossMap</code> 时从 <code>_GlossMapScale</code> 取光滑度。
     </p>
   </section>
 
