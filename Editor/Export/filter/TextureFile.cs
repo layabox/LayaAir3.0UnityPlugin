@@ -54,6 +54,7 @@ internal class TextureFile : FileData
     private LayaTextureImportFormat importFormat;
     private bool hasAlphaChannel;
     private bool m_isBuiltinTexture;
+    private bool m_forceReadable;
 
     // 导出前保存的原始导入设置，SaveFile 结束后用于还原，确保不污染 Unity 项目资源
     private string              m_importerPath           = null;
@@ -148,7 +149,7 @@ internal class TextureFile : FileData
         this.constructParams.Add(texture != null ? texture.height : 1);
         this.constructParams.Add((int)LayaTextureFormat.R8G8B8A8);
         this.constructParams.Add(generateMipmap); // mipmap
-        this.constructParams.Add(false); // canRead
+        this.constructParams.Add(m_forceReadable); // canRead
         this.constructParams.Add(sRGB);
         
         // propertyParams
@@ -210,7 +211,7 @@ internal class TextureFile : FileData
             // ── 精灵纹理快速路径 ──────────────────────────────────────────────
             // 2D 精灵纹理在 Laya 中只需要 { "textureType": 2 }，不需要 3D 贴图的
             // constructParams / propertyParams / platformDefault 等参数。
-            if (m_isSpriteTexture) {
+            if (m_isSpriteTexture && !m_forceReadable) {
                 JSONObject spriteImporter = new JSONObject(JSONObject.Type.OBJECT);
                 spriteImporter.AddField("textureType", 2);
                 this.setImporterMetadata(spriteImporter);
@@ -315,7 +316,7 @@ internal class TextureFile : FileData
             this.constructParams.Add(import.mipmapEnabled);
 
             // canRead
-            if (import.textureType == TextureImporterType.NormalMap || import.isReadable == false || import.textureCompression != TextureImporterCompression.Uncompressed) {
+            if (!m_forceReadable && (import.textureType == TextureImporterType.NormalMap || import.isReadable == false || import.textureCompression != TextureImporterCompression.Uncompressed)) {
                 this.constructParams.Add(false);
             } else {
                 this.constructParams.Add(true);
@@ -378,6 +379,40 @@ internal class TextureFile : FileData
         data.AddField("propertyParams", this.propertyParams);
         data.AddField("path", "res://" + this.uuid);
         return data;
+    }
+
+    /// <summary>
+    /// Shape Texture sampling calls Texture2D.getPixels() at runtime. Upgrade a
+    /// cached texture export to a readable 3D Texture2D without permanently
+    /// changing the Unity source import settings.
+    /// </summary>
+    public void EnsureReadable()
+    {
+        m_forceReadable = true;
+
+        // A texture may have entered the shared cache through Sprite export first.
+        // Rebuild its metadata as a regular Texture2D, while retaining the original
+        // importer snapshot that SaveFile must restore after pixel extraction.
+        if (m_isSpriteTexture)
+        {
+            string importerPath = m_importerPath;
+            TextureImporterType originalTextureType = m_origTextureType;
+            bool originalIsReadable = m_origIsReadable;
+            bool importSettingsModified = m_importSettingsModified;
+
+            m_isSpriteTexture = false;
+            getTextureInfo();
+
+            m_importerPath = importerPath;
+            m_origTextureType = originalTextureType;
+            m_origIsReadable = originalIsReadable;
+            m_importSettingsModified = importSettingsModified || m_importSettingsModified;
+        }
+
+        if (constructParams != null && constructParams.Count > 4)
+        {
+            constructParams[4] = JSONObject.Create(true);
+        }
     }
 
     private byte[] float2rgbe(float r, float g, float b)

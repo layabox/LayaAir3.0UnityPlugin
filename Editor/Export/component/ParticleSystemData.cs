@@ -170,24 +170,167 @@ internal class ParticleSystemData
         JSONObject shapObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(shapObject, "PlusShape");
         ParticleSystem.ShapeModule shape = particleSystem.shape;
-        shapObject.AddField("enable", shape.enabled);
-        shapObject.AddField("type", (int)(object)shape.shapeType);
+
+        // CpuParticle keeps Unity's current Shape enum values for its 14 supported
+        // 3D shapes. Normalize the obsolete shell-only enum values to the current
+        // shape + radiusThickness representation before serializing them.
+        int sourceShapeType = (int)(object)shape.shapeType;
+        int targetShapeType = sourceShapeType;
+        float radiusThickness = shape.radiusThickness;
+        switch (sourceShapeType)
+        {
+            case 1:  targetShapeType = 0;  radiusThickness = 0; break; // SphereShell
+            case 3:  targetShapeType = 2;  radiusThickness = 0; break; // HemisphereShell
+            case 7:  targetShapeType = 4;  radiusThickness = 0; break; // ConeShell
+            case 9:  targetShapeType = 8;  radiusThickness = 0; break; // ConeVolumeShell
+            case 11: targetShapeType = 10; radiusThickness = 0; break; // CircleEdge
+        }
+
+        bool supportedShape = isCpuParticleShapeTypeSupported(targetShapeType);
+        if (shape.enabled && !supportedShape)
+        {
+            Debug.LogWarning(
+                $"[LayaAir Export] '{particleSystem.gameObject.name}': CPU Particle Shape " +
+                $"'{shape.shapeType}' is not supported. The exported Shape module is disabled.");
+        }
+
+        shapObject.AddField("enable", shape.enabled && supportedShape);
+        // Keep the serialized type valid even when an unsupported/future Unity
+        // shape is disabled, so loading the asset cannot create a null helper.
+        shapObject.AddField("type", supportedShape ? targetShapeType : 4);
         shapObject.AddField("angle", shape.angle);
         shapObject.AddField("radius", shape.radius);
-        shapObject.AddField("radiusThickness", shape.radiusThickness);
+        shapObject.AddField("donutRadius", shape.donutRadius);
+        shapObject.AddField("radiusThickness", radiusThickness);
+        shapObject.AddField("radiusMode", (int)(object)shape.radiusMode);
+        shapObject.AddField("radiusSpread", shape.radiusSpread);
+        shapObject.AddField("radiusSpeed", writeMinMaxCurveData(shape.radiusSpeed));
         shapObject.AddField("length", shape.length);
         shapObject.AddField("arc", shape.arc);
         shapObject.AddField("arcMode", (int)(object)shape.arcMode);
         shapObject.AddField("arcSpread", shape.arcSpread);
         shapObject.AddField("arcSpeed", writeMinMaxCurveData(shape.arcSpeed));
-        shapObject.AddField("position", JsonUtils.GetVector3Object(shape.position));
-        shapObject.AddField("rotation", JsonUtils.GetVector3Object(shape.rotation));
+
+        shapObject.AddField("boxThickness", JsonUtils.GetVector3Object(shape.boxThickness));
+
+        if (targetShapeType == 6 && shape.mesh != null)
+        {
+            shapObject.AddField("mesh", resMap.GetMeshData(shape.mesh, null));
+        }
+        else if (shape.enabled && targetShapeType == 6)
+        {
+            Debug.LogWarning(
+                $"[LayaAir Export] '{particleSystem.gameObject.name}': CPU Particle Mesh Shape has no Mesh source.");
+        }
+        if (targetShapeType == 13 && shape.meshRenderer != null)
+        {
+            shapObject.AddField(
+                "meshRenderer",
+                map.getRefNodeIdObjet(shape.meshRenderer.gameObject, "MeshRenderer"));
+        }
+        else if (shape.enabled && targetShapeType == 13)
+        {
+            Debug.LogWarning(
+                $"[LayaAir Export] '{particleSystem.gameObject.name}': CPU Particle MeshRenderer Shape has no Renderer source.");
+        }
+        if (targetShapeType == 14 && shape.skinnedMeshRenderer != null)
+        {
+            shapObject.AddField(
+                "skinnedMeshRenderer",
+                map.getRefNodeIdObjet(shape.skinnedMeshRenderer.gameObject, "SkinnedMeshRenderer"));
+
+            Mesh skinnedMesh = shape.skinnedMeshRenderer.sharedMesh;
+            if (skinnedMesh != null && skinnedMesh.blendShapeCount > 0)
+            {
+                Debug.LogWarning(
+                    $"[LayaAir Export] '{particleSystem.gameObject.name}': the referenced SkinnedMeshRenderer " +
+                    "contains BlendShapes, but the current Unity Mesh exporter does not write morph target data. " +
+                    "CPU Particle Shape will sample the exported base skinned mesh.");
+            }
+        }
+        else if (shape.enabled && targetShapeType == 14)
+        {
+            Debug.LogWarning(
+                $"[LayaAir Export] '{particleSystem.gameObject.name}': CPU Particle SkinnedMeshRenderer Shape has no Renderer source.");
+        }
+        shapObject.AddField("meshShapeType", (int)(object)shape.meshShapeType);
+        shapObject.AddField("useMeshMaterialIndex", shape.useMeshMaterialIndex);
+        shapObject.AddField("meshMaterialIndex", shape.meshMaterialIndex);
+        shapObject.AddField("useMeshColors", shape.useMeshColors);
+        shapObject.AddField("normalOffset", shape.normalOffset);
+        int meshSpawnMode = (int)(object)shape.meshSpawnMode;
+        shapObject.AddField("meshSpawnMode", meshSpawnMode);
+        shapObject.AddField("meshSpawnSpread", shape.meshSpawnSpread);
+        shapObject.AddField("meshSpawnSpeed", writeMinMaxCurveData(shape.meshSpawnSpeed));
+
+        if (shape.enabled && isCpuParticleMeshShape(targetShapeType) && meshSpawnMode > 2)
+        {
+            Debug.LogWarning(
+                $"[LayaAir Export] '{particleSystem.gameObject.name}': CPU Particle Mesh Shape " +
+                "does not support BurstSpread and will fail closed.");
+        }
+
+        if (shape.texture != null)
+        {
+            shapObject.AddField("texture", resMap.GetTextureData(shape.texture, true));
+        }
+        shapObject.AddField("textureClipChannel", (int)(object)shape.textureClipChannel);
+        shapObject.AddField("textureClipThreshold", shape.textureClipThreshold);
+        shapObject.AddField("textureColorAffectsParticles", shape.textureColorAffectsParticles);
+        shapObject.AddField("textureAlphaAffectsParticles", shape.textureAlphaAffectsParticles);
+        shapObject.AddField("textureBilinearFiltering", shape.textureBilinearFiltering);
+        shapObject.AddField("textureUVChannel", shape.textureUVChannel);
+
+        if (shape.texture != null && isCpuParticleMeshShape(targetShapeType)
+            && shape.textureUVChannel != 0 && shape.textureUVChannel != 1)
+        {
+            Debug.LogWarning(
+                $"[LayaAir Export] '{particleSystem.gameObject.name}': CPU Particle Mesh Shape " +
+                $"only supports Texture UV channels 0 and 1; channel {shape.textureUVChannel} will fail closed.");
+        }
+
+        Vector3 shapePosition = shape.position;
+        SpaceUtils.changePostion(ref shapePosition);
+        Vector3 shapeRotation = shape.rotation;
+        shapeRotation.y *= -1;
+        shapeRotation.z *= -1;
+        shapObject.AddField("position", JsonUtils.GetVector3Object(shapePosition));
+        shapObject.AddField("rotation", JsonUtils.GetVector3Object(shapeRotation));
         shapObject.AddField("scale", JsonUtils.GetVector3Object(shape.scale));
         shapObject.AddField("alignToDirection", shape.alignToDirection);
         shapObject.AddField("randomDirectionAmount", shape.randomDirectionAmount);
         shapObject.AddField("sphericalDirectionAmount", shape.sphericalDirectionAmount);
         shapObject.AddField("randomPositionAmount", shape.randomPositionAmount);
         sysData.AddField("shape", shapObject);
+    }
+
+    private static bool isCpuParticleShapeTypeSupported(int shapeType)
+    {
+        switch (shapeType)
+        {
+            case 0:  // Sphere
+            case 2:  // Hemisphere
+            case 4:  // Cone
+            case 5:  // Box
+            case 6:  // Mesh
+            case 8:  // ConeVolume
+            case 10: // Circle
+            case 12: // SingleSidedEdge
+            case 13: // MeshRenderer
+            case 14: // SkinnedMeshRenderer
+            case 15: // BoxShell
+            case 16: // BoxEdge
+            case 17: // Donut
+            case 18: // Rectangle
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static bool isCpuParticleMeshShape(int shapeType)
+    {
+        return shapeType == 6 || shapeType == 13 || shapeType == 14;
     }
 
     private static void writeLifetimeByEmitterSpeed(UnityEngine.ParticleSystem particleSystem, JSONObject sysData)

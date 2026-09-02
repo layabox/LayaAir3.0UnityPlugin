@@ -1586,6 +1586,28 @@ internal class ResoureMap
     }
 
     /// <summary>
+    /// 获取 Texture2D 的 JSON 引用数据。Shape Texture 需要保留 CPU 像素，
+    /// 因此调用方可以要求导出的 Laya Texture2D 开启 canRead。
+    /// </summary>
+    public JSONObject GetTextureData(Texture texture, bool forceReadable = false)
+    {
+        TextureFile textureFile = this.GetTextureFile(texture, false);
+        if (textureFile == null)
+        {
+            return null;
+        }
+        if (forceReadable)
+        {
+            textureFile.EnsureReadable();
+        }
+
+        JSONObject textureData = new JSONObject(JSONObject.Type.OBJECT);
+        textureData.AddField("_$uuid", textureFile.uuid);
+        textureData.AddField("_$type", "Texture2D");
+        return textureData;
+    }
+
+    /// <summary>
     /// 获取指定 GameObject 的粒子导出模式
     /// 优先查找当前节点, 再向上查找父节点的 LayaParticleExportSetting 组件,
     /// 都没有则使用全局默认。
