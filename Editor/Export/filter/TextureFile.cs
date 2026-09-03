@@ -41,6 +41,8 @@ internal enum WrapMode
 
 internal class TextureFile : FileData
 {
+    private const string DefaultParticleTemplateGuid = "6017d482bbe642eebca96d26180f4130";
+
     [DllImport("msvcrt.dll")]
     public static extern double frexp(double val, out int eptr);
 
@@ -54,6 +56,7 @@ internal class TextureFile : FileData
     private LayaTextureImportFormat importFormat;
     private bool hasAlphaChannel;
     private bool m_isBuiltinTexture;
+    private bool m_isDefaultParticleTexture;
     private bool m_forceReadable;
 
     // 导出前保存的原始导入设置，SaveFile 结束后用于还原，确保不污染 Unity 项目资源
@@ -71,6 +74,8 @@ internal class TextureFile : FileData
         this.m_isSpriteTexture = isSpriteTexture;
         this.m_isBuiltinTexture = texture != null && ResoureMap.IsBuiltinResource(
             AssetDatabase.GetAssetPath(texture.GetInstanceID()));
+        this.m_isDefaultParticleTexture = this.m_isBuiltinTexture &&
+            ResoureMap.IsDefaultParticleTexture(texture);
         // updatePath 内部会调用 getOutFilePath，后者依赖 hasAlphaChannel 来决定
         // 输出扩展名（.png 或 .jpg）。但 getTextureInfo 才会准确设置 hasAlphaChannel，
         // 晚于 updatePath 执行，导致 hasAlphaChannel 始终是默认值 false，所有纹理
@@ -520,8 +525,33 @@ internal class TextureFile : FileData
         }
     }
 
+    /// <summary>
+    /// Unity 的 Default-Particle 是内置资源，不同 Unity/渲染后端对 GetPixels 和
+    /// Graphics.Blit 的结果并不一致。直接读取曾产生整张 RGBA(205,205,205,205)
+    /// 的灰色方块，因此使用插件内置、已校验的原始 PNG 数据稳定导出。
+    /// </summary>
+    private void saveDefaultParticleTexture() {
+        string templatePath = AssetDatabase.GUIDToAssetPath(DefaultParticleTemplateGuid);
+        TextAsset template = string.IsNullOrEmpty(templatePath)
+            ? null
+            : AssetDatabase.LoadAssetAtPath<TextAsset>(templatePath);
+        if (template == null || template.bytes == null || template.bytes.Length == 0) {
+            FileUtil.setStatuse(false);
+            throw new FileNotFoundException(
+                "LayaAir3D: Built-in Default-Particle export template is missing.",
+                templatePath);
+        }
+
+        File.WriteAllBytes(this.outPath, template.bytes);
+    }
+
     public override void SaveFile(Dictionary<string, FileData> exportFiles) {
         base.saveMeta();
+        if (this.m_isDefaultParticleTexture) {
+            this.saveDefaultParticleTexture();
+            return;
+        }
+
         string filePath = this.filePath;
         Color[] pixels = this.getTexturePixels();
         if (this.rgbmEncoding) {

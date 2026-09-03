@@ -244,12 +244,10 @@ internal class ResoureMap
     }
 
     /// <summary>
-    /// 将支持导出的 Unity 内置纹理映射到 Laya 输出目录中的资源路径。
-    /// 当前只支持 Default-Particle；其他内置纹理不能假定为白纹理。
+    /// 判断纹理是否为 Unity 内置的 Default-Particle。
     /// </summary>
-    public static bool TryGetBuiltinTextureExportPath(Texture texture, out string exportPath)
+    public static bool IsDefaultParticleTexture(Texture texture)
     {
-        exportPath = null;
         if (texture == null)
         {
             return false;
@@ -268,7 +266,17 @@ internal class ResoureMap
                 System.StringComparison.OrdinalIgnoreCase);
         }
 
-        if (!isDefaultParticle)
+        return isDefaultParticle;
+    }
+
+    /// <summary>
+    /// 将支持导出的 Unity 内置纹理映射到 Laya 输出目录中的资源路径。
+    /// 当前只支持 Default-Particle；其他内置纹理不能假定为白纹理。
+    /// </summary>
+    public static bool TryGetBuiltinTextureExportPath(Texture texture, out string exportPath)
+    {
+        exportPath = null;
+        if (!IsDefaultParticleTexture(texture))
         {
             return false;
         }
