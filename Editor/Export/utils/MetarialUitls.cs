@@ -457,35 +457,23 @@ public class PropDatasConfig
     }
 
     /// <summary>
-    /// 检测透明材质的具体渲染模式：Additive(3) / AlphaBlend(2)
-    /// 通过混合因子和 shader 名称综合判断
+    /// 检测透明材质的具体渲染模式。
+    /// 只有完整状态匹配 Laya 标准模式时才返回标准模式，其他组合使用 Custom(5)。
     /// </summary>
     public static int DetectTransparentRenderMode(Material material)
     {
-        // 优先通过 shader 名称判断
-        string shaderName = material.shader.name.ToLower();
-        if (shaderName.Contains("additive"))
-        {
-            return 3; // Additive
-        }
+        int srcBlend = GetSrcBlend(material);
+        int dstBlend = GetDstBlend(material);
+        bool depthWrite = GetZWrite(material);
 
-        // 通过混合因子判断：DstBlend=One 为 Additive，DstBlend=OneMinusSrcAlpha 为 AlphaBlend
-        if (material.HasProperty("_BUILTIN_DstBlend"))
-        {
-            int dstBlend = material.GetInt("_BUILTIN_DstBlend");
-            if (dstBlend == (int)UnityEngine.Rendering.BlendMode.One)
-                return 3; // Additive
-        }
-        else if (material.HasProperty("_DstBlend"))
-        {
-            int dstBlend = material.GetInt("_DstBlend");
-            if (dstBlend == (int)UnityEngine.Rendering.BlendMode.One)
-            {
-                return 3; // Additive
-            }
-        }
+        if (!depthWrite && srcBlend == 6 && dstBlend == 7)
+            return 2; // Alpha Blend: SrcAlpha / OneMinusSrcAlpha
 
-        return 2; // 默认 AlphaBlend
+        if (!depthWrite && srcBlend == 6 && dstBlend == 1)
+            return 3; // Additive: SrcAlpha / One
+
+        // Premultiply (One / OneMinusSrcAlpha), Multiply and all other non-standard states.
+        return 5;
     }
 
     /// <summary>
@@ -1434,6 +1422,8 @@ internal class MetarialUitls
         JSONObject props = new JSONObject(JSONObject.Type.OBJECT);
         jsonData.AddField("props", props);
         props.AddField("type", propsData.materalName);
+        // 先设置模式，再写入解析后的具体状态，避免标准模式覆盖它们。
+        props.AddField("materialRenderMode", PropDatasConfig.GetRenderModule(material));
         props.AddField("s_Cull", PropDatasConfig.GetCull(material));
         props.AddField("s_Blend", PropDatasConfig.GetBlend(material));
         props.AddField("s_BlendSrc", PropDatasConfig.GetSrcBlend(material));
@@ -1478,8 +1468,6 @@ internal class MetarialUitls
                 WriteTextureTilingOffset(material, props, plist.Key, tConfig.tilingOffsetName);
         }
         props.AddField("textures", texture);
-        props.AddField("materialRenderMode", PropDatasConfig.GetRenderModule(material));
-
         var needSetBlinnPhongSpecular = propsData.materalName == "BLINNPHONG";
         foreach (var cList in propsData.colorLists) {
             if (!material.HasProperty(cList.Key)) {
@@ -1660,6 +1648,8 @@ internal class MetarialUitls
         JSONObject props = new JSONObject(JSONObject.Type.OBJECT);
         props.AddField("textures", textures);
         props.AddField("type", propsData.materalName);
+        // 先设置模式，再写入解析后的具体状态。
+        props.AddField("materialRenderMode", PropDatasConfig.GetRenderModule(material));
         props.AddField("s_Cull", PropDatasConfig.GetCull(material));
         props.AddField("s_Blend", PropDatasConfig.GetBlend(material));
         props.AddField("s_BlendSrc", PropDatasConfig.GetSrcBlend(material));
@@ -1669,7 +1659,6 @@ internal class MetarialUitls
         props.AddField("alphaTest", PropDatasConfig.GetAlphaTest(material));
         props.AddField("alphaTestValue", PropDatasConfig.GetAlphaTestValue(material));
         props.AddField("renderQueue", material.renderQueue);
-        props.AddField("materialRenderMode", PropDatasConfig.GetRenderModule(material));
         foreach (var cList in propsData.colorLists)
         {
             if (!material.HasProperty(cList.Key))
@@ -1775,7 +1764,7 @@ internal class MetarialUitls
         // 渲染队列 - 粒子通常使用透明队列
         props.AddField("renderQueue", material.renderQueue > 0 ? material.renderQueue : 3000);
         
-        // 材质渲染模式 - 通过混合因子自动区分 Additive(3) / AlphaBlend(2)
+        // 材质渲染模式 - 标准状态匹配 Alpha/Additive，其他组合使用 Custom(5)
         props.AddField("materialRenderMode", PropDatasConfig.DetectTransparentRenderMode(material));
         
         // 剔除模式 - 粒子默认双面 (0=Off, 1=Front, 2=Back)
@@ -1991,11 +1980,8 @@ internal class MetarialUitls
     /// </summary>
     private static int GetParticleSrcBlend(Material material)
     {
-        if (material.HasProperty("_SrcBlend"))
-        {
-            int srcBlend = material.GetInt("_SrcBlend");
-            return ConvertUnityBlendToLaya(srcBlend);
-        }
+        if (material.HasProperty("_BUILTIN_SrcBlend") || material.HasProperty("_SrcBlend"))
+            return PropDatasConfig.GetSrcBlend(material);
         
         // 根据 shader 名称判断默认值
         string shaderName = material.shader.name.ToLower();
@@ -2020,11 +2006,8 @@ internal class MetarialUitls
     /// </summary>
     private static int GetParticleDstBlend(Material material)
     {
-        if (material.HasProperty("_DstBlend"))
-        {
-            int dstBlend = material.GetInt("_DstBlend");
-            return ConvertUnityBlendToLaya(dstBlend);
-        }
+        if (material.HasProperty("_BUILTIN_DstBlend") || material.HasProperty("_DstBlend"))
+            return PropDatasConfig.GetDstBlend(material);
         
         // 根据 shader 名称判断默认值
         string shaderName = material.shader.name.ToLower();

@@ -196,7 +196,7 @@ internal class MaterialFile : JsonFile
         // 渲染队列
         props.AddField("renderQueue", material.renderQueue > 0 ? material.renderQueue : 3000);
         
-        // 材质渲染模式 - 通过混合因子自动区分 Additive(3) / AlphaBlend(2)
+        // 材质渲染模式 - 标准状态匹配 Alpha/Additive，其他组合使用 Custom(5)
         props.AddField("materialRenderMode", PropDatasConfig.DetectTransparentRenderMode(material));
         
         // 剔除模式 - 粒子默认双面 (0=Off, 1=Front, 2=Back)
@@ -231,15 +231,11 @@ internal class MaterialFile : JsonFile
             dstBlend = 7; // OneMinusSrcAlpha
         }
         
-        // 如果材质有这些属性，使用材质的值
-        if (material.HasProperty("_SrcBlend"))
-        {
-            srcBlend = ConvertUnityBlendToLaya(material.GetInt("_SrcBlend"));
-        }
-        if (material.HasProperty("_DstBlend"))
-        {
-            dstBlend = ConvertUnityBlendToLaya(material.GetInt("_DstBlend"));
-        }
+        // ShaderGraph 的 _BUILTIN_* 是最终生效状态，优先于普通属性和 shader 名称。
+        if (material.HasProperty("_BUILTIN_SrcBlend") || material.HasProperty("_SrcBlend"))
+            srcBlend = PropDatasConfig.GetSrcBlend(material);
+        if (material.HasProperty("_BUILTIN_DstBlend") || material.HasProperty("_DstBlend"))
+            dstBlend = PropDatasConfig.GetDstBlend(material);
         
         props.AddField("s_BlendSrc", srcBlend);
         props.AddField("s_BlendDst", dstBlend);
@@ -247,8 +243,8 @@ internal class MaterialFile : JsonFile
         // 深度测试
         props.AddField("s_DepthTest", 1);
         
-        // 深度写入 - 粒子通常关闭
-        props.AddField("s_DepthWrite", false);
+        // 保留材质的实际深度写入状态。
+        props.AddField("s_DepthWrite", PropDatasConfig.GetZWrite(material));
         
         // 颜色
         Color tintColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);

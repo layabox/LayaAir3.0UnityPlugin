@@ -12956,7 +12956,7 @@ internal class CustomShaderExporter
         // ==================== 渲染状态导出（两路径方案）====================
         // 流程：解析shader渲染状态 → 合成实际生效值 → 匹配预定义模式
         //   路径A（匹配成功）：materialRenderMode=N + 标准参数
-        //   路径B（不匹配）：materialRenderMode=5(CUSTOM) + 动态参数（硬编码由shader statefirst处理）
+        //   路径B（不匹配）：materialRenderMode=5(CUSTOM) + 完整的实际渲染状态
         LayaRenderModeConfig matchedRenderMode = null;
 
         string shaderPath = AssetDatabase.GetAssetPath(shader);
@@ -13019,35 +13019,28 @@ internal class CustomShaderExporter
             else
             {
                 // ★ 路径 B：CUSTOM 模式
-                // shader 中的硬编码值由 statefirst 处理，材质只写动态 blend 参数 + 始终写 cull/zwrite/ztest
+                // 写入完整实际状态，确保 ShaderGraph 和 ShaderLab 路径的 Custom 材质行为一致。
                 props.AddField("renderQueue", material.renderQueue);
                 props.AddField("materialRenderMode", 5); // CUSTOM
 
                 // s_Blend 始终写入（标识混合模式类型）
                 props.AddField("s_Blend", resolved.s_Blend);
 
-                // Blend 参数 — 只写入属性引用（动态）的值，硬编码部分由 shader statefirst 处理
-                if (matParseResult != null && matParseResult.blendSrc != null)
+                // Custom 必须保留完整的实际混合状态。ShaderGraph 没有 ShaderLab
+                // 解析结果，因此不能依赖 matParseResult 决定是否写出混合因子。
+                if (resolved.s_Blend > 0)
                 {
                     if (resolved.s_Blend == 2)
                     {
-                        // Separate blend
-                        if (IsPropertyReference(matParseResult.blendSrc))
-                            props.AddField("s_BlendSrcRGB", resolved.s_BlendSrcRGB);
-                        if (IsPropertyReference(matParseResult.blendDst))
-                            props.AddField("s_BlendDstRGB", resolved.s_BlendDstRGB);
-                        if (IsPropertyReference(matParseResult.blendSrcAlpha))
-                            props.AddField("s_BlendSrcAlpha", resolved.s_BlendSrcAlpha);
-                        if (IsPropertyReference(matParseResult.blendDstAlpha))
-                            props.AddField("s_BlendDstAlpha", resolved.s_BlendDstAlpha);
+                        props.AddField("s_BlendSrcRGB", resolved.s_BlendSrcRGB);
+                        props.AddField("s_BlendDstRGB", resolved.s_BlendDstRGB);
+                        props.AddField("s_BlendSrcAlpha", resolved.s_BlendSrcAlpha);
+                        props.AddField("s_BlendDstAlpha", resolved.s_BlendDstAlpha);
                     }
                     else
                     {
-                        // Simple blend
-                        if (IsPropertyReference(matParseResult.blendSrc))
-                            props.AddField("s_BlendSrc", resolved.s_BlendSrc);
-                        if (IsPropertyReference(matParseResult.blendDst))
-                            props.AddField("s_BlendDst", resolved.s_BlendDst);
+                        props.AddField("s_BlendSrc", resolved.s_BlendSrc);
+                        props.AddField("s_BlendDst", resolved.s_BlendDst);
                     }
                 }
 
