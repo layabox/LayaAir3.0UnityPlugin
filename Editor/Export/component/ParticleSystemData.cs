@@ -871,7 +871,15 @@ internal class ParticleSystemData
             meshes.Add(meshItemObj);
         }
         compData.AddField("meshes", meshes);
-        compData.AddField("pivot", JsonUtils.GetVector3Object(renderer.pivot));
+
+        Vector3 pivot = renderer.pivot;
+        if (renderer.renderMode == ParticleSystemRenderMode.Mesh)
+        {
+            // Exported mesh vertices are mirrored on X, so the mesh-local pivot
+            // must use the same coordinate-system conversion.
+            SpaceUtils.changePostion(ref pivot);
+        }
+        compData.AddField("pivot", JsonUtils.GetVector3Object(pivot));
         return compData;
     }
 
