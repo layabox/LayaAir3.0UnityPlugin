@@ -233,28 +233,40 @@ class GameObjectUitls
     }
 
 
-    private const float k_MaxByteForOverexposedColor = 0.7490196078431373f;
-    public static void DecomposeHdrColor(Color linearColorHdr, out Color baseLinearColor, out float exposure)
+    /// <summary>
+    /// Splits Unity's final linear HDR color into a normalized linear color and
+    /// the linear multiplier expected by Laya materials.
+    ///
+    /// Unity's HDR picker represents intensity as exposure stops:
+    ///     linear HDR = base linear color * pow(2, exposure EV)
+    /// Laya shaders multiply color by a linear intensity, so the exported
+    /// intensity must be pow(2, EV), not the EV value itself.
+    /// </summary>
+    public static void DecomposeHdrColor(Color linearColorHdr, out Color baseLinearColor, out float intensity)
     {
-        baseLinearColor = linearColorHdr;
-        var maxColorComponent = linearColorHdr.maxColorComponent;
-        if (maxColorComponent == 0f || maxColorComponent <= 1f && maxColorComponent >= 1 / 255f)
-        {
-            exposure = 0f;
-            baseLinearColor.r = (byte)Mathf.RoundToInt(linearColorHdr.r * 255f);
-            baseLinearColor.g = (byte)Mathf.RoundToInt(linearColorHdr.g * 255f);
-            baseLinearColor.b = (byte)Mathf.RoundToInt(linearColorHdr.b * 255f);
-        }
-        else
-        {
-            var scaleFactor = k_MaxByteForOverexposedColor / maxColorComponent;
-            exposure = 1.0f / scaleFactor;
+        float maxColorComponent = Mathf.Max(
+            linearColorHdr.r,
+            Mathf.Max(linearColorHdr.g, linearColorHdr.b));
 
-            baseLinearColor.r = Mathf.LinearToGammaSpace(Math.Min(k_MaxByteForOverexposedColor,scaleFactor * linearColorHdr.r)) ;
-            baseLinearColor.g = Mathf.LinearToGammaSpace(Math.Min(k_MaxByteForOverexposedColor, scaleFactor * linearColorHdr.g));
-            baseLinearColor.b = Mathf.LinearToGammaSpace(Math.Min(k_MaxByteForOverexposedColor, scaleFactor * linearColorHdr.b));
+        if (maxColorComponent <= 0f)
+        {
+            baseLinearColor = new Color(0f, 0f, 0f, linearColorHdr.a);
+            intensity = 1f;
+            return;
         }
-      
+
+        // Material.GetColor already returns Unity's final linear HDR value.
+        // Recover an equivalent EV and immediately convert it to the linear
+        // multiplier consumed by Laya. This keeps the round trip exact while
+        // avoiding a second HDR/gamma conversion in the generated shader.
+        float exposureEv = Mathf.Log(maxColorComponent, 2f);
+        intensity = Mathf.Pow(2f, exposureEv);
+        float inverseIntensity = 1f / intensity;
+        baseLinearColor = new Color(
+            linearColorHdr.r * inverseIntensity,
+            linearColorHdr.g * inverseIntensity,
+            linearColorHdr.b * inverseIntensity,
+            linearColorHdr.a);
     }
 
 
