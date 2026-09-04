@@ -854,6 +854,8 @@ internal class ParticleSystemData
         compData.AddField("cameraVelocityScale", renderer.cameraVelocityScale);
         compData.AddField("velocityScale", renderer.velocityScale);
         compData.AddField("lengthScale", renderer.lengthScale);
+        compData.AddField("freeformStretching", renderer.freeformStretching);
+        compData.AddField("rotateWithStretchDirection", renderer.rotateWithStretchDirection);
         compData.AddField("maxParticleSize", renderer.maxParticleSize);
         compData.AddField("applyActiveColorSpace", getApplyActiveColorSpace(renderer));
         compData.AddField("flip", JsonUtils.GetVector3Object(renderer.flip));
