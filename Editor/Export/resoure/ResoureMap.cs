@@ -562,7 +562,12 @@ internal class ResoureMap
                 ParticleSystemRenderer psr = gameObject.GetComponent<ParticleSystemRenderer>();
                 if (ps != null && psr != null)
                 {
-                    JSONObject particleSystemData = ParticleSystemData.GetParticleSystem(ps, isOverride, map, this);
+                    JSONObject particleSystemData = ParticleSystemData.GetParticleSystem(
+                        ps,
+                        psr.renderMode,
+                        isOverride,
+                        map,
+                        this);
                     compents.Add(particleSystemData);
                     ParticleSystemData.GetParticleSystemRenderer(psr, isOverride, this, particleSystemData);
                 }

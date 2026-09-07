@@ -16,7 +16,10 @@ internal class ParticleSystemData
         return dataObject;
     }
 
-    private static JSONObject writeBaseNode(UnityEngine.ParticleSystem particleSystem, JSONObject sysData)
+    private static JSONObject writeBaseNode(
+        UnityEngine.ParticleSystem particleSystem,
+        ParticleSystemRenderMode renderMode,
+        JSONObject sysData)
     {
         JSONObject mainObject = new JSONObject(JSONObject.Type.OBJECT);
         JSONObject particleSystemData = new JSONObject(JSONObject.Type.OBJECT);
@@ -42,13 +45,16 @@ internal class ParticleSystemData
         mainObject.AddField("startRotation3D", main.startRotation3D);
         if (main.startRotation3D)
         {
-            mainObject.AddField("startRotationX", writeMinMaxCurveData(main.startRotationX, Mathf.Rad2Deg));
-            mainObject.AddField("startRotationY", writeMinMaxCurveData(main.startRotationY, -Mathf.Rad2Deg));
-            mainObject.AddField("startRotationZ", writeMinMaxCurveData(main.startRotationZ, -Mathf.Rad2Deg));
+            mainObject.AddField("startRotationX", writeMinMaxCurveData(main.startRotationX, CpuParticleCoordinateConverter.AxialRotationCurveFactor(0)));
+            mainObject.AddField("startRotationY", writeMinMaxCurveData(main.startRotationY, CpuParticleCoordinateConverter.AxialRotationCurveFactor(1)));
+            mainObject.AddField("startRotationZ", writeMinMaxCurveData(main.startRotationZ, CpuParticleCoordinateConverter.AxialRotationCurveFactor(2)));
         }
         else
         {
-            mainObject.AddField("startRotation", writeMinMaxCurveData(main.startRotation, -Mathf.Rad2Deg));
+            mainObject.AddField("startRotation", writeMinMaxCurveData(
+                main.startRotation,
+                CpuParticleCoordinateConverter.ScalarRotationCurveFactor(
+                    renderMode)));
         }
 
         mainObject.AddField("flipRotation", main.flipRotation);
@@ -64,7 +70,9 @@ internal class ParticleSystemData
         try
         {
             mainObject.AddField("emitterVelocityMode", (int)(object)dmain.emitterVelocityMode);
-            mainObject.AddField("emitterVelocity", JsonUtils.GetVector3Object(dmain.emitterVelocity));
+            Vector3 emitterVelocity = (Vector3)dmain.emitterVelocity;
+            mainObject.AddField("emitterVelocity", JsonUtils.GetVector3Object(
+                CpuParticleCoordinateConverter.ConvertPolar(emitterVelocity)));
         }
         catch
         {
@@ -84,30 +92,36 @@ internal class ParticleSystemData
         return particleSystemData;
     }
 
-    private static void writeRotationOverLifetime(UnityEngine.ParticleSystem particleSystem, JSONObject sysData)
+    private static void writeRotationOverLifetime(
+        UnityEngine.ParticleSystem particleSystem,
+        ParticleSystemRenderMode renderMode,
+        JSONObject sysData)
     {
         ParticleSystem.RotationOverLifetimeModule rotationOverLifetime = particleSystem.rotationOverLifetime;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusRotationOverLife");
         dataObject.AddField("enable", rotationOverLifetime.enabled);
         dataObject.AddField("separateAxes", rotationOverLifetime.separateAxes);
-        dataObject.AddField("x", writeMinMaxCurveData(rotationOverLifetime.x, Mathf.Rad2Deg));
-        dataObject.AddField("y", writeMinMaxCurveData(rotationOverLifetime.y, -Mathf.Rad2Deg));
-        dataObject.AddField("z", writeMinMaxCurveData(rotationOverLifetime.z, -Mathf.Rad2Deg));
+        dataObject.AddField("x", writeMinMaxCurveData(rotationOverLifetime.x, CpuParticleCoordinateConverter.AxialRotationCurveFactor(0)));
+        dataObject.AddField("y", writeMinMaxCurveData(rotationOverLifetime.y, CpuParticleCoordinateConverter.AxialRotationCurveFactor(1)));
+        float zFactor = rotationOverLifetime.separateAxes
+            ? CpuParticleCoordinateConverter.AxialRotationCurveFactor(2)
+            : CpuParticleCoordinateConverter.ScalarRotationCurveFactor(
+                renderMode);
+        dataObject.AddField("z", writeMinMaxCurveData(rotationOverLifetime.z, zFactor));
         sysData.AddField("rotationOverLifetime", dataObject);
     }
 
     private static void writeForceOverLifetime(UnityEngine.ParticleSystem particleSystem, JSONObject sysData)
     {
         ParticleSystem.ForceOverLifetimeModule forceOverLifetime = particleSystem.forceOverLifetime;
-        Vector3 spaceChage = SpaceUtils.getDirection();
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusForceOverLife");
         dataObject.AddField("enable", forceOverLifetime.enabled);
         dataObject.AddField("space", (int)(object)forceOverLifetime.space);
-        dataObject.AddField("x", writeMinMaxCurveData(forceOverLifetime.x, spaceChage.x));
-        dataObject.AddField("y", writeMinMaxCurveData(forceOverLifetime.y, spaceChage.y));
-        dataObject.AddField("z", writeMinMaxCurveData(forceOverLifetime.z, spaceChage.z));
+        dataObject.AddField("x", writeMinMaxCurveData(forceOverLifetime.x, CpuParticleCoordinateConverter.PolarCurveFactor(0)));
+        dataObject.AddField("y", writeMinMaxCurveData(forceOverLifetime.y, CpuParticleCoordinateConverter.PolarCurveFactor(1)));
+        dataObject.AddField("z", writeMinMaxCurveData(forceOverLifetime.z, CpuParticleCoordinateConverter.PolarCurveFactor(2)));
         dataObject.AddField("randomized", forceOverLifetime.randomized);
         sysData.AddField("forceOverLifetime", dataObject);
     }
@@ -115,21 +129,20 @@ internal class ParticleSystemData
     private static void writeVelocityOverLifetime(UnityEngine.ParticleSystem particleSystem, JSONObject sysData)
     {
         ParticleSystem.VelocityOverLifetimeModule velocityOverLifetime = particleSystem.velocityOverLifetime;
-        Vector3 spaceChage = SpaceUtils.getDirection();
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusVelocityOverLife");
         dataObject.AddField("enable", velocityOverLifetime.enabled);
         dataObject.AddField("speedModifier", writeMinMaxCurveData(velocityOverLifetime.speedModifier));
-        dataObject.AddField("x", writeMinMaxCurveData(velocityOverLifetime.x, spaceChage.x));
-        dataObject.AddField("y", writeMinMaxCurveData(velocityOverLifetime.y, spaceChage.y));
-        dataObject.AddField("z", writeMinMaxCurveData(velocityOverLifetime.z, spaceChage.z));
+        dataObject.AddField("x", writeMinMaxCurveData(velocityOverLifetime.x, CpuParticleCoordinateConverter.PolarCurveFactor(0)));
+        dataObject.AddField("y", writeMinMaxCurveData(velocityOverLifetime.y, CpuParticleCoordinateConverter.PolarCurveFactor(1)));
+        dataObject.AddField("z", writeMinMaxCurveData(velocityOverLifetime.z, CpuParticleCoordinateConverter.PolarCurveFactor(2)));
         dataObject.AddField("space", (int)(object)velocityOverLifetime.space);
-        dataObject.AddField("orbitalX", writeMinMaxCurveData(velocityOverLifetime.orbitalX));
-        dataObject.AddField("orbitalY", writeMinMaxCurveData(velocityOverLifetime.orbitalY));
-        dataObject.AddField("orbitalZ", writeMinMaxCurveData(velocityOverLifetime.orbitalZ));
-        dataObject.AddField("orbitalOffsetX", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetX));
-        dataObject.AddField("orbitalOffsetY", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetY));
-        dataObject.AddField("orbitalOffsetZ", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetZ));
+        dataObject.AddField("orbitalX", writeMinMaxCurveData(velocityOverLifetime.orbitalX, CpuParticleCoordinateConverter.AxialCurveFactor(0)));
+        dataObject.AddField("orbitalY", writeMinMaxCurveData(velocityOverLifetime.orbitalY, CpuParticleCoordinateConverter.AxialCurveFactor(1)));
+        dataObject.AddField("orbitalZ", writeMinMaxCurveData(velocityOverLifetime.orbitalZ, CpuParticleCoordinateConverter.AxialCurveFactor(2)));
+        dataObject.AddField("orbitalOffsetX", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetX, CpuParticleCoordinateConverter.PolarCurveFactor(0)));
+        dataObject.AddField("orbitalOffsetY", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetY, CpuParticleCoordinateConverter.PolarCurveFactor(1)));
+        dataObject.AddField("orbitalOffsetZ", writeMinMaxCurveData(velocityOverLifetime.orbitalOffsetZ, CpuParticleCoordinateConverter.PolarCurveFactor(2)));
         dataObject.AddField("radial", writeMinMaxCurveData(velocityOverLifetime.radial));
         sysData.AddField("velocityOverLifetime", dataObject);
     }
@@ -289,11 +302,10 @@ internal class ParticleSystemData
                 $"only supports Texture UV channels 0 and 1; channel {shape.textureUVChannel} will fail closed.");
         }
 
-        Vector3 shapePosition = shape.position;
-        SpaceUtils.changePostion(ref shapePosition);
-        Vector3 shapeRotation = shape.rotation;
-        shapeRotation.y *= -1;
-        shapeRotation.z *= -1;
+        Vector3 shapePosition = CpuParticleCoordinateConverter.ConvertPoint(
+            shape.position);
+        Vector3 shapeRotation = CpuParticleCoordinateConverter.ConvertRotationZXY(
+            shape.rotation);
         shapObject.AddField("position", JsonUtils.GetVector3Object(shapePosition));
         shapObject.AddField("rotation", JsonUtils.GetVector3Object(shapeRotation));
         shapObject.AddField("scale", JsonUtils.GetVector3Object(shape.scale));
@@ -426,16 +438,23 @@ internal class ParticleSystemData
         sysData.AddField("externalForces", dataObject);
     }
 
-    private static void writeRotationBySpeed(UnityEngine.ParticleSystem particleSystem, JSONObject sysData)
+    private static void writeRotationBySpeed(
+        UnityEngine.ParticleSystem particleSystem,
+        ParticleSystemRenderMode renderMode,
+        JSONObject sysData)
     {
         ParticleSystem.RotationBySpeedModule rotationBySpeed = particleSystem.rotationBySpeed;
         JSONObject dataObject = new JSONObject(JSONObject.Type.OBJECT);
         JsonUtils.SetComponentsType(dataObject, "PlusRotationBySpeed");
         dataObject.AddField("enable", rotationBySpeed.enabled);
         dataObject.AddField("separateAxes", rotationBySpeed.separateAxes);
-        dataObject.AddField("x", writeMinMaxCurveData(rotationBySpeed.x, Mathf.Rad2Deg));
-        dataObject.AddField("y", writeMinMaxCurveData(rotationBySpeed.y, -Mathf.Rad2Deg));
-        dataObject.AddField("z", writeMinMaxCurveData(rotationBySpeed.z, -Mathf.Rad2Deg));
+        dataObject.AddField("x", writeMinMaxCurveData(rotationBySpeed.x, CpuParticleCoordinateConverter.AxialRotationCurveFactor(0)));
+        dataObject.AddField("y", writeMinMaxCurveData(rotationBySpeed.y, CpuParticleCoordinateConverter.AxialRotationCurveFactor(1)));
+        float zFactor = rotationBySpeed.separateAxes
+            ? CpuParticleCoordinateConverter.AxialRotationCurveFactor(2)
+            : CpuParticleCoordinateConverter.ScalarRotationCurveFactor(
+                renderMode);
+        dataObject.AddField("z", writeMinMaxCurveData(rotationBySpeed.z, zFactor));
         dataObject.AddField("range", JsonUtils.GetVector2Object(rotationBySpeed.range));
         sysData.AddField("rotationBySpeed", dataObject);
     }
@@ -815,10 +834,19 @@ internal class ParticleSystemData
         return property == null || property.boolValue;
     }
 
-    public static JSONObject GetParticleSystem(UnityEngine.ParticleSystem particleSystem, bool isOverride, NodeMap map, ResoureMap resMap)
+    public static JSONObject GetParticleSystem(
+        UnityEngine.ParticleSystem particleSystem,
+        ParticleSystemRenderMode renderMode,
+        bool isOverride,
+        NodeMap map,
+        ResoureMap resMap)
     {
         JSONObject compData = JsonUtils.SetComponentsType(new JSONObject(JSONObject.Type.OBJECT), "ParticleSystem", isOverride);
-        JSONObject particleSystemData = writeBaseNode(particleSystem, compData);
+        compData.AddField("coordinateContractVersion", CpuParticleCoordinateConverter.ContractVersion);
+        JSONObject particleSystemData = writeBaseNode(
+            particleSystem,
+            renderMode,
+            compData);
         writeEmission(particleSystem, particleSystemData);
         writeShape(particleSystem, particleSystemData, map, resMap);
         writeVelocityOverLifetime(particleSystem, particleSystemData);
@@ -829,8 +857,14 @@ internal class ParticleSystemData
         writeColorBySpeed(particleSystem, particleSystemData);
         writeSizeOverLifetime(particleSystem, particleSystemData);
         writeSizeBySpeed(particleSystem, particleSystemData);
-        writeRotationOverLifetime(particleSystem, particleSystemData);
-        writeRotationBySpeed(particleSystem, particleSystemData);
+        writeRotationOverLifetime(
+            particleSystem,
+            renderMode,
+            particleSystemData);
+        writeRotationBySpeed(
+            particleSystem,
+            renderMode,
+            particleSystemData);
         writeExternalForces(particleSystem, particleSystemData, map);
         writeInheritVelocity(particleSystem, particleSystemData);
         writeNoise(particleSystem, particleSystemData);
@@ -870,18 +904,16 @@ internal class ParticleSystemData
         {
             JSONObject meshItemObj = new JSONObject(JSONObject.Type.OBJECT);
             JsonUtils.SetComponentsType(meshItemObj, "MeshItem");
-            meshItemObj.AddField("mesh", map.GetMeshData(particleMeshes[i], renderer));
+            meshItemObj.AddField("mesh", map.GetMeshData(
+                particleMeshes[i], renderer));
             meshes.Add(meshItemObj);
         }
         compData.AddField("meshes", meshes);
 
-        Vector3 pivot = renderer.pivot;
-        if (renderer.renderMode == ParticleSystemRenderMode.Mesh)
-        {
-            // Exported mesh vertices are mirrored on X, so the mesh-local pivot
-            // must use the same coordinate-system conversion.
-            SpaceUtils.changePostion(ref pivot);
-        }
+        Vector3 pivot = CpuParticleCoordinateConverter.ConvertRendererPivot(
+            renderer.renderMode,
+            renderer.alignment,
+            renderer.pivot);
         compData.AddField("pivot", JsonUtils.GetVector3Object(pivot));
         return compData;
     }
