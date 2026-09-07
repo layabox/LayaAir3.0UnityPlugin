@@ -844,6 +844,7 @@ internal class ParticleSystemData
 
     public static JSONObject GetParticleSystemRenderer(UnityEngine.ParticleSystemRenderer renderer, bool isOverride, ResoureMap map, JSONObject compData)
     {
+        compData.AddField("enabled", renderer.enabled);
         compData.AddField("renderMode", (int)(object)renderer.renderMode);
         compData.AddField("sortMode", (int)(object)renderer.sortMode);
         compData.AddField("alignment", (int)(object)renderer.alignment);
