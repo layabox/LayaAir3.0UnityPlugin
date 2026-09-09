@@ -585,8 +585,8 @@ public class AnimationCurveGroup
     private static void writeRotate(FrameData frame, ref AniNodeFrameData data, bool isRotate, bool parentIsCamOrLight)
     {
         SpaceUtils.changeRotate(ref frame.valueNumbers, isRotate);
-        SpaceUtils.changeRotateTangle(ref frame.inTangentNumbers);
-        SpaceUtils.changeRotateTangle(ref frame.outTangentNumbers);
+        SpaceUtils.changeRotateTangle(ref frame.inTangentNumbers, isRotate);
+        SpaceUtils.changeRotateTangle(ref frame.outTangentNumbers, isRotate);
         if (parentIsCamOrLight)
         {
             // 左乘Y180补偿父级相机/灯光的额外旋转
@@ -600,18 +600,12 @@ public class AnimationCurveGroup
     private static void writeRotateEuler(FrameData frame, ref AniNodeFrameData data, bool isRotate, bool parentIsCamOrLight)
     {
         SpaceUtils.changeRotateEuler(ref frame.valueNumbers, isRotate);
-        SpaceUtils.changeRotateEulerTangent(ref frame.inTangentNumbers, false);
-        SpaceUtils.changeRotateEulerTangent(ref frame.outTangentNumbers, false);
+        SpaceUtils.changeRotateEulerTangent(ref frame.inTangentNumbers, isRotate);
+        SpaceUtils.changeRotateEulerTangent(ref frame.outTangentNumbers, isRotate);
         if (parentIsCamOrLight)
         {
-            // 欧拉角Y180补偿：先转四元数，左乘Y180，再转回欧拉角
-            Quaternion q = Quaternion.Euler(frame.valueNumbers[0], frame.valueNumbers[1], frame.valueNumbers[2]);
-            SpaceUtils.compensateCameraParentRotation(ref q);
-            Vector3 euler = q.eulerAngles;
-            frame.valueNumbers[0] = euler.x;
-            frame.valueNumbers[1] = euler.y;
-            frame.valueNumbers[2] = euler.z;
-            // 注意：欧拉角切线的Y180补偿较复杂，暂不处理
+            // Left Ry(pi) adds to the leading ZXY yaw; derivatives are unchanged.
+            frame.valueNumbers[1] += 180;
         }
         writeValue(frame, ref data, isRotate, parentIsCamOrLight);
     }

@@ -2,9 +2,7 @@ using UnityEngine;
 
 public class SpaceUtils
 {
-    private static readonly Quaternion HelpRotation = new Quaternion(0, 1, 0, 0);
     private static Quaternion HelpRotation1 = new Quaternion();
-    private static Vector3 HelpVec3 = new Vector3();
     public static void changePostion(ref Vector3 postion)
     {
         postion.x *= -1;
@@ -33,10 +31,10 @@ public class SpaceUtils
     {
         if (ischange)
         {
-            // 对相机/灯光：先做Y轴180度旋转（Unity Z-forward → LayaAir Z-backward）
-            rotation *= HelpRotation;
-            // 然后只翻转w（不翻转x），保持俯仰角方向正确
-            rotation.w *= -1;
+            // C R Ry(pi) C, C=diag(-1,1,1). A signed permutation is also
+            // valid for derivative tangents and avoids 0 * infinity at steps.
+            float x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w;
+            rotation = new Quaternion(z, w, x, y);
         }
         else
         {
@@ -59,10 +57,9 @@ public class SpaceUtils
         rotation[3] = HelpRotation1.w;
     }
 
-    public static void changeRotateTangle(ref float[] rotation)
+    public static void changeRotateTangle(ref float[] rotation, bool ischange = false)
     {
-        rotation[0] *= -1;
-        rotation[3] *= -1;
+        changeRotate(ref rotation, ischange);
     }
 
     /// <summary>
@@ -89,30 +86,16 @@ public class SpaceUtils
 
     public static void changeRotateEuler(ref float[] eulr, bool ischange)
     {
-        HelpVec3.x = eulr[0];
-        HelpVec3.y = eulr[1];
-        HelpVec3.z = eulr[2];
-        if (ischange)
-        {
-
-            HelpRotation1.eulerAngles = HelpVec3;
-            HelpRotation1 *= HelpRotation;
-            Vector3 angles = HelpRotation1.eulerAngles;
-            eulr[0] = -angles.x;  // 对相机的pitch取反，保持向下俯视的效果
-            eulr[1] = -angles.y;
-            eulr[2] = -angles.z;
-        }
-        else
-        {
-            eulr[0] = HelpVec3.x;
-            eulr[1] = -HelpVec3.y;
-            eulr[2] = -HelpVec3.z;
-        }
+        // Affine ZXY mapping preserves unwrapped curves and their tangents.
+        eulr[0] *= ischange ? -1 : 1;
+        eulr[1] = (ischange ? 180 : 0) - eulr[1];
+        eulr[2] *= ischange ? 1 : -1;
     }
     public static void changeRotateEulerTangent(ref float[] eulr, bool ischange)
     {
+        eulr[0] *= ischange ? -1 : 1;
         eulr[1] *= -1;
-        eulr[2] *= -1;
+        eulr[2] *= ischange ? 1 : -1;
     }
 
     /// <summary>
