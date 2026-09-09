@@ -45,18 +45,22 @@ internal class ParticleSystemData
         mainObject.AddField("startRotation3D", main.startRotation3D);
         if (main.startRotation3D)
         {
-            mainObject.AddField("startRotationX", writeMinMaxCurveData(main.startRotationX, CpuParticleCoordinateConverter.AxialRotationCurveFactor(0)));
-            mainObject.AddField("startRotationY", writeMinMaxCurveData(main.startRotationY, CpuParticleCoordinateConverter.AxialRotationCurveFactor(1)));
-            mainObject.AddField("startRotationZ", writeMinMaxCurveData(main.startRotationZ, CpuParticleCoordinateConverter.AxialRotationCurveFactor(2)));
+            mainObject.AddField("startRotationX", writeMinMaxCurveData(main.startRotationX, CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 0)));
+            mainObject.AddField("startRotationY", writeMinMaxCurveData(main.startRotationY, CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 1)));
+            mainObject.AddField("startRotationZ", writeMinMaxCurveData(main.startRotationZ, CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 2)));
         }
         else
         {
             mainObject.AddField("startRotation", writeMinMaxCurveData(
                 main.startRotation,
-                CpuParticleCoordinateConverter.ScalarRotationCurveFactor(
-                    renderMode)));
+                CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 2)));
         }
 
+        mainObject.AddField("startAxisOfRotation", JsonUtils.GetVector3Object(new Vector3(0, 0, -1)));
+        mainObject.AddField("rotationAxisMode", renderMode == ParticleSystemRenderMode.Mesh
+            && particleSystem.shape.shapeType != ParticleSystemShapeType.SingleSidedEdge ? 1 : 0);
+        mainObject.AddField("rotationAxisReference", JsonUtils.GetVector3Object(Vector3.forward));
+        mainObject.AddField("rotationAxisFallback", JsonUtils.GetVector3Object(Vector3.down));
         mainObject.AddField("flipRotation", main.flipRotation);
         mainObject.AddField("startColor", writeMinMaxGradientData(main.startColor));
         mainObject.AddField("gravityModifier", writeMinMaxCurveData(main.gravityModifier));
@@ -102,12 +106,9 @@ internal class ParticleSystemData
         JsonUtils.SetComponentsType(dataObject, "PlusRotationOverLife");
         dataObject.AddField("enable", rotationOverLifetime.enabled);
         dataObject.AddField("separateAxes", rotationOverLifetime.separateAxes);
-        dataObject.AddField("x", writeMinMaxCurveData(rotationOverLifetime.x, CpuParticleCoordinateConverter.AxialRotationCurveFactor(0)));
-        dataObject.AddField("y", writeMinMaxCurveData(rotationOverLifetime.y, CpuParticleCoordinateConverter.AxialRotationCurveFactor(1)));
-        float zFactor = rotationOverLifetime.separateAxes
-            ? CpuParticleCoordinateConverter.AxialRotationCurveFactor(2)
-            : CpuParticleCoordinateConverter.ScalarRotationCurveFactor(
-                renderMode);
+        dataObject.AddField("x", writeMinMaxCurveData(rotationOverLifetime.x, CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 0)));
+        dataObject.AddField("y", writeMinMaxCurveData(rotationOverLifetime.y, CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 1)));
+        float zFactor = CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 2);
         dataObject.AddField("z", writeMinMaxCurveData(rotationOverLifetime.z, zFactor));
         sysData.AddField("rotationOverLifetime", dataObject);
     }
@@ -448,12 +449,9 @@ internal class ParticleSystemData
         JsonUtils.SetComponentsType(dataObject, "PlusRotationBySpeed");
         dataObject.AddField("enable", rotationBySpeed.enabled);
         dataObject.AddField("separateAxes", rotationBySpeed.separateAxes);
-        dataObject.AddField("x", writeMinMaxCurveData(rotationBySpeed.x, CpuParticleCoordinateConverter.AxialRotationCurveFactor(0)));
-        dataObject.AddField("y", writeMinMaxCurveData(rotationBySpeed.y, CpuParticleCoordinateConverter.AxialRotationCurveFactor(1)));
-        float zFactor = rotationBySpeed.separateAxes
-            ? CpuParticleCoordinateConverter.AxialRotationCurveFactor(2)
-            : CpuParticleCoordinateConverter.ScalarRotationCurveFactor(
-                renderMode);
+        dataObject.AddField("x", writeMinMaxCurveData(rotationBySpeed.x, CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 0)));
+        dataObject.AddField("y", writeMinMaxCurveData(rotationBySpeed.y, CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 1)));
+        float zFactor = CpuParticleCoordinateConverter.RotationCurveFactor(particleSystem, renderMode, 2);
         dataObject.AddField("z", writeMinMaxCurveData(rotationBySpeed.z, zFactor));
         dataObject.AddField("range", JsonUtils.GetVector2Object(rotationBySpeed.range));
         sysData.AddField("rotationBySpeed", dataObject);
@@ -887,6 +885,18 @@ internal class ParticleSystemData
         compData.AddField("freeformStretching", renderer.freeformStretching);
         compData.AddField("rotateWithStretchDirection", renderer.rotateWithStretchDirection);
         compData.AddField("maxParticleSize", renderer.maxParticleSize);
+        compData.AddField("minParticleSize", renderer.minParticleSize);
+        compData.AddField("normalDirection", renderer.normalDirection);
+        compData.AddField("allowRoll", renderer.allowRoll);
+        compData.AddField("rollCorrectionScale", renderer.renderMode == ParticleSystemRenderMode.Mesh ? -1 : 1);
+        compData.AddField("alignmentRotation", JsonUtils.GetVector3Object(CpuParticleCoordinateConverter.AlignmentRotation(renderer)));
+        bool velocityBillboard = renderer.renderMode == ParticleSystemRenderMode.Billboard && renderer.alignment == ParticleSystemRenderSpace.Velocity;
+        compData.AddField("velocityReferenceAxis", JsonUtils.GetVector3Object(velocityBillboard ? Vector3.forward : Vector3.up));
+        compData.AddField("velocityReferenceSpace", velocityBillboard ? 1 : 0);
+        compData.AddField("verticalAlignment", 1);
+        bool fixedBillboard = renderer.renderMode == ParticleSystemRenderMode.HorizontalBillboard || renderer.renderMode == ParticleSystemRenderMode.VerticalBillboard;
+        compData.AddField("pivotMode", fixedBillboard ? 1 : 0);
+        compData.AddField("pivotRotation", fixedBillboard ? -45 : 0);
         compData.AddField("applyActiveColorSpace", getApplyActiveColorSpace(renderer));
         compData.AddField("flip", JsonUtils.GetVector3Object(renderer.flip));
         writeCustomVertexStreams(renderer, compData);

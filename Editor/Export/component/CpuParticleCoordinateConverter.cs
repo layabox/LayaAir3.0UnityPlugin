@@ -60,6 +60,34 @@ internal static class CpuParticleCoordinateConverter
         return AxialCurveFactor(axis) * Mathf.Rad2Deg;
     }
 
+    // One plan for Main, Lifetime and BySpeed: scalar Main can seed an Euler
+    // particle when either enabled rotation module requests separate axes.
+    public static bool Uses3DRotation(ParticleSystem system)
+    {
+        return system.main.startRotation3D
+            || (system.rotationOverLifetime.enabled && system.rotationOverLifetime.separateAxes)
+            || (system.rotationBySpeed.enabled && system.rotationBySpeed.separateAxes);
+    }
+
+    public static float RotationCurveFactor(ParticleSystem system, ParticleSystemRenderMode mode, int axis)
+    {
+        if (axis == 2 && !Uses3DRotation(system)) return ScalarRotationCurveFactor(mode);
+        if (mode == ParticleSystemRenderMode.Mesh) return AxialRotationCurveFactor(axis);
+        var renderer = system.GetComponent<ParticleSystemRenderer>();
+        bool view = renderer.alignment == ParticleSystemRenderSpace.View;
+        return (axis == 2 || (mode == ParticleSystemRenderMode.Billboard && view) ? -1f : 1f) * Mathf.Rad2Deg;
+    }
+
+    public static Vector3 AlignmentRotation(ParticleSystemRenderer renderer)
+    {
+        var mode = renderer.renderMode;
+        var alignment = renderer.alignment;
+        if ((mode == ParticleSystemRenderMode.Mesh && (alignment == ParticleSystemRenderSpace.View || alignment == ParticleSystemRenderSpace.Facing))
+            || (mode == ParticleSystemRenderMode.Billboard && (alignment == ParticleSystemRenderSpace.World || alignment == ParticleSystemRenderSpace.Local || alignment == ParticleSystemRenderSpace.Velocity)))
+            return new Vector3(0, 180, 0);
+        return mode == ParticleSystemRenderMode.HorizontalBillboard ? new Vector3(0, 0, 180) : Vector3.zero;
+    }
+
     public static Vector3 ConvertRendererPivot(
         ParticleSystemRenderMode renderMode,
         ParticleSystemRenderSpace alignment,
@@ -74,11 +102,11 @@ internal static class CpuParticleCoordinateConverter
             return new Vector3(-value.x, value.y, -value.z);
         }
 
-        // Non-Mesh pivot components are expressed in the generated geometry
-        // basis, not in GameObject world axes. The CPU v2 CameraView builds
-        // the corresponding Laya basis, so these basis-local coefficients are
-        // retained. Keep the mode/alignment arguments explicit so no caller
-        // can accidentally replace this rule with a generic Vector3 mirror.
+        if (renderMode == ParticleSystemRenderMode.HorizontalBillboard || renderMode == ParticleSystemRenderMode.VerticalBillboard)
+            return new Vector3(value.x, -value.y, value.z);
+        if ((renderMode == ParticleSystemRenderMode.Billboard && alignment != ParticleSystemRenderSpace.View)
+            || renderMode == ParticleSystemRenderMode.Stretch)
+            return new Vector3(value.x, value.y, -value.z);
         return value;
     }
 }
