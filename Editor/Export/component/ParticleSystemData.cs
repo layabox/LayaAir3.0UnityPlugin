@@ -27,8 +27,8 @@ internal class ParticleSystemData
 
         mainObject.AddField("duration", main.duration);
         mainObject.AddField("loop", main.loop);
-        mainObject.AddField("startDelay", writeMinMaxCurveData(main.startDelay, 1, 0, 1));
-        mainObject.AddField("startLifetime", writeMinMaxCurveData(main.startLifetime, 1, 0, 1));
+        mainObject.AddField("startDelay", writeMinMaxCurveData(main.startDelay));
+        mainObject.AddField("startLifetime", writeMinMaxCurveData(main.startLifetime));
         mainObject.AddField("startSpeed", writeMinMaxCurveData(main.startSpeed));
         mainObject.AddField("startSize3D", main.startSize3D);
         if (main.startSize3D)
@@ -635,12 +635,7 @@ internal class ParticleSystemData
             {
                 streamObject.AddField(
                     componentNames[component],
-                    writeMinMaxCurveData(
-                        customData.GetVector(stream, component),
-                        1.0f,
-                        float.NegativeInfinity,
-                        float.PositiveInfinity
-                    )
+                    writeMinMaxCurveData(customData.GetVector(stream, component))
                 );
             }
         }
@@ -986,7 +981,7 @@ internal class ParticleSystemData
         props.AddField(propname, gradientData);
     }
 
-    public static JSONObject writeMinMaxCurveData(ParticleSystem.MinMaxCurve curve, float factor = 1.0f, float min = -1, float max = 1)
+    public static JSONObject writeMinMaxCurveData(ParticleSystem.MinMaxCurve curve, float factor = 1.0f)
     {
         JSONObject curveData = new JSONObject(JSONObject.Type.OBJECT);
         curveData.AddField("mode", (int)(object)curve.mode);
@@ -996,7 +991,7 @@ internal class ParticleSystemData
                 curveData.AddField("constant", curve.constant * factor);
                 break;
             case ParticleSystemCurveMode.Curve:
-                curveData.AddField("curve", getAnimationCurveData(curve.curve, min, max));
+                curveData.AddField("curve", getAnimationCurveData(curve.curve));
                 curveData.AddField("curveMultiplier", curve.curveMultiplier * factor);
                 break;
             case ParticleSystemCurveMode.TwoConstants:
@@ -1004,15 +999,15 @@ internal class ParticleSystemData
                 curveData.AddField("constantMin", curve.constantMin * factor);
                 break;
             case ParticleSystemCurveMode.TwoCurves:
-                curveData.AddField("curveMax", getAnimationCurveData(curve.curveMax, min, max));
-                curveData.AddField("curveMin", getAnimationCurveData(curve.curveMin, min, max));
+                curveData.AddField("curveMax", getAnimationCurveData(curve.curveMax));
+                curveData.AddField("curveMin", getAnimationCurveData(curve.curveMin));
                 curveData.AddField("curveMultiplier", curve.curveMultiplier * factor);
                 break;
         }
         return curveData;
     }
 
-    public static JSONObject getAnimationCurveData(AnimationCurve animationcurve, float min = -1, float max = 1)
+    public static JSONObject getAnimationCurveData(AnimationCurve animationcurve)
     {
         JSONObject animationcurveData = new JSONObject(JSONObject.Type.OBJECT);
         if (animationcurve != null && animationcurve.length > 0)
@@ -1020,22 +1015,26 @@ internal class ParticleSystemData
             JSONObject subnodeArray = new JSONObject(JSONObject.Type.ARRAY);
             for (int i = 0; i < animationcurve.length; i++)
             {
+                var key = animationcurve[i];
+                if (float.IsNaN(key.time) || float.IsInfinity(key.time)
+                    || float.IsNaN(key.value) || float.IsInfinity(key.value))
+                {
+                    throw new System.InvalidOperationException(
+                        "Cannot export CPU particle curve key " + i
+                        + " (time=" + key.time + ", value=" + key.value
+                        + "): keyframe time and value must be finite.");
+                }
+
                 JSONObject subnodeObject = new JSONObject(JSONObject.Type.OBJECT);
                 JsonUtils.SetComponentsType(subnodeObject, "FloatKeyframe");
-                subnodeObject.AddField("time", animationcurve[i].time);
-                float value = animationcurve[i].value;
-                if (value >= min && value <= max)
-                {
-                    subnodeObject.AddField("value", value);
-                }
-                else
-                {
-                    Debug.LogError("不在范围内");
-                }
-                subnodeObject.AddField("inTangent", animationcurve[i].inTangent);
-                subnodeObject.AddField("outTangent", animationcurve[i].outTangent);
-                subnodeObject.AddField("inWeight", animationcurve[i].inWeight);
-                subnodeObject.AddField("outWeight", animationcurve[i].outWeight);
+                subnodeObject.AddField("time", key.time);
+                // Unity curves may overshoot the inspector's normalized range.
+                // Keep the original value; dropping or clamping it corrupts the curve.
+                subnodeObject.AddField("value", key.value);
+                subnodeObject.AddField("inTangent", key.inTangent);
+                subnodeObject.AddField("outTangent", key.outTangent);
+                subnodeObject.AddField("inWeight", key.inWeight);
+                subnodeObject.AddField("outWeight", key.outWeight);
                 subnodeArray.Add(subnodeObject);
             }
             animationcurveData.AddField("keys", subnodeArray);
