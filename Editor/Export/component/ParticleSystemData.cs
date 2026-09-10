@@ -310,7 +310,12 @@ internal class ParticleSystemData
             shape.rotation);
         shapObject.AddField("position", JsonUtils.GetVector3Object(shapePosition));
         shapObject.AddField("rotation", JsonUtils.GetVector3Object(shapeRotation));
-        shapObject.AddField("scale", JsonUtils.GetVector3Object(shape.scale));
+        // Procedural samples are generated in the native Shape basis. Encode
+        // C = diag(-1, 1, 1) in their effective scale: R_L * S_L = C * R_U * S_U.
+        // Shared Mesh vertices/normals already contain C, so keep Mesh scale.
+        Vector3 shapeScale = shape.scale;
+        if (!isCpuParticleMeshShape(targetShapeType)) shapeScale.x = -shapeScale.x;
+        shapObject.AddField("scale", JsonUtils.GetVector3Object(shapeScale));
         shapObject.AddField("alignToDirection", shape.alignToDirection);
         shapObject.AddField("randomDirectionAmount", shape.randomDirectionAmount);
         shapObject.AddField("sphericalDirectionAmount", shape.sphericalDirectionAmount);
