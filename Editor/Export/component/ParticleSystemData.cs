@@ -86,6 +86,7 @@ internal class ParticleSystemData
         mainObject.AddField("stopAction", (int)(object)particleSystem.main.stopAction);
         mainObject.AddField("cullingMode", (int)(object)particleSystem.main.cullingMode);
         mainObject.AddField("ringBufferMode", (int)(object)particleSystem.main.ringBufferMode);
+        mainObject.AddField("ringBufferLoopRange", JsonUtils.GetVector2Object(main.ringBufferLoopRange));
 
         particleSystemData.AddField("useAutoRandomSeed", particleSystem.useAutoRandomSeed);
         if (!particleSystem.useAutoRandomSeed)
