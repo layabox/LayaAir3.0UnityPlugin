@@ -2262,79 +2262,6 @@ internal class CustomShaderExporter
         return resolved;
     }
 
-    /// <summary>
-    /// ShaderGraph assets contain graph JSON rather than ShaderLab pass text, so ParseRenderState
-    /// cannot find Blend/Cull/ZWrite/ZTest directives. ShaderGraph serializes the effective Built-in
-    /// target state onto the material as _BUILTIN_* properties; resolve those values directly.
-    /// </summary>
-    private static ResolvedRenderState ResolveShaderGraphRenderState(Material material)
-    {
-        var resolved = new ResolvedRenderState();
-
-        int surface = GetFirstMaterialInt(material, material.renderQueue >= 3000 ? 1 : 0,
-            "_BUILTIN_Surface", "_Surface", "_SurfaceType");
-        bool transparent = surface != 0 || material.renderQueue >= 3000;
-
-        resolved.hasBlend = true;
-        resolved.s_Blend = transparent ? 1 : 0;
-        if (transparent)
-        {
-            int srcBlend;
-            int dstBlend;
-            bool hasSrc = TryGetFirstMaterialInt(material, out srcBlend,
-                "_BUILTIN_SrcBlend", "_SrcBlend");
-            bool hasDst = TryGetFirstMaterialInt(material, out dstBlend,
-                "_BUILTIN_DstBlend", "_DstBlend");
-
-            if (hasSrc && hasDst)
-            {
-                resolved.s_BlendSrc = UnityBlendFactorToLayaInt(srcBlend);
-                resolved.s_BlendDst = UnityBlendFactorToLayaInt(dstBlend);
-            }
-            else
-            {
-                // ShaderGraph AlphaMode: 0=Alpha, 1=Premultiply, 2=Additive, 3=Multiply.
-                int blendMode = GetFirstMaterialInt(material, 0, "_BUILTIN_Blend", "_Blend", "_BlendMode");
-                switch (blendMode)
-                {
-                    case 1: // Premultiply
-                        resolved.s_BlendSrc = 1; // One
-                        resolved.s_BlendDst = 7; // OneMinusSrcAlpha
-                        break;
-                    case 2: // Additive
-                        resolved.s_BlendSrc = 6; // SrcAlpha
-                        resolved.s_BlendDst = 1; // One
-                        break;
-                    case 3: // Multiply
-                        resolved.s_BlendSrc = 4; // DstColor
-                        resolved.s_BlendDst = 0; // Zero
-                        break;
-                    default: // Alpha
-                        resolved.s_BlendSrc = 6; // SrcAlpha
-                        resolved.s_BlendDst = 7; // OneMinusSrcAlpha
-                        break;
-                }
-            }
-        }
-
-        int cull = GetFirstMaterialInt(material, 2,
-            "_BUILTIN_CullMode", "_CullMode", "_Cull");
-        resolved.hasCull = true;
-        resolved.s_Cull = UnityCullToLayaInt(cull);
-
-        int zWrite = GetFirstMaterialInt(material, transparent ? 0 : 1,
-            "_BUILTIN_ZWrite", "_ZWrite");
-        resolved.hasZWrite = true;
-        resolved.s_DepthWrite = zWrite != 0;
-
-        int zTest = GetFirstMaterialInt(material, 4,
-            "_BUILTIN_ZTest", "_ZTest");
-        resolved.hasZTest = true;
-        resolved.s_DepthTest = UnityZTestToLayaInt(zTest);
-
-        return resolved;
-    }
-
     private static int GetFirstMaterialInt(Material material, int fallback, params string[] propertyNames)
     {
         int value;
@@ -12967,31 +12894,17 @@ internal class CustomShaderExporter
             catch (System.Exception) { matShaderSource = null; }
         }
 
-        if (matShaderSource != null)
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState))
         {
-            bool isShaderGraph = shaderPath.EndsWith(".shadergraph", System.StringComparison.OrdinalIgnoreCase);
-            ShaderParseResult matParseResult = null;
-            ResolvedRenderState resolved;
-
-            if (isShaderGraph)
-            {
-                // ShaderGraph source is JSON and does not contain ShaderLab pass directives.
-                // Read the effective target state serialized in _BUILTIN_* material properties.
-                resolved = ResolveShaderGraphRenderState(material);
-                ExportLogger.Log($"LayaAir3D: Resolved ShaderGraph render state from material properties: {material.name}");
-            }
-            else
-            {
-                // 第一步：解析 shader 渲染状态（保留原始 token，区分硬编码和属性引用）
-                matParseResult = new ShaderParseResult();
-                ParseRenderState(matShaderSource, matParseResult);
-
-                // 第二步：结合材质数据，解析出实际生效的 Laya 渲染参数
-                // ⭐ GUI 脚本属性值修正：某些 shader 的 CustomEditor 在运行时覆盖材质属性，
-                // 但 .mat 序列化的是旧值。此处模拟 GUI 脚本逻辑，生成正确的属性值。
-                Dictionary<string, int> guiOverrides = BuildShaderGUIOverrides(material, baseLayaShaderName ?? layaShaderName);
-                resolved = ResolveRenderState(matParseResult, material, guiOverrides);
-            }
+            graphState.Write(props, material);
+        }
+        else if (matShaderSource != null && !shaderPath.EndsWith(".shadergraph", System.StringComparison.OrdinalIgnoreCase))
+        {
+            var matParseResult = new ShaderParseResult();
+            ParseRenderState(matShaderSource, matParseResult);
+            Dictionary<string, int> guiOverrides = BuildShaderGUIOverrides(material, baseLayaShaderName ?? layaShaderName);
+            ResolvedRenderState resolved = ResolveRenderState(matParseResult, material, guiOverrides);
 
             // 第三步：与预定义模式匹配
             matchedRenderMode = MatchRenderMode(resolved);
@@ -13074,13 +12987,16 @@ internal class CustomShaderExporter
             props.AddField("s_DepthWrite", zWrite);
         }
 
-        bool alphaTest = PropDatasConfig.GetAlphaTest(material) ||
-            GetFirstMaterialInt(material, 0, "_BUILTIN_AlphaClip", "_AlphaClip") != 0;
+        bool alphaTest = graphState != null ? graphState.AlphaTest :
+            PropDatasConfig.GetAlphaTest(material) || GetFirstMaterialInt(material, 0, "_BUILTIN_AlphaClip", "_AlphaClip") != 0;
         float alphaTestValue = material.HasProperty("_Alpha_Clip_Threshold")
             ? material.GetFloat("_Alpha_Clip_Threshold")
             : PropDatasConfig.GetAlphaTestValue(material);
-        props.AddField("alphaTest", alphaTest);
-        props.AddField("alphaTestValue", alphaTestValue);
+        if (graphState == null)
+        {
+            props.AddField("alphaTest", alphaTest);
+            props.AddField("alphaTestValue", alphaTestValue);
+        }
         
         // 导出纹理
         JSONObject textures = new JSONObject(JSONObject.Type.ARRAY);

@@ -249,6 +249,8 @@ public class PropDatasConfig
 
     public static int GetCull(Material material)
     {
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.Cull;
         if (material.HasProperty("_BUILTIN_CullMode"))
         {
             return material.GetInt("_BUILTIN_CullMode");
@@ -272,7 +274,10 @@ public class PropDatasConfig
 
     public static int GetBlend(Material material)
     {
-        // ShaderGraph stores its authoritative surface type in _BUILTIN_Surface.
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.Blend;
+
+        // Legacy fallback for graphs whose active target is not supported.
         if (material.HasProperty("_BUILTIN_Surface"))
             return material.GetInt("_BUILTIN_Surface") != 0 || material.renderQueue >= 3000 ? 1 : 0;
 
@@ -300,6 +305,8 @@ public class PropDatasConfig
 
     public static int GetSrcBlend(Material material)
     {
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.SrcRGB;
         if (material.HasProperty("_BUILTIN_SrcBlend"))
             return UnityBlendFactorToLaya(material.GetInt("_BUILTIN_SrcBlend"), 6);
 
@@ -323,6 +330,8 @@ public class PropDatasConfig
     }
     public static int GetDstBlend(Material material)
     {
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.DstRGB;
         if (material.HasProperty("_BUILTIN_DstBlend"))
             return UnityBlendFactorToLaya(material.GetInt("_BUILTIN_DstBlend"), 7);
 
@@ -351,6 +360,8 @@ public class PropDatasConfig
 
     public static bool GetZWrite(Material material)
     {
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.DepthWrite;
         if (material.HasProperty("_BUILTIN_ZWrite"))
             return material.GetInt("_BUILTIN_ZWrite") != 0;
 
@@ -373,6 +384,8 @@ public class PropDatasConfig
 
     public static int GetZTest(Material material)
     {
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.DepthTest;
         if (material.HasProperty("_BUILTIN_ZTest"))
             return UnityZTestToLaya(material.GetInt("_BUILTIN_ZTest"));
 
@@ -393,6 +406,8 @@ public class PropDatasConfig
 
     public static bool GetAlphaTest(Material material)
     {
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.AlphaTest;
         if (material.HasProperty("_BUILTIN_AlphaClip"))
             return material.GetInt("_BUILTIN_AlphaClip") != 0;
 
@@ -423,6 +438,8 @@ public class PropDatasConfig
 
     public static int GetRenderModule(Material material)
     {
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.RenderMode;
         if (material.shader.name.StartsWith("Laya/") && material.HasProperty("_Mode")) {
             return material.GetInt("_Mode");
         }
@@ -462,6 +479,8 @@ public class PropDatasConfig
     /// </summary>
     public static int DetectTransparentRenderMode(Material material)
     {
+        ShaderGraphRenderState graphState;
+        if (ShaderGraphRenderState.TryResolve(material, out graphState)) return graphState.RenderMode;
         int srcBlend = GetSrcBlend(material);
         int dstBlend = GetDstBlend(material);
         bool depthWrite = GetZWrite(material);
@@ -506,6 +525,23 @@ public class PropDatasConfig
         }
 
         return 0; // 默认 Opaque
+    }
+
+    internal static void WriteRenderState(Material material, JSONObject props)
+    {
+        if (ShaderGraphRenderState.TryWrite(material, props)) return;
+
+        // Keep existing ShaderLab/mapped-material behavior outside the ShaderGraph fix.
+        props.AddField("materialRenderMode", GetRenderModule(material));
+        props.AddField("s_Cull", GetCull(material));
+        props.AddField("s_Blend", GetBlend(material));
+        props.AddField("s_BlendSrc", GetSrcBlend(material));
+        props.AddField("s_BlendDst", GetDstBlend(material));
+        props.AddField("s_DepthTest", GetZTest(material));
+        props.AddField("s_DepthWrite", GetZWrite(material));
+        props.AddField("alphaTest", GetAlphaTest(material));
+        props.AddField("alphaTestValue", GetAlphaTestValue(material));
+        props.AddField("renderQueue", material.renderQueue);
     }
 
     private static int UnityBlendFactorToLaya(int unityBlend, int fallback)
@@ -1422,17 +1458,7 @@ internal class MetarialUitls
         JSONObject props = new JSONObject(JSONObject.Type.OBJECT);
         jsonData.AddField("props", props);
         props.AddField("type", propsData.materalName);
-        // 先设置模式，再写入解析后的具体状态，避免标准模式覆盖它们。
-        props.AddField("materialRenderMode", PropDatasConfig.GetRenderModule(material));
-        props.AddField("s_Cull", PropDatasConfig.GetCull(material));
-        props.AddField("s_Blend", PropDatasConfig.GetBlend(material));
-        props.AddField("s_BlendSrc", PropDatasConfig.GetSrcBlend(material));
-        props.AddField("s_BlendDst", PropDatasConfig.GetDstBlend(material));
-        props.AddField("s_DepthTest", PropDatasConfig.GetZTest(material));
-        props.AddField("s_DepthWrite", PropDatasConfig.GetZWrite(material));
-        props.AddField("alphaTest", PropDatasConfig.GetAlphaTest(material));
-        props.AddField("alphaTestValue", PropDatasConfig.GetAlphaTestValue(material));
-        props.AddField("renderQueue", material.renderQueue);
+        PropDatasConfig.WriteRenderState(material, props);
         JSONObject texture = new JSONObject(JSONObject.Type.ARRAY);
         foreach (var plist in propsData.pictureList)
         {
@@ -1648,17 +1674,7 @@ internal class MetarialUitls
         JSONObject props = new JSONObject(JSONObject.Type.OBJECT);
         props.AddField("textures", textures);
         props.AddField("type", propsData.materalName);
-        // 先设置模式，再写入解析后的具体状态。
-        props.AddField("materialRenderMode", PropDatasConfig.GetRenderModule(material));
-        props.AddField("s_Cull", PropDatasConfig.GetCull(material));
-        props.AddField("s_Blend", PropDatasConfig.GetBlend(material));
-        props.AddField("s_BlendSrc", PropDatasConfig.GetSrcBlend(material));
-        props.AddField("s_BlendDst", PropDatasConfig.GetDstBlend(material));
-        props.AddField("s_DepthTest", PropDatasConfig.GetZTest(material));
-        props.AddField("s_DepthWrite", PropDatasConfig.GetZWrite(material));
-        props.AddField("alphaTest", PropDatasConfig.GetAlphaTest(material));
-        props.AddField("alphaTestValue", PropDatasConfig.GetAlphaTestValue(material));
-        props.AddField("renderQueue", material.renderQueue);
+        PropDatasConfig.WriteRenderState(material, props);
         foreach (var cList in propsData.colorLists)
         {
             if (!material.HasProperty(cList.Key))
@@ -1801,6 +1817,7 @@ internal class MetarialUitls
             depthWrite = material.GetInt("_ZWrite") == 1;
         }
         props.AddField("s_DepthWrite", depthWrite);
+        ShaderGraphRenderState.TryWrite(material, props);
         
         // 颜色属性 - 尝试从多个可能的属性获取
         Color tintColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
@@ -1945,6 +1962,7 @@ internal class MetarialUitls
         if (material.HasProperty("_ZWrite"))
             depthWrite = material.GetInt("_ZWrite") == 1;
         props.AddField("s_DepthWrite", depthWrite);
+        ShaderGraphRenderState.TryWrite(material, props);
 
         // 颜色
         Color tintColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
