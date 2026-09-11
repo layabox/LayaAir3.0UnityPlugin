@@ -547,6 +547,7 @@ internal class ParticleSystemData
         dataObject.AddField("enable", trails.enabled);
         dataObject.AddField("mode", (int)(object)trails.mode);
         dataObject.AddField("ribbonCount", (int)(object)trails.ribbonCount);
+        dataObject.AddField("splitSubEmitterRibbons", trails.splitSubEmitterRibbons);
         dataObject.AddField("ratio", trails.ratio);
         dataObject.AddField("lifetime", writeMinMaxCurveData(trails.lifetime));
         dataObject.AddField("minVertexDistance", trails.minVertexDistance);
@@ -880,6 +881,8 @@ internal class ParticleSystemData
         compData.AddField("enabled", renderer.enabled);
         compData.AddField("renderMode", (int)(object)renderer.renderMode);
         compData.AddField("sortMode", (int)(object)renderer.sortMode);
+        // Unity Renderer > Order in Layer maps to Laya's renderer-level order.
+        compData.AddField("renderOrder", renderer.sortingOrder);
         compData.AddField("alignment", (int)(object)renderer.alignment);
 
         if (renderer.sharedMaterial) { compData.AddField("material", map.GetMaterialData(renderer.sharedMaterial, renderer, true)); }
