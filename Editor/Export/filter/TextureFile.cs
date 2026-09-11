@@ -64,7 +64,7 @@ internal class TextureFile : FileData
     private TextureImporterType m_origTextureType        = TextureImporterType.Default;
     private bool                m_origIsReadable         = false;
     private bool                m_importSettingsModified = false;
-    // 是否作为 Laya 2D 精灵纹理导出（meta 只含 textureType:2，不生成 3D constructParams）
+    // 是否作为 Laya 2D 精灵纹理导出（meta 含 textureType:2 和环绕模式，不生成 3D constructParams）
     private bool                m_isSpriteTexture        = false;
 
     public TextureFile(string originPath, Texture2D texture, bool isNormal,
@@ -106,22 +106,32 @@ internal class TextureFile : FileData
         this.m_metaData.AddField("importer", importerData);
     }
 
+    private static WrapMode convertWrapMode(TextureWrapMode wrapMode) {
+        switch (wrapMode) {
+            case TextureWrapMode.Repeat:
+                return WrapMode.Repeat;
+            case TextureWrapMode.Mirror:
+                return WrapMode.Mirrored;
+            default:
+                return WrapMode.Clamp;
+        }
+    }
+
+    private static void addWrapModeMetadata(JSONObject importData, WrapMode wrapModeU, WrapMode wrapModeV) {
+        // 保留统一模式作为兼容回退；U/V 不同时启用 Laya 的分轴设置。
+        importData.AddField("wrapMode", (int)wrapModeU);
+        importData.AddField("wrapModePerAxis", wrapModeU != wrapModeV);
+        importData.AddField("wrapModeU", (int)wrapModeU);
+        importData.AddField("wrapModeV", (int)wrapModeV);
+    }
+
     private void initDefaultTextureInfo() {
         this.importFormat = LayaTextureImportFormat.R8G8B8A8;
         this.hasAlphaChannel = true;
         
         var sRGB = !this.isNormal;
-        WrapMode wrapMode = WrapMode.Clamp;
-        if (texture != null) {
-            switch (texture.wrapMode) {
-                case TextureWrapMode.Repeat:
-                    wrapMode = WrapMode.Repeat;
-                    break;
-                case TextureWrapMode.Mirror:
-                    wrapMode = WrapMode.Mirrored;
-                    break;
-            }
-        }
+        WrapMode wrapModeU = texture != null ? convertWrapMode(texture.wrapModeU) : WrapMode.Clamp;
+        WrapMode wrapModeV = texture != null ? convertWrapMode(texture.wrapModeV) : WrapMode.Clamp;
         bool generateMipmap = texture != null && texture.mipmapCount > 1;
         int anisoLevel = texture != null ? texture.anisoLevel : 1;
         int filterMode = 1;
@@ -139,7 +149,7 @@ internal class TextureFile : FileData
         // 默认importer数据
         JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
         importData.AddField("sRGB", sRGB);
-        importData.AddField("wrapMode", (int)wrapMode);
+        addWrapModeMetadata(importData, wrapModeU, wrapModeV);
         importData.AddField("generateMipmap", generateMipmap);
         importData.AddField("anisoLevel", anisoLevel);
         importData.AddField("alphaChannel", hasAlphaChannel);
@@ -159,8 +169,8 @@ internal class TextureFile : FileData
         
         // propertyParams
         this.propertyParams.AddField("filterMode", filterMode);
-        this.propertyParams.AddField("wrapModeU", (int)wrapMode);
-        this.propertyParams.AddField("wrapModeV", (int)wrapMode);
+        this.propertyParams.AddField("wrapModeU", (int)wrapModeU);
+        this.propertyParams.AddField("wrapModeV", (int)wrapModeV);
         this.propertyParams.AddField("anisoLevel", anisoLevel);
     }
 
@@ -176,6 +186,8 @@ internal class TextureFile : FileData
             return;
         }
 
+        WrapMode wrapModeU = convertWrapMode(texture.wrapModeU);
+        WrapMode wrapModeV = convertWrapMode(texture.wrapModeV);
         string path = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
         if (import == null) {
@@ -214,11 +226,12 @@ internal class TextureFile : FileData
             }
 
             // ── 精灵纹理快速路径 ──────────────────────────────────────────────
-            // 2D 精灵纹理在 Laya 中只需要 { "textureType": 2 }，不需要 3D 贴图的
+            // 2D 精灵纹理保留 textureType 和环绕模式，不需要 3D 贴图的
             // constructParams / propertyParams / platformDefault 等参数。
             if (m_isSpriteTexture && !m_forceReadable) {
                 JSONObject spriteImporter = new JSONObject(JSONObject.Type.OBJECT);
                 spriteImporter.AddField("textureType", 2);
+                addWrapModeMetadata(spriteImporter, wrapModeU, wrapModeV);
                 this.setImporterMetadata(spriteImporter);
                 // constructParams / propertyParams 保持空数组（已在方法开头初始化），
                 // 精灵纹理不会被材质系统调用 jsonObject()，无需填充。
@@ -259,24 +272,10 @@ internal class TextureFile : FileData
             ? LayaTextureImportFormat.R8G8B8A8
             : LayaTextureImportFormat.R8G8B8;
 
-        WrapMode wrapMode = WrapMode.Clamp;
-        switch (texture.wrapMode) {
-            case TextureWrapMode.Repeat:
-                wrapMode = WrapMode.Repeat;
-                break;
-            case TextureWrapMode.Mirror:
-                wrapMode = WrapMode.Mirrored;
-                break;
-            case TextureWrapMode.Clamp:
-            default:
-                wrapMode = WrapMode.Clamp;
-                break;
-        }
-
         if (true) { // import
             JSONObject importData = new JSONObject(JSONObject.Type.OBJECT);
             importData.AddField("sRGB", sRGB);
-            importData.AddField("wrapMode", (int)wrapMode);
+            addWrapModeMetadata(importData, wrapModeU, wrapModeV);
             importData.AddField("generateMipmap", import.mipmapEnabled);
             if (import.mipmapEnabled) {
                 importData.AddField("mipmapFilter", mipmapFilter);
@@ -348,9 +347,9 @@ internal class TextureFile : FileData
             }
             this.propertyParams.AddField("filterMode", filterMode);
             // wrapModeU
-            this.propertyParams.AddField("wrapModeU", (int)wrapMode);
+            this.propertyParams.AddField("wrapModeU", (int)wrapModeU);
             // wrapModeV
-            this.propertyParams.AddField("wrapModeV", (int)wrapMode);
+            this.propertyParams.AddField("wrapModeV", (int)wrapModeV);
             // anisoLevel
             this.propertyParams.AddField("anisoLevel", anisoLevel);
         }
