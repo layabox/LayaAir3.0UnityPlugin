@@ -13328,7 +13328,13 @@ internal class CustomShaderExporter
             Cubemap cubemap = tex as Cubemap;
             if (cubemap != null)
             {
-                ExportCubemapTexture(cubemap, layaName, textures, defines, propName, resoureMap);
+                JSONObject textureData = ExportCubemapTexture(cubemap, layaName, resoureMap);
+                if (textureData != null)
+                {
+                    textures.Add(textureData);
+                    string define = GenerateTextureDefine(propName);
+                    if (!defines.Contains(define)) defines.Add(define);
+                }
             }
             else
             {
@@ -13354,17 +13360,30 @@ internal class CustomShaderExporter
     }
 
     /// <summary>
-    /// 导出 Cubemap 纹理：拆为 6 面 PNG，创建 .cubemap JSON，添加到材质 textures 数组
+    /// 保留现有 +/-X 面交换以匹配 SpaceUtils 的 X 轴反射，同时修正面内方向。
+    /// GetPixels 到 PNG 的行方向转换与 X 反射共同要求每面旋转 180 度。
+    /// 只交换左右面而不旋转像素，会破坏相邻面边缘的连续性。
+    /// pixels 是 GetPixels 返回的副本，可以原地重排，不修改 Unity 源纹理。
     /// </summary>
-    private static void ExportCubemapTexture(Cubemap cubemap, string layaName,
-        JSONObject textures, List<string> defines, string propName, ResoureMap resoureMap)
+    internal static void ReorientCubemapFacePixels(Color[] pixels)
     {
+        Array.Reverse(pixels);
+    }
+
+    /// <summary>
+    /// 导出 Cubemap 纹理并返回材质纹理引用，供自定义 Shader 和材质映射配置共用。
+    /// 拆为 6 面 PNG，创建 .cubemap JSON；宏定义由各自的材质导出路径处理。
+    /// </summary>
+    internal static JSONObject ExportCubemapTexture(Cubemap cubemap, string layaName, ResoureMap resoureMap)
+    {
+        if (cubemap == null) return null;
         string assetPath = AssetDatabase.GetAssetPath(cubemap);
         if (string.IsNullOrEmpty(assetPath) || ResoureMap.IsBuiltinResource(assetPath))
-            return;
+            return null;
 
         int size = cubemap.width;
-        string basePath = assetPath.Substring(0, assetPath.LastIndexOf('.'));
+        bool generateMipmap = cubemap.mipmapCount > 1;
+        string basePath = Path.ChangeExtension(assetPath, null);
         string cubemapPath = basePath + ".cubemap";
 
         // 避免同一 Cubemap 重复导出
@@ -13406,7 +13425,9 @@ internal class CustomShaderExporter
 
                 // 提取面像素并编码为 PNG
                 Texture2D faceTex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-                faceTex.SetPixels(cubemap.GetPixels(face));
+                Color[] facePixels = cubemap.GetPixels(face);
+                ReorientCubemapFacePixels(facePixels);
+                faceTex.SetPixels(facePixels);
                 faceTex.Apply();
                 byte[] pngBytes = faceTex.EncodeToPNG();
                 UnityEngine.Object.DestroyImmediate(faceTex);
@@ -13426,7 +13447,7 @@ internal class CustomShaderExporter
             cubeFile.jsonData.AddField("filterMode", 1);
             cubeFile.jsonData.AddField("cubemapFileMode", "R8G8B8A8");
             cubeFile.jsonData.AddField("mipmapCoverageIBL", true);
-            cubeFile.jsonData.AddField("generateMipmap", true);
+            cubeFile.jsonData.AddField("generateMipmap", generateMipmap);
             cubeFile.jsonData.AddField("sRGB", true);
 
             // 恢复原始 isReadable 设置
@@ -13437,34 +13458,33 @@ internal class CustomShaderExporter
             }
         }
 
-        // 添加到 .lmat textures 数组（格式与 Skybox 路径一致）
+        return CreateCubemapTextureReference(layaName, cubeFile.uuid, cubeFile.jsonData);
+    }
+
+    // 从已注册的 Cubemap 配置生成引用，首次导出与缓存复用使用相同的采样参数。
+    internal static JSONObject CreateCubemapTextureReference(string layaName, string cubeUuid, JSONObject cubeData)
+    {
+        int size = (int)cubeData["cubemapSize"].i;
         JSONObject constructParams = new JSONObject(JSONObject.Type.ARRAY);
         constructParams.Add(size);
         constructParams.Add(size);
-        constructParams.Add(0);      // R8G8B8A8
-        constructParams.Add(false);  // mipmap
+        constructParams.Add((int)LayaTextureFormat.R8G8B8A8);
+        constructParams.Add(cubeData["generateMipmap"].b);
         constructParams.Add(false);  // canRead
-        constructParams.Add(true);   // sRGB
+        constructParams.Add(cubeData["sRGB"].b);
 
         JSONObject propertyParams = new JSONObject(JSONObject.Type.OBJECT);
-        propertyParams.AddField("filterMode", 1);
+        propertyParams.AddField("filterMode", cubeData["filterMode"].i);
         propertyParams.AddField("wrapModeU", 0);
         propertyParams.AddField("wrapModeV", 0);
         propertyParams.AddField("anisoLevel", 4);
 
         JSONObject texObj = new JSONObject(JSONObject.Type.OBJECT);
         texObj.AddField("name", layaName);
-        texObj.AddField("path", "res://" + cubeFile.uuid);
+        texObj.AddField("path", "res://" + cubeUuid);
         texObj.AddField("constructParams", constructParams);
         texObj.AddField("propertyParams", propertyParams);
-        textures.Add(texObj);
-
-        // 添加宏定义
-        string define = GenerateTextureDefine(propName);
-        if (!defines.Contains(define))
-        {
-            defines.Add(define);
-        }
+        return texObj;
     }
 
     /// <summary>

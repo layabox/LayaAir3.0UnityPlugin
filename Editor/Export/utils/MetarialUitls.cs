@@ -1480,13 +1480,23 @@ internal class MetarialUitls
                     }
                 }
                 
-                TextureFile textureFile = resoureMap.GetTextureFile(text1, tConfig.isNormal);
-                if(textureFile == null)
+                // Cubemap 与 Texture2D 共用 textures 映射，根据实际资源类型导出。
+                JSONObject textureData;
+                if (text1 is Cubemap cubemap)
+                {
+                    textureData = CustomShaderExporter.ExportCubemapTexture(cubemap, tConfig.keyName, resoureMap);
+                }
+                else
+                {
+                    TextureFile textureFile = resoureMap.GetTextureFile(text1, tConfig.isNormal);
+                    textureData = textureFile != null ? textureFile.jsonObject(tConfig.keyName) : null;
+                }
+                if (textureData == null)
                 {
                     Debug.LogWarning("LayaAir3D: Failed to export texture: " + texPath);
                     continue;
                 }
-                texture.Add(textureFile.jsonObject(tConfig.keyName));
+                texture.Add(textureData);
             }
 
             // 新式配置：Tiling/Offset 作为 Texture 的附加导出行为。

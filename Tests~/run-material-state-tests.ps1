@@ -17,10 +17,23 @@ $responseFile = Get-ChildItem -LiteralPath (Join-Path $projectPath 'Library/Bee/
     Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
 if (!$responseFile) { throw 'Open and compile the Unity project first; no Editor compiler response file was found.' }
 $response = [System.IO.File]::ReadAllText($responseFile.FullName)
+# A cached Unity response can still list temporary Editor scripts deleted since
+# its last compilation. Do not require those removed files to run the regressions.
+$response = (($response -split '\r?\n') | Where-Object {
+    $sourceEntry = $_.Trim().Trim('"')
+    if (!$sourceEntry.StartsWith('-') -and $sourceEntry.EndsWith('.cs')) {
+        $sourceFile = if ([System.IO.Path]::IsPathRooted($sourceEntry)) { $sourceEntry } else { Join-Path $projectPath $sourceEntry }
+        if (![System.IO.File]::Exists($sourceFile)) {
+            Write-Host "Skipping removed source from cached Unity response: $sourceEntry"
+            return $false
+        }
+    }
+    return $true
+}) -join "`n"
 $response = [regex]::Replace($response, '(?m)^-target:.*$', '-target:exe')
 $response = [regex]::Replace($response, '(?m)^-out:.*$', ('-out:"' + $outputPath + '/Assembly-CSharp-Editor.dll"'))
 $response = [regex]::Replace($response, '(?m)^-refout:.*\r?\n', '')
-foreach ($relativeSource in @('Editor/Export/utils/ShaderGraphRenderState.cs', 'Tests~/MaterialRenderStateTests.cs')) {
+foreach ($relativeSource in @('Editor/Export/utils/ShaderGraphRenderState.cs', 'Tests~/MaterialRenderStateTests.cs', 'Tests~/CubemapExportTests.cs')) {
     $sourcePath = (Join-Path $pluginRoot $relativeSource).Replace('\', '/')
     if (!$response.Replace('\', '/').Contains($sourcePath)) { $response += "`n" + '"' + $sourcePath + '"' }
 }

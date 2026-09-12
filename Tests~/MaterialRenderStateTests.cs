@@ -167,6 +167,7 @@ public static class MaterialRenderStateTests
                 AssertWarp(actualWarp);
                 Console.WriteLine("Verified real Warp ShaderGraph: " + args[0]);
             }
+            CubemapExportTests.Run();
             Console.WriteLine("PASS: " + assertions + " material render state assertions.");
             return 0;
         }
