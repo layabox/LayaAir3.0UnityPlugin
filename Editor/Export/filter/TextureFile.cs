@@ -190,6 +190,9 @@ internal class TextureFile : FileData
         WrapMode wrapModeV = convertWrapMode(texture.wrapModeV);
         string path = AssetDatabase.GetAssetPath(texture.GetInstanceID());
         TextureImporter import = AssetImporter.GetAtPath(path) as TextureImporter;
+        // 在临时改成 Default 类型之前读取原始色彩空间；法线贴图始终使用线性采样。
+        bool sRGB = import != null && import.sRGBTexture && !this.isNormal &&
+            import.textureType != TextureImporterType.NormalMap;
         if (import == null) {
             if (m_isBuiltinTexture) {
                 initDefaultTextureInfo();
@@ -237,11 +240,6 @@ internal class TextureFile : FileData
                 // 精灵纹理不会被材质系统调用 jsonObject()，无需填充。
                 return;
             }
-        }
-
-        var sRGB = true;
-        if (this.isNormal || import.textureType == TextureImporterType.NormalMap){
-            sRGB = false;
         }
 
         var mipmapFilter = 0;
