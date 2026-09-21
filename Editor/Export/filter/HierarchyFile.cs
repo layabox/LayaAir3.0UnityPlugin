@@ -74,65 +74,62 @@ internal class HierarchyFile
         {
             GameObject[] gameObjects = scene.GetRootGameObjects();
 
-            // 检查是否启用批量导出一级节点
+            // The first level of a Unity scene is its root GameObjects.
             if (ExportConfig.BatchMade)
             {
-                // 用于跟踪已使用的文件名，处理同名节点
-                Dictionary<string, int> usedFileNames = new Dictionary<string, int>();
-
-                // 批量导出一级节点：将每个根节点的一级子节点分别导出为独立的 .lh 文件
+                HashSet<string> usedFileNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
                 for (int i = 0; i < gameObjects.Length; i++)
                 {
                     GameObject rootObject = gameObjects[i];
                     if (!rootObject.activeInHierarchy && ExportConfig.IgnoreNotActiveGameObject)
-                    {
                         continue;
-                    }
+                    if (!this.nodeMap.checkHaveNode(rootObject))
+                        continue;
 
-                    // 遍历根节点的一级子节点
-                    Transform rootTransform = rootObject.transform;
-                    for (int j = 0; j < rootTransform.childCount; j++)
-                    {
-                        GameObject childObject = rootTransform.GetChild(j).gameObject;
-                        if (!childObject.activeInHierarchy && ExportConfig.IgnoreNotActiveGameObject)
-                        {
-                            continue;
-                        }
+                    string baseName = GameObjectUitls.cleanIllegalChar(rootObject.name, true);
+                    string fileName = baseName + ".lh";
+                    for (int suffix = 1; !usedFileNames.Add(fileName); suffix++)
+                        fileName = baseName + "_" + suffix + ".lh";
 
-                        // 生成唯一的文件名，处理同名节点
-                        string baseName = GameObjectUitls.cleanIllegalChar(childObject.name, true);
-                        string fileName;
-                        if (usedFileNames.ContainsKey(baseName))
-                        {
-                            usedFileNames[baseName]++;
-                            fileName = baseName + "_" + usedFileNames[baseName] + ".lh";
-                        }
-                        else
-                        {
-                            usedFileNames[baseName] = 0;
-                            fileName = baseName + ".lh";
-                        }
-
-                        JSONObject perfabJson = this.nodeMap.getPerfabJson(childObject);
-                        addAtlasPreloads(perfabJson);
-                        this.resouremap.AddExportFile(new JsonFile(fileName, perfabJson, true));
-                    }
+                    JSONObject prefabJson = this.nodeMap.getPerfabJson(rootObject);
+                    addAtlasPreloads(prefabJson);
+                    this.resouremap.AddExportFile(new JsonFile(fileName, prefabJson, true));
                 }
             }
             else
             {
-                // 原有逻辑：将根节点导出为 .lh 文件
+                // Export the entire scene as one prefab with an identity transform.
+                JSONObject prefabJson = new JSONObject(JSONObject.Type.OBJECT);
+                prefabJson.AddField("_$ver", 1);
+                prefabJson.AddField("_$id", "#0");
+                prefabJson.AddField("_$type", "Sprite3D");
+                prefabJson.AddField("name", scene.name);
+                prefabJson.AddField("active", true);
+                prefabJson.AddField("isStatic", false);
+                prefabJson.AddField("layer", 0);
+
+                JSONObject transform = new JSONObject(JSONObject.Type.OBJECT);
+                transform.AddField("localPosition", JsonUtils.GetVector3Object(Vector3.zero));
+                Quaternion rotation = Quaternion.identity;
+                SpaceUtils.changeRotate(ref rotation, false);
+                transform.AddField("localRotation", JsonUtils.GetQuaternionObject(rotation));
+                transform.AddField("localScale", JsonUtils.GetVector3Object(Vector3.one));
+                prefabJson.AddField("transform", transform);
+
+                JSONObject children = new JSONObject(JSONObject.Type.ARRAY);
                 for (int i = 0; i < gameObjects.Length; i++)
                 {
-                    GameObject gameObject = gameObjects[i];
-                    if (!gameObject.activeInHierarchy && ExportConfig.IgnoreNotActiveGameObject)
-                    {
+                    GameObject rootObject = gameObjects[i];
+                    if (!rootObject.activeInHierarchy && ExportConfig.IgnoreNotActiveGameObject)
                         continue;
-                    }
-                    JSONObject perfabJson = this.nodeMap.getPerfabJson(gameObject);
-                    addAtlasPreloads(perfabJson);
-                    this.resouremap.AddExportFile(new JsonFile(gameObject.name + ".lh", perfabJson, true));
+                    if (!this.nodeMap.checkHaveNode(rootObject))
+                        continue;
+                    children.Add(this.nodeMap.getJsonObject(rootObject));
                 }
+                prefabJson.AddField("_$child", children);
+                addAtlasPreloads(prefabJson);
+                string fileName = GameObjectUitls.cleanIllegalChar(scene.name, true) + ".lh";
+                this.resouremap.AddExportFile(new JsonFile(fileName, prefabJson, true));
             }
         }
 
