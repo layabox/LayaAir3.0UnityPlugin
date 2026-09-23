@@ -118,11 +118,11 @@ internal class TextureFile : FileData
     }
 
     private static void addWrapModeMetadata(JSONObject importData, WrapMode wrapModeU, WrapMode wrapModeV) {
-        // 保留统一模式作为兼容回退；U/V 不同时启用 Laya 的分轴设置。
+        // Laya 的 importer 用 wrapMode 表示 U；省略 wrapModeV 时 V 跟随 U。
         importData.AddField("wrapMode", (int)wrapModeU);
-        importData.AddField("wrapModePerAxis", wrapModeU != wrapModeV);
-        importData.AddField("wrapModeU", (int)wrapModeU);
-        importData.AddField("wrapModeV", (int)wrapModeV);
+        if (wrapModeU != wrapModeV) {
+            importData.AddField("wrapModeV", (int)wrapModeV);
+        }
     }
 
     private void initDefaultTextureInfo() {
@@ -153,6 +153,8 @@ internal class TextureFile : FileData
         importData.AddField("generateMipmap", generateMipmap);
         importData.AddField("anisoLevel", anisoLevel);
         importData.AddField("alphaChannel", hasAlphaChannel);
+        // 内置纹理没有 TextureImporter，使用 Laya 默认值。
+        importData.AddField("alphaIsTransparency", false);
         
         JSONObject platformDefault = new JSONObject(JSONObject.Type.OBJECT);
         platformDefault.AddField("format", (int)this.importFormat);
@@ -193,6 +195,8 @@ internal class TextureFile : FileData
         // 在临时改成 Default 类型之前读取原始色彩空间；法线贴图始终使用线性采样。
         bool sRGB = import != null && import.sRGBTexture && !this.isNormal &&
             import.textureType != TextureImporterType.NormalMap;
+        // 在临时更改导入类型前保留源配置，交给 Laya 的纹理导入流程使用。
+        bool alphaIsTransparency = import != null && import.alphaIsTransparency;
         if (import == null) {
             if (m_isBuiltinTexture) {
                 initDefaultTextureInfo();
@@ -234,6 +238,7 @@ internal class TextureFile : FileData
             if (m_isSpriteTexture && !m_forceReadable) {
                 JSONObject spriteImporter = new JSONObject(JSONObject.Type.OBJECT);
                 spriteImporter.AddField("textureType", 2);
+                spriteImporter.AddField("alphaIsTransparency", alphaIsTransparency);
                 addWrapModeMetadata(spriteImporter, wrapModeU, wrapModeV);
                 this.setImporterMetadata(spriteImporter);
                 // constructParams / propertyParams 保持空数组（已在方法开头初始化），
@@ -280,6 +285,7 @@ internal class TextureFile : FileData
             }
             importData.AddField("anisoLevel", anisoLevel);
             importData.AddField("alphaChannel", hasAlphaChannel);
+            importData.AddField("alphaIsTransparency", alphaIsTransparency);
             
             if (true) { // platformDefault
                 JSONObject platformDefault = new JSONObject(JSONObject.Type.OBJECT);

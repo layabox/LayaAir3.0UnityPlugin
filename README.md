@@ -1,5 +1,22 @@
 # Unity Plugin for LayaAir3.0
 
+## 纹理透明度导入设置
+
+纹理导出会将 Unity `TextureImporter.alphaIsTransparency` 写入图片
+`.meta` 的 `importer.alphaIsTransparency`，保留源资源的开关值。没有
+`TextureImporter` 的内置纹理写入 `false`。
+
+图片仍通过 Unity 已导入的纹理像素生成，可能已包含 Unity 的扩边结果。
+LayaPro 开启此选项时，在缩放、mipmap 和压缩之前重新计算完全透明像素的
+RGB，扩边步骤不会修改 Alpha 或非完全透明像素的 RGB。相同输入重复执行
+LayaPro 的扩边不会继续扩大范围；但 Unity 的缩放或压缩可能改变输入，
+因此不保证两端透明区域的 RGB 逐像素一致。在 LayaPro 中关闭此选项只会
+跳过其扩边步骤，无法还原已写入导出图片的 Unity 扩边结果。
+
+当前 LayaPro 仅对普通 2D、可解码的 LDR 纹理且保留 Alpha 的输出执行此处理；
+Sprite 的导出 meta 同样保留源配置，但目前不参与该步骤。该属性属于图片
+导入设置，不写入材质 `propertyParams`，也不替代预乘 Alpha 设置。
+
 ## 材质映射中的 Cubemap
 
 在材质映射条目的 `textures` 中配置 Cubemap，与 Texture2D 使用相同格式：
