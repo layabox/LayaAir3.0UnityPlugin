@@ -1353,6 +1353,7 @@ namespace LayaExport
         private static void ExportTextureSheetAnimation(ParticleSystem.TextureSheetAnimationModule tsa, JSONObject particleSystem)
         {
             JSONObject tsaObj = new JSONObject(JSONObject.Type.OBJECT);
+            tsaObj.AddField("_$type", "TextureSheetAnimation");
             tsaObj.AddField("enable", true);
 
             // tiles
@@ -1371,6 +1372,7 @@ namespace LayaExport
             // _frame
             float frameCount = animType == 1 ? tsa.numTilesX : tsa.numTilesX * tsa.numTilesY;
             JSONObject frame = new JSONObject(JSONObject.Type.OBJECT);
+            frame.AddField("_$type", "FrameOverTime");
             int frameType = GetCurveType(tsa.frameOverTime.mode);
             frame.AddField("_type", frameType);
 
@@ -1385,17 +1387,23 @@ namespace LayaExport
             }
             else
             {
-                float maxCurve = frameCount * tsa.frameOverTime.curveMultiplier;
-                ExportGradientDataInt(tsa.frameOverTime, frame, "_overTime", maxCurve);
+                ParticleSystem.MinMaxCurve frameCurve = tsa.frameOverTime;
+                float multiplier = frameCount * frameCurve.curveMultiplier;
                 if (frameType == 3)
                 {
-                    ExportGradientDataIntMinMax(tsa.frameOverTime, frame, "_overTimeMin", "_overTimeMax", maxCurve);
+                    WriteGradientCurve(frameCurve.curveMin, frame, "_overTimeMin", multiplier, "GradientDataInt");
+                    WriteGradientCurve(frameCurve.curveMax, frame, "_overTimeMax", multiplier, "GradientDataInt");
+                }
+                else
+                {
+                    WriteGradientCurve(frameCurve.curve, frame, "_overTime", multiplier, "GradientDataInt");
                 }
             }
             tsaObj.AddField("_frame", frame);
 
             // _startFrame
             JSONObject startFrame = new JSONObject(JSONObject.Type.OBJECT);
+            startFrame.AddField("_$type", "StartFrame");
             int startFrameType = tsa.startFrame.mode == ParticleSystemCurveMode.TwoConstants ? 1 : 0;
             startFrame.AddField("_type", startFrameType);
             if (startFrameType == 0)
@@ -1747,13 +1755,19 @@ namespace LayaExport
         /// </summary>
         private static void ExportGradientDataNumber(ParticleSystem.MinMaxCurve curve, JSONObject parent, string fieldName, float multiplier)
         {
-            AnimationCurve animCurve = curve.curve;
+            WriteGradientCurve(curve.curve, parent, fieldName, multiplier);
+        }
+
+        private static void WriteGradientCurve(AnimationCurve animCurve, JSONObject parent, string fieldName, float multiplier, string dataType = null)
+        {
             if (animCurve == null || animCurve.length == 0)
             {
                 animCurve = AnimationCurve.Linear(0, 0, 1, 1);
             }
 
             JSONObject gradientData = new JSONObject(JSONObject.Type.OBJECT);
+            if (dataType != null)
+                gradientData.AddField("_$type", dataType);
 
             int actualKeyCount;
             List<float> elements = SampleCurveElements(animCurve, multiplier, out actualKeyCount);
@@ -1839,16 +1853,6 @@ namespace LayaExport
 
                 parent.AddField(maxFieldName, gradientDataMax);
             }
-        }
-
-        private static void ExportGradientDataInt(ParticleSystem.MinMaxCurve curve, JSONObject parent, string fieldName, float multiplier)
-        {
-            ExportGradientDataNumber(curve, parent, fieldName, multiplier);
-        }
-
-        private static void ExportGradientDataIntMinMax(ParticleSystem.MinMaxCurve curve, JSONObject parent, string minFieldName, string maxFieldName, float multiplier)
-        {
-            ExportGradientDataNumberMinMax(curve, parent, minFieldName, maxFieldName, multiplier);
         }
 
         /// <summary>

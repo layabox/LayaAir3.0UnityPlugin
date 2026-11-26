@@ -33,3 +33,18 @@ The new resolver supports Built-in and URP Lit/Unlit ShaderGraph targets. Unsupp
 targets and legacy graph formats emit a warning and retain the legacy material
 fallback. Ordinary ShaderLab parsing and configured uniform/texture mappings retain
 their existing behavior.
+
+## GPU particle texture sheet export
+
+In a disposable Unity project with this plugin installed, copy
+`Tests~/ParticleTextureSheetExportTests.cs` to `Assets/Editor/`. With the project
+closed, run the following from PowerShell using the paths for your installation.
+
+```powershell
+& 'D:/tool/Unity/Editor/2022.3.62f3/Editor/Unity.exe' -batchmode -nographics -quit `
+  -projectPath 'D:/project/UnityTest' -executeMethod ParticleTextureSheetExportTests.Run -logFile -
+```
+
+The test exports a Unity ParticleSystem with the module disabled and with each of the
+four frame modes. It checks both start frame modes, the Laya runtime type names,
+and the frame values for a 4×4 sheet. A passing run logs `ParticleTextureSheetExportTests passed`.
